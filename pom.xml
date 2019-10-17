@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.envisioniot.enos</groupId>
-    <artifactId>enos-iot-device-java-sdk-parent</artifactId>
+    <artifactId>iot-device-java-sdk-parent</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -30,66 +30,100 @@
     </dependencyManagement>
 
     <modules>
+        <module>mqtt</module>
     </modules>
 
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.1.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>3.0.0-M1</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.1.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.0.1</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.0.1</version>
-                    <executions>
-                        <execution>
-                            <id>attach-javadocs</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                            <configuration>
-                                <failOnError>false</failOnError>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+    <profiles>
+        <profile>
+            <id>envisionrepo</id>
+            <distributionManagement>
+                <repository>
+                    <id>envision.repo</id>
+                    <name>envision internal repository for released artifacts</name>
+                    <url>http://nexus.envisioncn.com/content/repositories/releases</url>
+                </repository>
+                <snapshotRepository>
+                    <id>envision.repo.snapshots</id>
+                    <name>envision internal repository for snapshots artifacts</name>
+                    <url>http://nexus.envisioncn.com/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
 
+        <profile>
+            <id>mvnrepo</id>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>oss</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+                </snapshotRepository>
+                <repository>
+                    <id>oss</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+            </distributionManagement>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <build>
         <plugins>
+            <!-- Source -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <configuration>
+                    <additionalparam>-Xdoclint:none</additionalparam>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>default-jar</id>
                         <phase>package</phase>
                         <goals>
                             <goal>jar</goal>
@@ -97,54 +131,16 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <configuration>
-                    <attach>true</attach>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <attach>true</attach>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
-    <repositories>
-        <repository>
-            <id>envision.repo</id>
-            <name>Internal Releases</name>
-            <url>http://nexus.envisioncn.com/content/repositories/releases/</url>
-        </repository>
-        <repository>
-            <id>envision.repo.snapshots</id>
-            <name>Internal Snapshots</name>
-            <url>http://nexus.envisioncn.com/content/repositories/snapshots/</url>
-        </repository>
-    </repositories>
-
-    <distributionManagement>
-        <repository>
-            <id>envision.repo</id>
-            <name>Internal Releases</name>
-            <url>http://nexus.envisioncn.com/content/repositories/releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>envision.repo.snapshots</id>
-            <name>Internal Snapshots</name>
-            <url>http://nexus.envisioncn.com/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
+    <!-- <repositories> <repository> <id>envision.repo</id> <name>Internal 
+        Releases</name> <url>http://nexus.envisioncn.com/content/repositories/releases/</url> 
+        </repository> <repository> <id>envision.repo.snapshots</id> <name>Internal 
+        Snapshots</name> <url>http://nexus.envisioncn.com/content/repositories/snapshots/</url> 
+        </repository> </repositories> <distributionManagement> <repository> <id>envision.repo</id> 
+        <name>Internal Releases</name> <url>http://nexus.envisioncn.com/content/repositories/releases/</url> 
+        </repository> <snapshotRepository> <id>envision.repo.snapshots</id> <name>Internal 
+        Snapshots</name> <url>http://nexus.envisioncn.com/content/repositories/snapshots/</url> 
+        </snapshotRepository> </distributionManagement> -->
 </project>
