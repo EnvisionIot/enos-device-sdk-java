@@ -30,8 +30,9 @@
     </dependencyManagement>
 
     <modules>
-        <module>mqtt</module>
-    </modules>
+        <module>base-protocol</module>
+<!--         <module>mqtt</module>
+ -->    </modules>
 
     <profiles>
         <profile>
