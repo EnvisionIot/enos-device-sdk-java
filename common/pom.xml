@@ -9,12 +9,11 @@
         <relativePath>..</relativePath>
     </parent>
 
-    <artifactId>enos-mqtt</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <artifactId>enos-iot-device-commons</artifactId>
 
     <packaging>jar</packaging>
 
-    <name>EnOS IoT MQTT Java SDK</name>
+    <name>EnOS IoT Device Commons</name>
     <inceptionYear>2018</inceptionYear>
     <url>https://github.com/EnvisionIot/enos-mqtt-sdk-java</url>
 
@@ -42,21 +41,6 @@
     </developers>
 
     <description>
-        0.0.3-SNAPSHOT remove command DeleteDeviceCommand DisableDeviceCommand
-        use these command instead: SubDeviceDelete, SubDeviceDisable SubDeviceEnable commands
-        remove RrpcCommand, the ServiceInvocationCommand handle the sync service as well
-        add requests including : QueryDeviceTag,AttributeQuery,AttributeUpdate
-        0.0.4-SNAPSHOT rename some requests
-        2.1.0 release
-        2.1.1-SNAPSHOT support dynamic activate(login by productSecret)
-        support init by config file
-        2.1.2-SNAPSHOT support ota feature
-        2.1.2 release
-        2.1.3 message integration
-        2.1.4-SNAPSHOT internal logic refactor, fix thread pool resource leak
-        2.1.5-SNAPSHOT support device name internationalization for device registering
-        2.1.6-SNAPSHOT fix potential hanging bug during re-connect in paho
-        2.1.7-SNAPSHOT batch login sub-device
     </description>
 
     <properties>
@@ -76,15 +60,39 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.envisioniot</groupId>
-            <artifactId>enos-iot-device-commons</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.6.2</version>
         </dependency>
 
         <dependency>
-            <groupId>org.eclipse.paho</groupId>
-            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-            <version>1.2.0</version>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>19.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+            <version>3.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.6</version>
         </dependency>
     </dependencies>
 

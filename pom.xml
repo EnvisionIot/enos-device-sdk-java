@@ -3,8 +3,8 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.envisioniot.enos</groupId>
-    <artifactId>iot-device-java-sdk-parent</artifactId>
+    <groupId>com.envisioniot</groupId>
+    <artifactId>enos-iot-device-java-sdk-parent</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -30,9 +30,10 @@
     </dependencyManagement>
 
     <modules>
-        <module>base-protocol</module>
-<!--         <module>mqtt</module>
- -->    </modules>
+        <module>common</module>
+        <module>mqtt</module>
+        <module>sample</module>
+    </modules>
 
     <profiles>
         <profile>

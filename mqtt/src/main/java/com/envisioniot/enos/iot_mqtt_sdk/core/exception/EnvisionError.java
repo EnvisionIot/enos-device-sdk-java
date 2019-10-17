@@ -1,54 +1,55 @@
 package com.envisioniot.enos.iot_mqtt_sdk.core.exception;
 
+import lombok.Value;
+
 /**
- * @author zhensheng.cai
- * @date 2018/7/12.
+ * Errors while handling mqtt connection and messages.
+ * 
+ * Redesigned, to implement an interface instead of enum.
+ * 
+ * @author shenjieyuan
  */
-public enum EnvisionError {
-    SUCCESS(0, "success"),
+@Value
+public class EnvisionError implements IEnvisionError
+{
+    public static final EnvisionError SUCCESS = new EnvisionError(0, "success");
 
-    INIT_MQTT_CLIENT_FAILED(-100, "INIT_MQTT_CLIENT_FAILED"),
-    MQTT_CLIENT_CONNECT_FAILED(-101, "MQTT_CLIENT_CONNECT_FAILED"),
-    MQTT_CLIENT_PUBLISH_FAILED(-102, "MQTT_CLIENT_PUBLISH_FAILED"),
-    MQTT_CLIENT_DISCONNECT_FAILED(-103, "MQTT_CLIENT_DISCONNECT_FAILED"),
-    MQTT_CLIENT_SUBSCRIEBE_FAILED(-104, "MQTT_CLIENT_SUBSCRIEBE_FAILED"),
-    MQTT_CLIENT_CLOSE_FAILED(-105, "MQTT_CLIENT_CLOSE_FAILED"),
-    INVALID_DEVICE_CREDENTIAL(-106, "INVALID_DEVICE_CREDENTIAL"),
-    INVALID_REPLY_MESSAGE_FORMAT(-107, "INVALID_REPLY_MESSAGE_FORMAT"),
-    INVALID_PAYLOAD(-108, "INVALID_PAYLOAD"),
-    EMPTY_PAYLOAD(-109, "EMPTY_PAYLOAD"),
-    GET_LOCAL_MODEL_FAILED(-110, "GET_LOCAL_MODEL_FAILED"),
-    MODEL_VALIDATION_FAILED(-111, "MODEL_VALIDATION_FAILED"),
-    RESPONSE_PARSE_ERR(-112, "RESPONSE_PARSE_ERR"),
-    MQTT_RESPONSE_PARSED_FALED(-113, "MQTT_RESPONSE_PARSED_FALED"),
-    UNSUPPPORTED_REQUEST_CALL_TYPE(-114, "UNSUPPPORTED_REQUEST_CALL_TYPE"),
-    SESSION_IS_NULL(-115, "SESSION_IS_NULL"),
-    STATUS_IS_UNKNOWN(-116, "STATUS_IS_UNKNOWN"),
-    CODE_ERROR_MISSING_ARGS(-117, "CODE_ERROR_MISSING_ARGS"),
-    CODE_ERROR_ARG_INVALID(-118, "CODE_ERROR_ARG_INVALID"),
-    CANNOT_REGISTER_CALLBACK(-119, "CANNOT_REGISTER_CALLBACK"),
-    DEVICE_SESSION_IS_NULL(-120, "SESSION IS NULL"),
-    CALLBACK_EXECUTION_FAILED(-121, "callback execution failed"),
-    STATUS_ERROR(-122, "invalid operation in current status"),
-    STATUS_NOT_ALLOW_LOGIN(-123, "status not allow login"),
-    STATUS_NOT_ALLOW_LOGOUT(-124, "status not allow logout"),
-    FUTURE_TASK_TIME_OUT(-125, "sync request timeout"),
-    THREAD_INTERRUPTED(-126, "thread interrupted"),
-    QOS_2_NOT_ALLOWED(-127, "qos 2 not allowed");
+    public static final EnvisionError INIT_MQTT_CLIENT_FAILED = new EnvisionError(-100, "INIT_MQTT_CLIENT_FAILED");
+    public static final EnvisionError MQTT_CLIENT_CONNECT_FAILED = new EnvisionError(-101,
+            "MQTT_CLIENT_CONNECT_FAILED");
+    public static final EnvisionError MQTT_CLIENT_PUBLISH_FAILED = new EnvisionError(-102,
+            "MQTT_CLIENT_PUBLISH_FAILED");
+    public static final EnvisionError MQTT_CLIENT_DISCONNECT_FAILED = new EnvisionError(-103,
+            "MQTT_CLIENT_DISCONNECT_FAILED");
+    public static final EnvisionError MQTT_CLIENT_SUBSCRIEBE_FAILED = new EnvisionError(-104,
+            "MQTT_CLIENT_SUBSCRIEBE_FAILED");
+    public static final EnvisionError MQTT_CLIENT_CLOSE_FAILED = new EnvisionError(-105, "MQTT_CLIENT_CLOSE_FAILED");
+    public static final EnvisionError INVALID_DEVICE_CREDENTIAL = new EnvisionError(-106, "INVALID_DEVICE_CREDENTIAL");
+    public static final EnvisionError INVALID_REPLY_MESSAGE_FORMAT = new EnvisionError(-107,
+            "INVALID_REPLY_MESSAGE_FORMAT");
+    public static final EnvisionError INVALID_PAYLOAD = new EnvisionError(-108, "INVALID_PAYLOAD");
+    public static final EnvisionError EMPTY_PAYLOAD = new EnvisionError(-109, "EMPTY_PAYLOAD");
+    public static final EnvisionError GET_LOCAL_MODEL_FAILED = new EnvisionError(-110, "GET_LOCAL_MODEL_FAILED");
+    public static final EnvisionError MODEL_VALIDATION_FAILED = new EnvisionError(-111, "MODEL_VALIDATION_FAILED");
+    public static final EnvisionError RESPONSE_PARSE_ERR = new EnvisionError(-112, "RESPONSE_PARSE_ERR");
+    public static final EnvisionError MQTT_RESPONSE_PARSED_FALED = new EnvisionError(-113,
+            "MQTT_RESPONSE_PARSED_FALED");
+    public static final EnvisionError UNSUPPPORTED_REQUEST_CALL_TYPE = new EnvisionError(-114,
+            "UNSUPPPORTED_REQUEST_CALL_TYPE");
+    public static final EnvisionError SESSION_IS_NULL = new EnvisionError(-115, "SESSION_IS_NULL");
+    public static final EnvisionError STATUS_IS_UNKNOWN = new EnvisionError(-116, "STATUS_IS_UNKNOWN");
+    public static final EnvisionError CODE_ERROR_MISSING_ARGS = new EnvisionError(-117, "CODE_ERROR_MISSING_ARGS");
+    public static final EnvisionError CODE_ERROR_ARG_INVALID = new EnvisionError(-118, "CODE_ERROR_ARG_INVALID");
+    public static final EnvisionError CANNOT_REGISTER_CALLBACK = new EnvisionError(-119, "CANNOT_REGISTER_CALLBACK");
+    public static final EnvisionError DEVICE_SESSION_IS_NULL = new EnvisionError(-120, "SESSION IS NULL");
+    public static final EnvisionError CALLBACK_EXECUTION_FAILED = new EnvisionError(-121, "callback execution failed");
+    public static final EnvisionError STATUS_ERROR = new EnvisionError(-122, "invalid operation in current status");
+    public static final EnvisionError STATUS_NOT_ALLOW_LOGIN = new EnvisionError(-123, "status not allow login");
+    public static final EnvisionError STATUS_NOT_ALLOW_LOGOUT = new EnvisionError(-124, "status not allow logout");
+    public static final EnvisionError FUTURE_TASK_TIME_OUT = new EnvisionError(-125, "sync request timeout");
+    public static final EnvisionError THREAD_INTERRUPTED = new EnvisionError(-126, "thread interrupted");
+    public static final EnvisionError QOS_2_NOT_ALLOWED = new EnvisionError(-127, "qos 2 not allowed");
 
-    private int errorCode;
-    private String errorMessage;
-
-    EnvisionError(int errorCode, String errorMessage) {
-        this.errorCode = errorCode;
-        this.errorMessage = errorMessage;
-    }
-
-    public int getErrorCode() {
-        return errorCode;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
+    private final int errorCode;
+    private final String errorMessage;
 }
