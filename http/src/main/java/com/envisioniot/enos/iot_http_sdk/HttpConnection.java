@@ -9,6 +9,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -143,8 +145,8 @@ public class HttpConnection
                 SignMethod.SHA256);
     }
 
-    private static final String MEDIA_TYPE_JSON_UTF_8 = JSON_UTF_8.toString();
-    private static final String MEDIA_TYPE_OCTET_STREAM = OCTET_STREAM.toString();
+    static final String MEDIA_TYPE_JSON_UTF_8 = JSON_UTF_8.toString();
+    static final String MEDIA_TYPE_OCTET_STREAM = OCTET_STREAM.toString();
 
     /**
      * 执行设备上线请求
@@ -223,8 +225,8 @@ public class HttpConnection
     private void checkAuth() throws EnvisionException
     {
         // 如果没有sessionId，需要先登录获取sessionId
-        if (Strings.isNullOrEmpty(sessionId)
-                || System.currentTimeMillis() - lastPostTimestamp > sessionConfiguration.getLifetime())
+        if (Strings.isNullOrEmpty(sessionId) || 
+            System.currentTimeMillis() - lastPostTimestamp > sessionConfiguration.getLifetime())
         {
             auth();
             if (Strings.isNullOrEmpty(sessionId))
@@ -264,43 +266,17 @@ public class HttpConnection
     {
         return request instanceof ModelUpRawRequest;
     }
-
-    private <T extends BaseMqttResponse> Call generatePublishCall(BaseMqttRequest<T> request) throws EnvisionException
-    {
-        checkAuth();
-        // 将请求消息设置完整
-        fillRequest(request);
-
-        RequestBody body;
-        if (!isUpRaw(request))
-        {
-            // 准备请求消息
-            body = RequestBody.create(MediaType.parse(MEDIA_TYPE_JSON_UTF_8), new String(request.encode(), UTF_8));
-        } else
-        {
-            body = RequestBody.create(MediaType.parse(MEDIA_TYPE_OCTET_STREAM), request.encode());
-        }
-
-        Request httpRequest = new Request.Builder()
-                .url(brokerUrl + "/topic" + request.getMessageTopic() + "?sessionId=" + sessionId).post(body).build();
-
-        Call call = okHttpClient.newCall(httpRequest);
-        return call;
-    }
-
+    
     /**
-     * Publish a request to EnOS IOT HTTP broker
-     * 
+     * 执行okHttp Call，获取Response
      * @param <T>
-     *            Response
+     * @param call
      * @param request
-     * @return response
+     * @return
      * @throws EnvisionException
      */
-    public <T extends BaseMqttResponse> T publish(BaseMqttRequest<T> request) throws EnvisionException
+    private <T extends BaseMqttResponse> T publishCall(Call call, BaseMqttRequest<T> request) throws EnvisionException
     {
-        Call call = generatePublishCall(request);
-
         try
         {
             Response httpResponse = call.execute();
@@ -323,21 +299,16 @@ public class HttpConnection
             throw new EnvisionException(CLIENT_ERROR);
         }
     }
-
+    
     /**
-     * Publish a request to EnOS IOT HTTP broker, asynchronously with a callback
-     * 
+     * 异步执行okHttp Call，通过Callback方法处理Response
      * @param <T>
-     *            Response
+     * @param call
      * @param request
      * @param callback
-     * @throws EnvisionException
      */
-    public <T extends BaseMqttResponse> void publish(BaseMqttRequest<T> request, IResponseCallback<T> callback)
-            throws EnvisionException
+    private <T extends BaseMqttResponse> void publishCallAsync(Call call, BaseMqttRequest<T> request, IResponseCallback<T> callback)
     {
-        Call call = generatePublishCall(request);
-
         call.enqueue(new Callback()
         {
             @Override
@@ -374,6 +345,98 @@ public class HttpConnection
     }
 
     /**
+     * 生成一个用于okHttp的请求消息
+     * @param <T>
+     * @param request
+     * @return
+     * @throws EnvisionException
+     */
+    private <T extends BaseMqttResponse> Call generatePublishCall(BaseMqttRequest<T> request) throws EnvisionException
+    {
+        checkAuth();
+        // 将请求消息设置完整
+        fillRequest(request);
+
+        RequestBody body;
+        if (!isUpRaw(request))
+        {
+            // 准备请求消息
+            body = RequestBody.create(MediaType.parse(MEDIA_TYPE_JSON_UTF_8), new String(request.encode(), UTF_8));
+        } else
+        {
+            body = RequestBody.create(MediaType.parse(MEDIA_TYPE_OCTET_STREAM), request.encode());
+        }
+
+        Request httpRequest = new Request.Builder()
+                .url(brokerUrl + "/topic" + request.getMessageTopic() + "?sessionId=" + sessionId).post(body).build();
+
+        Call call = okHttpClient.newCall(httpRequest);
+        return call;
+    }
+    
+    
+    private <T extends BaseMqttResponse> Call generateMultipartPublishCall(BaseMqttRequest<T> request, 
+            Map<String, File> files) throws EnvisionException, IOException
+    {
+        checkAuth();
+
+        // 将请求消息设置完整
+        fillRequest(request);
+        
+        // 准备一个Multipart请求消息
+        MultipartBody.Builder builder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("enos-message", new String(request.encode(), UTF_8));
+        
+        for (Entry<String,File> entry: files.entrySet())
+        {
+            String filename = entry.getKey();
+            File file = entry.getValue();
+            
+            builder.addPart(FileFormData.createFormData(filename, filename, file));
+        }
+        
+        RequestBody body = builder.build();
+
+        Request httpRequest = new Request.Builder()
+                .url(brokerUrl + "/topic" + request.getMessageTopic() + "?sessionId=" + sessionId).post(body).build();
+
+        Call call = okHttpClient.newCall(httpRequest);
+        return call;
+    }
+
+    /**
+     * Publish a request to EnOS IOT HTTP broker
+     * 
+     * @param <T>
+     *            Response
+     * @param request
+     * @return response
+     * @throws EnvisionException
+     */
+    public <T extends BaseMqttResponse> T publish(BaseMqttRequest<T> request) throws EnvisionException
+    {
+        Call call = generatePublishCall(request);
+        return publishCall(call, request);
+    }
+
+    /**
+     * Publish a request to EnOS IOT HTTP broker, asynchronously with a callback
+     * 
+     * @param <T>
+     *            Response
+     * @param request
+     * @param callback
+     * @throws EnvisionException
+     */
+    public <T extends BaseMqttResponse> void publish(BaseMqttRequest<T> request, IResponseCallback<T> callback)
+            throws EnvisionException
+    {
+        Call call = generatePublishCall(request);
+        publishCallAsync(call, request, callback);
+    }
+
+    /**
      * Post a request to EnOS IOT HTTP Broker with files
      * 
      * Inside the request, the file should be identified by a prefix "local://".
@@ -389,17 +452,40 @@ public class HttpConnection
      *            file name and files
      * @return response
      * @throws EnvisionException
+     * @throws IOException error to read files
      */
     public <T extends BaseMqttResponse> T postMultipartRequest(BaseMqttRequest<T> request, Map<String, File> files)
-            throws EnvisionException
+            throws EnvisionException, IOException
     {
-        checkAuth();
-
-        // TODO: 使用session ID发送请求，获取响应结果
-        // 读取文件，变成Multipart组成部分。
-        // 准备一个专门的contentLength、 MD5 参数。
-        T response = null;
-
-        return response;
+        Call call = generateMultipartPublishCall(request, files);
+        return publishCall(call, request);
+    }
+    
+    
+    /**
+     * Post a request to EnOS IOT HTTP Broker with files, handle the response in a callback function
+     * 
+     * Inside the request, the file should be identified by a prefix "local://".
+     * <br>
+     * For example, to post a file named "ameter.jpg" as measure point
+     * <i>camera</i>'s value: <br>
+     * "camera" : "local://ameter.jpg"
+     * 
+     * @param <T>
+     *            Response
+     * @param request
+     * @param files
+     *            file name and files
+     * @param callback
+     * @return response
+     * @throws EnvisionException
+     * @throws IOException error to read files
+     */
+    public <T extends BaseMqttResponse> void postMultipartRequest(BaseMqttRequest<T> request, Map<String, File> files,
+            IResponseCallback<T> callback)
+            throws EnvisionException, IOException
+    {
+        Call call = generateMultipartPublishCall(request, files);
+        publishCallAsync(call, request, callback);
     }
 }
