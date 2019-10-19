@@ -30,10 +30,10 @@
     </dependencyManagement>
 
     <modules>
-        <module>common</module>
-        <module>mqtt</module>
-        <module>http</module>
-        <module>sample</module>
+        <module>enos-sdk-core</module>
+        <module>enos-mqtt-sdk</module>
+        <module>enos-http-sdk</module>
+        <module>enos-sdk-sample</module>
     </modules>
 
     <profiles>
