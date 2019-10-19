@@ -79,7 +79,6 @@ public class AttributeUpdateRequest extends BaseMqttRequest<AttributeUpdateRespo
 
     }
 
-
     @Override
     protected String _getPK_DK_FormatTopic() {
         return DeliveryTopicFormat.ATTRIBUTE_UPDATE;
@@ -87,6 +86,6 @@ public class AttributeUpdateRequest extends BaseMqttRequest<AttributeUpdateRespo
 
     @Override
     public Class<AttributeUpdateResponse> getAnswerType() {
-        return null;
+        return AttributeUpdateResponse.class;
     }
 }

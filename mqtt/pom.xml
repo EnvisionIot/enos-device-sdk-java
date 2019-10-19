@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.envisioniot</groupId>
-        <artifactId>enos-iot-device-java-sdk-parent</artifactId>
+        <artifactId>enos-iot-sdk-parent</artifactId>
         <version>0.1.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
@@ -14,7 +14,7 @@
 
     <packaging>jar</packaging>
 
-    <name>EnOS IoT MQTT Java SDK</name>
+    <name>EnOS IoT SDK for MQTT</name>
     <inceptionYear>2018</inceptionYear>
     <url>https://github.com/EnvisionIot/enos-mqtt-sdk-java</url>
 
@@ -78,7 +78,7 @@
     <dependencies>
         <dependency>
             <groupId>com.envisioniot</groupId>
-            <artifactId>enos-iot-device-commons</artifactId>
+            <artifactId>enos-core</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
 

@@ -7,7 +7,7 @@ import lombok.Value;
  * @author shenjieyuan
  */
 @Value
-public class AuthRequest
+public class AuthRequestBody
 {
     private final String secureMode;
 

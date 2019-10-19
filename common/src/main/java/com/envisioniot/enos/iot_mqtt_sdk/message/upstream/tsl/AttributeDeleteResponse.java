@@ -19,5 +19,4 @@ public class AttributeDeleteResponse extends BaseMqttResponse {
     public Pattern getMatchTopicPattern() {
         return pattern;
     }
-
 }

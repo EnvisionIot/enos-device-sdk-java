@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.envisioniot</groupId>
-    <artifactId>enos-iot-device-java-sdk-parent</artifactId>
+    <artifactId>enos-iot-sdk-parent</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>EnOS IoT Device Java SDK Bundle</name>
+    <name>EnOS IoT SDK</name>
     <url>http://www.envisioniot.com</url>
 
     <properties>

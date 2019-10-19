@@ -12,11 +12,11 @@ import lombok.Data;
 public class SessionConfiguration
 {
     // 默认lifetime是5分钟
-    public static final long DEFAULT_LIFETIME = 300_000L;
+    public static final int DEFAULT_LIFETIME = 300_000;
 
     @Builder.Default
     private SignMethod signMethod = SHA256;
 
     @Builder.Default
-    private long lifetime = DEFAULT_LIFETIME;
+    private int lifetime = DEFAULT_LIFETIME;
 }

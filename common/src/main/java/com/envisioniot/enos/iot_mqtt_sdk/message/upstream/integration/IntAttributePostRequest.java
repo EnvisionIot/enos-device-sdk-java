@@ -84,6 +84,6 @@ public class IntAttributePostRequest extends BaseMqttRequest<IntAttributePostRes
 
     @Override
     public Class<IntAttributePostResponse> getAnswerType() {
-        return null;
+        return IntAttributePostResponse.class;
     }
 }

@@ -134,7 +134,7 @@ public abstract class BaseMqttRequest<T extends BaseMqttResponse> extends BaseAn
     public String getAnswerTopic() {
         return getMessageTopic() + "_reply";
     }
-
+    
     protected abstract String _getPK_DK_FormatTopic();
 
 }

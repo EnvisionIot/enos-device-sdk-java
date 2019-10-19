@@ -7,9 +7,9 @@ import lombok.Data;
  * @author shenjieyuan
  */
 @Data
-public class AuthResponse 
+public class AuthResponseBody 
 {
     private int code;
-    private AuthResponseData data;
+    private AuthResponseBodyData data;
     private String message;
 }
