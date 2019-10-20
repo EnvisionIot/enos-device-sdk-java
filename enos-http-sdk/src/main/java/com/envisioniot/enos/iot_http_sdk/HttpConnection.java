@@ -30,7 +30,9 @@ import com.google.common.util.concurrent.Monitor;
 import com.google.gson.Gson;
 
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -110,6 +112,17 @@ public class HttpConnection
 
             return instance;
         }
+        
+        /**
+         * Fluent API to set session configuration
+         * @param configuration
+         * @return
+         */
+        public Builder sessionConfiguration(SessionConfiguration configuration)
+        {
+            this.sessionConfiguration = configuration;
+            return this;
+        }
     }
 
     private String brokerUrl;
@@ -124,11 +137,15 @@ public class HttpConnection
     private Monitor authMonitor = new Monitor();
 
     private volatile AuthResponseBody lastAuthResponse = null;
+    
+    @Getter
     private volatile String sessionId = null;
 
-    private long lastPostTimestamp;
+    @Getter
+    private long lastPublishTimestamp;
 
-    private final AtomicInteger requestId = new AtomicInteger(0);
+    @Getter @Setter
+    private AtomicInteger requestId = new AtomicInteger(0);
 
     /**
      * Generate sign for auth request, only use SHA-256 method
@@ -179,7 +196,7 @@ public class HttpConnection
                     // 更新sessionId
                     sessionId = lastAuthResponse.getData().getSessionId();
                     // 存储lastPostTimestamp
-                    lastPostTimestamp = System.currentTimeMillis();
+                    lastPublishTimestamp = System.currentTimeMillis();
 
                     log.info("auth success, store sessionId = " + sessionId);
 
@@ -226,7 +243,7 @@ public class HttpConnection
     {
         // 如果没有sessionId，需要先登录获取sessionId
         if (Strings.isNullOrEmpty(sessionId) || 
-            System.currentTimeMillis() - lastPostTimestamp > sessionConfiguration.getLifetime())
+            System.currentTimeMillis() - lastPublishTimestamp > sessionConfiguration.getLifetime())
         {
             auth();
             if (Strings.isNullOrEmpty(sessionId))
@@ -454,7 +471,7 @@ public class HttpConnection
      * @throws EnvisionException
      * @throws IOException error to read files
      */
-    public <T extends BaseMqttResponse> T postMultipartRequest(BaseMqttRequest<T> request, Map<String, File> files)
+    public <T extends BaseMqttResponse> T publishMultipart(BaseMqttRequest<T> request, Map<String, File> files)
             throws EnvisionException, IOException
     {
         Call call = generateMultipartPublishCall(request, files);
@@ -481,7 +498,7 @@ public class HttpConnection
      * @throws EnvisionException
      * @throws IOException error to read files
      */
-    public <T extends BaseMqttResponse> void postMultipartRequest(BaseMqttRequest<T> request, Map<String, File> files,
+    public <T extends BaseMqttResponse> void publishMultipart(BaseMqttRequest<T> request, Map<String, File> files,
             IResponseCallback<T> callback)
             throws EnvisionException, IOException
     {
