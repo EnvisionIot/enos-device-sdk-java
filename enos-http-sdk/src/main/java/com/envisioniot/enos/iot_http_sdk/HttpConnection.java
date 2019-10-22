@@ -416,7 +416,7 @@ public class HttpConnection
         RequestBody body = builder.build();
 
         Request httpRequest = new Request.Builder()
-                .url(brokerUrl + "/topic" + request.getMessageTopic() + "?sessionId=" + sessionId).post(body).build();
+                .url(brokerUrl + "/multipart" + request.getMessageTopic() + "?sessionId=" + sessionId).post(body).build();
 
         Call call = okHttpClient.newCall(httpRequest);
         return call;
