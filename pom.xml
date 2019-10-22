@@ -136,14 +136,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <!-- <repositories> <repository> <id>envision.repo</id> <name>Internal 
-        Releases</name> <url>http://nexus.envisioncn.com/content/repositories/releases/</url> 
-        </repository> <repository> <id>envision.repo.snapshots</id> <name>Internal 
-        Snapshots</name> <url>http://nexus.envisioncn.com/content/repositories/snapshots/</url> 
-        </repository> </repositories> <distributionManagement> <repository> <id>envision.repo</id> 
-        <name>Internal Releases</name> <url>http://nexus.envisioncn.com/content/repositories/releases/</url> 
-        </repository> <snapshotRepository> <id>envision.repo.snapshots</id> <name>Internal 
-        Snapshots</name> <url>http://nexus.envisioncn.com/content/repositories/snapshots/</url> 
-        </snapshotRepository> </distributionManagement> -->
 </project>
