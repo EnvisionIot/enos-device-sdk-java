@@ -9,7 +9,7 @@ import lombok.Value;
 @Value
 public class AuthRequestBody
 {
-    private final String secureMode;
+    private final String signMethod;
 
     private final long lifetime;
     

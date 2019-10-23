@@ -1,19 +1,5 @@
 package com.envisioniot.enos.iot_http_sdk;
 
-import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.CLIENT_ERROR;
-import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.UNSUCCESSFUL_AUTH;
-import static com.google.common.net.MediaType.JSON_UTF_8;
-import static com.google.common.net.MediaType.OCTET_STREAM;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.envisioniot.enos.iot_http_sdk.auth.AuthRequestBody;
 import com.envisioniot.enos.iot_http_sdk.auth.AuthResponseBody;
 import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
@@ -28,20 +14,26 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Monitor;
 import com.google.gson.Gson;
-
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import okhttp3.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.CLIENT_ERROR;
+import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.UNSUCCESSFUL_AUTH;
+import static com.google.common.net.MediaType.JSON_UTF_8;
+import static com.google.common.net.MediaType.OCTET_STREAM;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * This class provides a http connection towards EnOS IoT HTTP Broker
@@ -206,7 +198,7 @@ public class HttpConnection
                     // auth failed
                     AuthResponseBody failure = new AuthResponseBody();
                     failure.setCode(response.code());
-                    failure.setMessage(response.message());
+                    failure.setMsg(response.message());
 
                     log.info("auth failed. " + failure);
 
