@@ -11,5 +11,5 @@ public class AuthResponseBody
 {
     private int code;
     private AuthResponseBodyData data;
-    private String message;
+    private String msg;
 }
