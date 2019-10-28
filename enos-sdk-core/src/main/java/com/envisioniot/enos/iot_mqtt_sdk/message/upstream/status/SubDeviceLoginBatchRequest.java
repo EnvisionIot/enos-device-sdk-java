@@ -79,16 +79,19 @@ public class SubDeviceLoginBatchRequest extends BaseMqttRequest<SubDeviceLoginBa
             return params;
         }
 
-        public void setClientId(String clientId) {
+        public SubDeviceLoginBatchRequest.Builder setClientId(String clientId) {
             this.clientId = clientId;
+            return this;
         }
 
-        public void setTimestamp(long timestamp) {
+        public SubDeviceLoginBatchRequest.Builder setTimestamp(long timestamp) {
             this.timestamp = timestamp;
+            return this;
         }
 
-        public void setSignMethod(SignMethod signMethod) {
+        public SubDeviceLoginBatchRequest.Builder setSignMethod(SignMethod signMethod) {
             this.signMethod = signMethod;
+            return this;
         }
 
         @Override
