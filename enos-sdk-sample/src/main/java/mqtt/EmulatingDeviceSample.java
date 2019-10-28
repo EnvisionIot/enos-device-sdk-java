@@ -20,6 +20,7 @@ import mqtt.helper.Helper;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -49,7 +50,7 @@ public class EmulatingDeviceSample {
             if (input.toLowerCase().equals("help")) {
                 System.out.println("setServerUrl url");
                 System.out.println("connect productKey deviceKey deviceSecret");
-                System.out.println("publish mpName mpValue mpType [subProductKey subDeviceKey]"); // mp: measure point
+                System.out.println("publish mpName1 mpValue1 mpType1 [mpName2 mpValue2 mpType2] [...] [subProductKey subDeviceKey]"); // mp: measure point
                 System.out.println("registerMessageHandler");
                 System.out.println("loginSubDevice subProductKey subDeviceKey subDeviceSecret");
                 System.out.println("logoutSubDevice subProductKey subDeviceKey");
@@ -76,7 +77,12 @@ public class EmulatingDeviceSample {
                     if (validate(args, 4, false, client, true)) {
                         try {
                             client = new MqttClient(serverUrl, args[1], args[2], args[3]);
-                            client.getProfile().setConnectionTimeout(60).setAutoReconnect(true);
+                            client.getProfile()
+                                    .setConnectionTimeout(60)
+                                    .setAutoReconnect(true)
+//                                    .setSSLSecured(true)
+//                                    .setSSLJksPath("C:\\Users\\jian.zhang4\\device-auth\\beta\\mqtt-sample-dev01\\mqtt-sample-dev01.jks", "123456")
+                            ;
                             client.connect();
                             System.out.println("successfully connected to broker");
                         } catch (Exception e) {
@@ -88,26 +94,48 @@ public class EmulatingDeviceSample {
                     break;
                 case "publish":
                     if (validate(args, 4, true, client, false)) {
-                        Object value = args[2];
 
-                        if (args[3].equals("double")) {
-                            value = Double.valueOf(args[2]);
-                        } else if (args[3].equals("float")) {
-                            value = Float.valueOf(args[2]);
-                        } else if (args[3].equals("int")) {
-                            value = Integer.valueOf(args[2]);
-                        } else if (!args[3].equals("string")) {
-                            System.err.println("Error: don't support measure point type " + args[3]);
+                        int numberOfMeasurePoints = (args.length - 1) / 3;
+                        int left = args.length - 1 - numberOfMeasurePoints * 3;
+                        if (left != 0 && left != 2) {
+                            System.err.println("Error: invalid command line. Input help for more details");
+                            break;
+                        }
+
+                        Map<String, Object> measurePoints = new HashMap<>();
+                        boolean failed = false;
+                        for (int i = 0; i < numberOfMeasurePoints; ++i) {
+                            String field = args[i * 3 + 1];
+                            Object value = args[i * 3 + 2];
+                            Object type = args[i * 3 + 3];
+
+                            if (type.equals("double")) {
+                                value = Double.valueOf(args[i * 3 + 2]);
+                            } else if (type.equals("float")) {
+                                value = Float.valueOf(args[i * 3 + 2]);
+                            } else if (type.equals("int")) {
+                                value = Integer.valueOf(args[i * 3 + 2]);
+                            } else if (!args[3].equals("string")) {
+                                System.err.println("Error: don't support measure point type " + args[3]);
+                                failed = true;
+                                break;
+                            }
+
+                            measurePoints.put(field, value);
+                        }
+                        if (failed) {
+                            break;
                         }
 
                         String productKey = client.getProfile().getProductKey();
                         String deviceKey = client.getProfile().getDeviceKey();
-                        if (args.length >= 6) {
-                            productKey = args[4];
-                            deviceKey = args[5];
+                        if (left == 2) {
+                            int offset = 1 + numberOfMeasurePoints * 3;
+                            productKey = args[offset];
+                            deviceKey = args[offset + 1];
                         }
 
-                        publishMeasurepoint(client, args[1], value, productKey, deviceKey);
+                        publishMeasurepoint(client, measurePoints, productKey, deviceKey);
                     }
                     break;
                 case "registerMessageHandler":
@@ -232,18 +260,18 @@ public class EmulatingDeviceSample {
         };
     }
 
-    private static void publishMeasurepoint(MqttClient client, String measurepoint, Object value, String productKey, String deviceKey) {
+    private static void publishMeasurepoint(MqttClient client, Map<String, Object> measurepoints, String productKey, String deviceKey) {
         try {
             MeasurepointPostRequest request = MeasurepointPostRequest.builder()
                     .setProductKey(productKey)
                     .setDeviceKey(deviceKey)
-                    .addMeasurePoint(measurepoint, value).build();
+                    .addMeasurePoints(measurepoints).build();
 
             MeasurepointPostResponse response = client.publish(request);
             if (response.isSuccess()) {
-                System.out.println("\nmeasure point " + measurepoint + " published successfully");
+                System.out.println("\nmeasure points " + measurepoints + " published successfully");
             } else {
-                System.out.println("failed to publish " + measurepoint + ": " + response.getMessage());
+                System.out.println("failed to publish " + measurepoints + ": " + response.getMessage());
             }
         } catch (Exception e) {
             e.printStackTrace();

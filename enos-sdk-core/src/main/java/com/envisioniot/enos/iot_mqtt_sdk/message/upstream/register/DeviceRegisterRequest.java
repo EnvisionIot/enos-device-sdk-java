@@ -4,9 +4,9 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.DeliveryTopicFormat;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.MethodConstants;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
-import com.envisioniot.enos.iot_mqtt_sdk.util.CheckUtil;
 import com.envisioniot.enos.iot_mqtt_sdk.util.StringI18n;
 import com.envisioniot.enos.iot_mqtt_sdk.util.StringUtil;
+import com.google.common.base.Preconditions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -115,7 +115,8 @@ public class DeviceRegisterRequest extends BaseMqttRequest<DeviceRegisterRespons
     @Override
     public void check() throws EnvisionException {
         List<Map<String, Object>> params = this.getParams();
-        CheckUtil.checkMaxSize(params, MAX_DEVICE_SIZE, "regOptionList");
+        Preconditions.checkArgument(params.size() <= MAX_DEVICE_SIZE,
+                "register too many devices: " + params.size() + ", only " + MAX_DEVICE_SIZE + " allowed");
     }
 
     @Override

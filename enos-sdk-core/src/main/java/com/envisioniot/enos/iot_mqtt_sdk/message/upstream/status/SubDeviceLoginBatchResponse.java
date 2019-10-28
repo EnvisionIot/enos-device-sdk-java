@@ -11,7 +11,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
- * Note that user MUST check {@link SubDeviceLoginBatchResponse#hasSevereError()}
+ * Note that user MUST check {@link SubDeviceLoginBatchResponse#hasServerError()}
  * before calling {@link SubDeviceLoginBatchResponse#getSuccessResults()} and
  * {@link SubDeviceLoginBatchResponse#getFailureResults()}. Otherwise, it throws.
  *
@@ -20,7 +20,6 @@ import java.util.regex.Pattern;
 public class SubDeviceLoginBatchResponse extends BaseMqttResponse {
     private static final long serialVersionUID = -1L;
 
-    @SuppressWarnings("unused")
     private static final int HORRIBLE_ERROR_CODE = 500;
 
     private static Pattern pattern = Pattern.compile(ArrivedTopicPattern.SUB_DEVICE_LOGIN_BATCH_REPLY);
@@ -28,7 +27,7 @@ public class SubDeviceLoginBatchResponse extends BaseMqttResponse {
     private List<LoginSuccessResult> successResults;
     private List<LoginFailureResult> failureResults;
 
-    public boolean hasSevereError() {
+    public boolean hasServerError() {
         return !isSuccess() && getSuccessResults().isEmpty() && getFailureResults().isEmpty();
     }
 
