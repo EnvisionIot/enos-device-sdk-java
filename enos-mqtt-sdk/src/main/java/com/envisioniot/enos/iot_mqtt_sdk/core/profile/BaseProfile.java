@@ -1,16 +1,13 @@
 package com.envisioniot.enos.iot_mqtt_sdk.core.profile;
 
+import com.envisioniot.enos.iot_mqtt_sdk.core.compositejks.SslContextBuilder;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignUtil;
 import com.envisioniot.enos.iot_mqtt_sdk.util.SecureMode;
 import com.envisioniot.enos.iot_mqtt_sdk.util.SecureModeUtil;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.FileInputStream;
-import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -107,8 +104,7 @@ public abstract class BaseProfile {
         if (config.getSslSecured()) {
             if (this.sslContext == null) {
                 try {
-                    this.sslContext = createContext(this.config.getSslJksPath(), this.config.getSslPassword().toCharArray(), this.config.getSslAlgorithm());
-
+                    this.sslContext = createContext(this.config.getSslJksPath(), this.config.getSslPassword(), this.config.getSslAlgorithm());
                 } catch (Exception e) {
                     throw new RuntimeException("create SSL context failed", e.fillInStackTrace());
                 }
@@ -234,17 +230,14 @@ public abstract class BaseProfile {
         return this;
     }
 
-    private static SSLContext createContext(String keyPath, char[] pwd, String algorithm) throws Exception {
-        SSLContext context = SSLContext.getInstance("TLS");
-        KeyStore ks = KeyStore.getInstance("JKS");
-        ks.load(new FileInputStream(keyPath), pwd);
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(algorithm);
-        tmf.init(ks);
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
-        kmf.init(ks, pwd);
-        context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-        return context;
-    }
+    private static SSLContext createContext(String keyPath, String pwd, String algorithm) throws Exception {
+        return SslContextBuilder.builder()
+                .keyStoreFromFile(keyPath, pwd)
+                .usingTLS()
+                .usingAlgorithm(algorithm)
+                .usingKeyManagerPasswordFromKeyStore()
+                .buildMergedWithSystem();
 
+    }
 
 }

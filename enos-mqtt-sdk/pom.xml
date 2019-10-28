@@ -57,6 +57,7 @@
         2.1.5-SNAPSHOT support device name internationalization for device registering
         2.1.6-SNAPSHOT fix potential hanging bug during re-connect in paho
         2.1.7-SNAPSHOT batch login sub-device
+        2.1.8 support composite jks
         2.2.0-SNAPSHOT seperate the common part (message parsing etc.) into independent project
     </description>
 
