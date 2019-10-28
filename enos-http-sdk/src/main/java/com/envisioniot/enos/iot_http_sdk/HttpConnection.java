@@ -198,7 +198,7 @@ public class HttpConnection
                     // auth failed
                     AuthResponseBody failure = new AuthResponseBody();
                     failure.setCode(response.code());
-                    failure.setMsg(response.message());
+                    failure.setMessage(response.message());
 
                     log.info("auth failed. " + failure);
 
