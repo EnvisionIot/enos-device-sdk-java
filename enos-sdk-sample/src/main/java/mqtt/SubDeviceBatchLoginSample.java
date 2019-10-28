@@ -1,4 +1,4 @@
-package com.envisioniot.enos.iot_mqtt_sdk.sample;
+package mqtt;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.login.NormalDeviceLoginInput;
