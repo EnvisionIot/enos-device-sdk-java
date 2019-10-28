@@ -9,6 +9,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRe
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostResponse;
 import com.google.gson.GsonBuilder;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -48,7 +49,7 @@ public class MeasurepointPostSample
         {
             MeasurepointPostResponse response = connection.publish(request);
             System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(response));
-        } catch (EnvisionException e)
+        } catch (EnvisionException | IOException e)
         {
             e.printStackTrace();
         }
@@ -60,7 +61,7 @@ public class MeasurepointPostSample
         {
             MeasurepointPostResponse response = connection.publish(request);
             System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(response));
-        } catch (EnvisionException e)
+        } catch (EnvisionException | IOException e)
         {
             e.printStackTrace();
         }
@@ -84,7 +85,7 @@ public class MeasurepointPostSample
                     failure.printStackTrace();
                 }
             });
-        } catch (EnvisionException e)
+        } catch (EnvisionException | IOException e)
         {
             e.printStackTrace();
         }

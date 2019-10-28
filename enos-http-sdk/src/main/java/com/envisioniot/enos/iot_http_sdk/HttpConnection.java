@@ -9,6 +9,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignUtil;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.ModelUpRawRequest;
+import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.UploadFileInfo;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -21,10 +22,8 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -360,7 +359,7 @@ public class HttpConnection
      * @return
      * @throws EnvisionException
      */
-    private <T extends BaseMqttResponse> Call generatePublishCall(BaseMqttRequest<T> request) throws EnvisionException
+    private <T extends BaseMqttResponse> Call generatePlainPublishCall(BaseMqttRequest<T> request) throws EnvisionException
     {
         checkAuth();
         // 将请求消息设置完整
@@ -384,8 +383,8 @@ public class HttpConnection
     }
     
     
-    private <T extends BaseMqttResponse> Call generateMultipartPublishCall(BaseMqttRequest<T> request, 
-            Map<String, File> files) throws EnvisionException, IOException
+    private <T extends BaseMqttResponse> Call generateMultipartPublishCall(BaseMqttRequest<T> request,
+            List<UploadFileInfo> files) throws EnvisionException, IOException
     {
         checkAuth();
 
@@ -397,12 +396,9 @@ public class HttpConnection
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("enos-message", new String(request.encode(), UTF_8));
         
-        for (Entry<String,File> entry: files.entrySet())
+        for (UploadFileInfo uploadFile: files)
         {
-            String filename = entry.getKey();
-            File file = entry.getValue();
-            
-            builder.addPart(FileFormData.createFormData(filename, filename, file));
+            builder.addPart(FileFormData.createFormData(uploadFile));
         }
         
         RequestBody body = builder.build();
@@ -413,6 +409,28 @@ public class HttpConnection
         Call call = okHttpClient.newCall(httpRequest);
         return call;
     }
+    
+    /**
+     * 生成一个HTTP请求的okHttp Call
+     * @param <T>
+     * @param request
+     * @return
+     * @throws EnvisionException
+     * @throws IOException
+     */
+    private <T extends BaseMqttResponse> Call generatePublishCall(BaseMqttRequest<T> request) throws EnvisionException, IOException
+    {
+        if (request.getFiles() != null && !request.getFiles().isEmpty())
+        {
+            //包含文件测点的请求
+            return generateMultipartPublishCall(request, request.getFiles());
+        }
+        else
+        {
+            //没有文件测点的请求
+            return generatePlainPublishCall(request);
+        }
+    }
 
     /**
      * Publish a request to EnOS IOT HTTP broker
@@ -422,8 +440,9 @@ public class HttpConnection
      * @param request
      * @return response
      * @throws EnvisionException
+     * @throws IOException 
      */
-    public <T extends BaseMqttResponse> T publish(BaseMqttRequest<T> request) throws EnvisionException
+    public <T extends BaseMqttResponse> T publish(BaseMqttRequest<T> request) throws EnvisionException, IOException
     {
         Call call = generatePublishCall(request);
         return publishCall(call, request);
@@ -437,64 +456,65 @@ public class HttpConnection
      * @param request
      * @param callback
      * @throws EnvisionException
+     * @throws IOException 
      */
     public <T extends BaseMqttResponse> void publish(BaseMqttRequest<T> request, IResponseCallback<T> callback)
-            throws EnvisionException
+            throws EnvisionException, IOException
     {
         Call call = generatePublishCall(request);
         publishCallAsync(call, request, callback);
     }
 
-    /**
-     * Post a request to EnOS IOT HTTP Broker with files
-     * 
-     * Inside the request, the file should be identified by a prefix "local://".
-     * <br>
-     * For example, to post a file named "ameter.jpg" as measure point
-     * <i>camera</i>'s value: <br>
-     * "camera" : "local://ameter.jpg"
-     * 
-     * @param <T>
-     *            Response
-     * @param request
-     * @param files
-     *            file name and files
-     * @return response
-     * @throws EnvisionException
-     * @throws IOException error to read files
-     */
-    public <T extends BaseMqttResponse> T publishMultipart(BaseMqttRequest<T> request, Map<String, File> files)
-            throws EnvisionException, IOException
-    {
-        Call call = generateMultipartPublishCall(request, files);
-        return publishCall(call, request);
-    }
-    
-    
-    /**
-     * Post a request to EnOS IOT HTTP Broker with files, handle the response in a callback function
-     * 
-     * Inside the request, the file should be identified by a prefix "local://".
-     * <br>
-     * For example, to post a file named "ameter.jpg" as measure point
-     * <i>camera</i>'s value: <br>
-     * "camera" : "local://ameter.jpg"
-     * 
-     * @param <T>
-     *            Response
-     * @param request
-     * @param files
-     *            file name and files
-     * @param callback
-     * @return response
-     * @throws EnvisionException
-     * @throws IOException error to read files
-     */
-    public <T extends BaseMqttResponse> void publishMultipart(BaseMqttRequest<T> request, Map<String, File> files,
-            IResponseCallback<T> callback)
-            throws EnvisionException, IOException
-    {
-        Call call = generateMultipartPublishCall(request, files);
-        publishCallAsync(call, request, callback);
-    }
+//    /**
+//     * Post a request to EnOS IOT HTTP Broker with files
+//     * 
+//     * Inside the request, the file should be identified by a prefix "local://".
+//     * <br>
+//     * For example, to post a file named "ameter.jpg" as measure point
+//     * <i>camera</i>'s value: <br>
+//     * "camera" : "local://ameter.jpg"
+//     * 
+//     * @param <T>
+//     *            Response
+//     * @param request
+//     * @param files
+//     *            file name and files
+//     * @return response
+//     * @throws EnvisionException
+//     * @throws IOException error to read files
+//     */
+//    public <T extends BaseMqttResponse> T publishMultipart(BaseMqttRequest<T> request, Map<String, File> files)
+//            throws EnvisionException, IOException
+//    {
+//        Call call = generateMultipartPublishCall(request, files);
+//        return publishCall(call, request);
+//    }
+//    
+//    
+//    /**
+//     * Post a request to EnOS IOT HTTP Broker with files, handle the response in a callback function
+//     * 
+//     * Inside the request, the file should be identified by a prefix "local://".
+//     * <br>
+//     * For example, to post a file named "ameter.jpg" as measure point
+//     * <i>camera</i>'s value: <br>
+//     * "camera" : "local://ameter.jpg"
+//     * 
+//     * @param <T>
+//     *            Response
+//     * @param request
+//     * @param files
+//     *            file name and files
+//     * @param callback
+//     * @return response
+//     * @throws EnvisionException
+//     * @throws IOException error to read files
+//     */
+//    public <T extends BaseMqttResponse> void publishMultipart(BaseMqttRequest<T> request, Map<String, File> files,
+//            IResponseCallback<T> callback)
+//            throws EnvisionException, IOException
+//    {
+//        Call call = generateMultipartPublishCall(request, files);
+//        publishCallAsync(call, request, callback);
+//    }
 }

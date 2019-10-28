@@ -11,6 +11,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultActivateResponseHan
 import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DeviceCredential;
 import com.envisioniot.enos.iot_mqtt_sdk.core.profile.FileProfile;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.activate.DeviceActivateInfoCommand;
+import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogoutRequest;
@@ -430,10 +431,17 @@ public class MqttConnection {
          * Add necessary internal handling logic before we do the execute. This includes:
          * a) fill necessary information not provided by the request
          * b) check if the request is valid
+         * c) file is not allowed in MQTT
          */
         protected void preExecute() throws EnvisionException {
             fillRequest();
             delivered.check();
+            if ((delivered instanceof BaseMqttRequest) && 
+                (((BaseMqttRequest<?>) delivered).getFiles() != null) &&
+                (!((BaseMqttRequest<?>) delivered).getFiles().isEmpty()))
+            {
+                throw new EnvisionException("file publishing is not supported yet in MQTT");
+            }
         }
 
         protected void fillRequest() {
