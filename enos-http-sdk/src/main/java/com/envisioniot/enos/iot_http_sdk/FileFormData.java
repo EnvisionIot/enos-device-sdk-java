@@ -14,6 +14,7 @@ import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.codec.binary.Hex;
 
+import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.UploadFileInfo;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
@@ -97,23 +98,28 @@ public class FileFormData
         return md5.toString();
     }
 
-    public static Part createFormData(
-            @NonNull String name, @NonNull String filename, @NonNull File file) throws IOException
+    public static Part createFormData(@NonNull UploadFileInfo fileInfo) throws IOException
     {
         StringBuilder disposition = new StringBuilder("form-data; name=");
-        appendQuotedString(disposition, name);
+        appendQuotedString(disposition, fileInfo.getFilename());
 
         disposition.append("; filename=");
-        appendQuotedString(disposition, filename);
+        appendQuotedString(disposition, fileInfo.getFilename());
         
         disposition.append("; md5=");
-        appendQuotedString(disposition, md5(file));
+        appendQuotedString(disposition, md5(fileInfo.getFile()));
+
+        disposition.append("; feature-type=");
+        appendQuotedString(disposition, fileInfo.getFeatureType());
+
+        disposition.append("; feature-id=");
+        appendQuotedString(disposition, fileInfo.getFeatureId());
 
         Headers headers = new Headers.Builder()
                 .addUnsafeNonAscii("Content-Disposition", disposition.toString())
                 .build();
 
         return MultipartBody.Part.create(headers, 
-                RequestBody.create(MediaType.parse(HttpConnection.MEDIA_TYPE_OCTET_STREAM), file));
+                RequestBody.create(MediaType.parse(HttpConnection.MEDIA_TYPE_OCTET_STREAM), fileInfo.getFile()));
     }
 }

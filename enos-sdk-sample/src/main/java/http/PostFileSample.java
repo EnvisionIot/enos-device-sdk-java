@@ -2,8 +2,6 @@ package http;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.envisioniot.enos.iot_http_sdk.HttpConnection;
 import com.envisioniot.enos.iot_http_sdk.StaticDeviceCredential;
@@ -36,15 +34,12 @@ public class PostFileSample
         // we are going to post a file "example.jpg"
         MeasurepointPostRequest request = MeasurepointPostRequest.builder()
                 .addMeasurePoint("current", 4.5)
-                .addMeasurePoint("file", "local://example.jpg")
+                .addMeasurePoint("file", new File("example.jpg"))
                 .build();
-
-        Map<String,File> files = new HashMap<>();
-        files.put("example.jpg", new File("example.jpg"));
 
         try
         {
-            MeasurepointPostResponse response = connection.publishMultipart(request, files);
+            MeasurepointPostResponse response = connection.publish(request);
             System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(response));
         } catch (IOException | EnvisionException e)
         {
@@ -54,8 +49,7 @@ public class PostFileSample
         // Asynchronously call the measurepoint post
         try
         {
-            connection.publishMultipart(request, files, 
-                    new IResponseCallback<MeasurepointPostResponse>()
+            connection.publish(request, new IResponseCallback<MeasurepointPostResponse>()
             {
                 @Override
                 public void onResponse(MeasurepointPostResponse response)

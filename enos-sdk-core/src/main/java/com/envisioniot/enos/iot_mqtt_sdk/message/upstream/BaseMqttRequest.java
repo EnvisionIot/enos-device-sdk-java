@@ -3,8 +3,14 @@ package com.envisioniot.enos.iot_mqtt_sdk.message.upstream;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.BaseAnswerableMessage;
+import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.UploadFileInfo;
 import com.envisioniot.enos.iot_mqtt_sdk.util.CheckUtil;
 import com.envisioniot.enos.iot_mqtt_sdk.util.StringUtil;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
 
 /**
  * @author zhensheng.cai
@@ -21,6 +27,9 @@ public abstract class BaseMqttRequest<T extends BaseMqttResponse> extends BaseAn
 
     private String productKey;
     private String deviceKey;
+
+    @Getter @Setter
+    private List<UploadFileInfo> files;
 
     protected BaseMqttRequest() {
     }
