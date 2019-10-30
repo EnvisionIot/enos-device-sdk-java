@@ -6,6 +6,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignUtil;
+import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttArrivedMessage.DecodeResult;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.ModelUpRawRequest;
@@ -292,15 +293,13 @@ public class HttpConnection
             T response = request.getAnswerType().newInstance();
             try
             {
-                response.decode(request.getAnswerTopic(), httpResponse.body().bytes());
+                DecodeResult result = response.decode(request.getAnswerTopic(), httpResponse.body().bytes());
+                return result.getArrivedMsg();
             } catch (Exception e)
             {
-                log.info("failed to decode response", e);
-                response.setId(request.getId());
-                response.setCode(httpResponse.code());
-                response.setMessage(httpResponse.message());
+                log.info("failed to decode response: " + response, e);
+                throw new EnvisionException(CLIENT_ERROR);
             }
-            return response;
         } catch (Exception e)
         {
             log.warn("failed to execute request", e);
@@ -339,13 +338,12 @@ public class HttpConnection
                 }
                 try
                 {
-                    response.decode(request.getAnswerTopic(), httpResponse.body().bytes());
+                    DecodeResult result = response.decode(request.getAnswerTopic(), httpResponse.body().bytes());
+                    response = result.getArrivedMsg();
                 } catch (Exception e)
                 {
-                    log.info("failed to decode response");
-                    response.setId(request.getId());
-                    response.setCode(httpResponse.code());
-                    response.setMessage(httpResponse.message());
+//                    log.info("failed to decode response: " + response, e);
+                    throw new IOException("failed to decode response: " + response, e);
                 }
                 callback.onResponse(response);
             }
