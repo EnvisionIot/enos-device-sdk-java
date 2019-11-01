@@ -1,9 +1,12 @@
 package com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl;
 
+import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.DeliveryTopicFormat;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.MethodConstants;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.util.FileUtil;
+import com.google.common.collect.Maps;
+
 
 import static com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.FeatureType.MEASUREPOINT;
 
@@ -13,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.commons.beanutils.BeanMap;
 
 /**
  * { "id": "123", "version": "1.0", "params": { "Power": { "value": "on",
@@ -60,8 +65,71 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
             files.add(fileInfo);
             return filename;
         }
+        
+        
+        /**
+         * 通过bean提供一个结构体测点值，支持文件字段
+         * @param key
+         * @param value
+         * @return
+         * @throws EnvisionException 
+         */
+        public Builder addStructMeasurePoint(String key, Object bean) 
+        {
+            BeanMap beanMap = new BeanMap(bean);
+            Map<String,Object> value = Maps.newHashMap();
+            for (Entry<Object, Object> subEntry: beanMap.entrySet())
+            {
+                String subKey = (String) subEntry.getKey();
+                // ignore class
+                if (!subKey.equals("class"))
+                {
+                    if (subEntry.getValue() instanceof File)
+                    {
+                        // store sub-value as file
+                        String filename = storeFile(key, ((File) subEntry.getValue()));
+                        value.put(subKey, "local://" + filename);
+                    }
+                }
+            }
 
-        @SuppressWarnings("unchecked")
+            @SuppressWarnings("unchecked")
+            Map<String, Object> values = (Map<String, Object>) params.get("measurepoints");
+            values.put(key, value);
+            return this;
+        }
+        
+        /**
+         * 通过Map提供一个结构体测点值，支持文件字段
+         * @param key
+         * @param value
+         * @return
+         */
+        public Builder addStructMeasurePoint(String key, Map<String,Object> value)
+        {
+            for (Entry<String,Object> subEntry: ((Map<String,Object>) value).entrySet())
+            {
+                if (subEntry.getValue() instanceof File)
+                {
+                    // store sub-value as file
+                    String filename = storeFile(key, ((File) subEntry.getValue()));
+                    ((Map<String,Object>) value).put(subEntry.getKey(), "local://" + filename);
+                }
+            }
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> values = (Map<String, Object>) params.get("measurepoints");
+            values.put(key, value);
+            return this;
+        }
+        
+
+        /**
+         * 添加一个测点值，支持文件类型
+         * @param key
+         * @param value
+         * @return
+         */
         public Builder addMeasurePoint(String key, Object value)
         {
             // TODO: 目前为每个文件都单独生成一个文件对象；后续可以考虑优化合并相同的文件
@@ -70,20 +138,8 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
                 // store value as file
                 value = "local://" + storeFile(key, (File) value);
             }
-            else if (value instanceof Map)
-            {
-                for (Entry<String,Object> subEntry: ((Map<String,Object>) value).entrySet())
-                {
-                    if (subEntry.getValue() instanceof File)
-                    {
-                        // store sub-value as file
-                        String filename = storeFile(key, ((File) subEntry.getValue()));
-                        ((Map<String,Object>) value).put(subEntry.getKey(), "local://" + filename);
-                    }
-                }
-            }
-            // TODO: 目前还不考虑 传入一个带有File Bean的对象。
             
+            @SuppressWarnings("unchecked")
             Map<String, Object> values = (Map<String, Object>) params.get("measurepoints");
             values.put(key, value);
             return this;

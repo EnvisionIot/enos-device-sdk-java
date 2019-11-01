@@ -333,8 +333,8 @@ public class HttpConnection
                     response = request.getAnswerType().newInstance();
                 } catch (Exception e)
                 {
-                    log.error("failed to construct response", e);
-                    throw new IOException("failed to construct response", e);
+                    callback.onFailure(new IOException("failed to construct response", e));
+                    return;
                 }
                 try
                 {
@@ -342,8 +342,8 @@ public class HttpConnection
                     response = result.getArrivedMsg();
                 } catch (Exception e)
                 {
-//                    log.info("failed to decode response: " + response, e);
-                    throw new IOException("failed to decode response: " + response, e);
+                    callback.onFailure(new IOException("failed to decode response: " + response, e));
+                    return;
                 }
                 callback.onResponse(response);
             }
@@ -400,7 +400,7 @@ public class HttpConnection
         }
         
         RequestBody body = builder.build();
-
+        
         Request httpRequest = new Request.Builder()
                 .url(brokerUrl + "/multipart" + request.getMessageTopic() + "?sessionId=" + sessionId).post(body).build();
 
@@ -462,57 +462,4 @@ public class HttpConnection
         Call call = generatePublishCall(request);
         publishCallAsync(call, request, callback);
     }
-
-//    /**
-//     * Post a request to EnOS IOT HTTP Broker with files
-//     * 
-//     * Inside the request, the file should be identified by a prefix "local://".
-//     * <br>
-//     * For example, to post a file named "ameter.jpg" as measure point
-//     * <i>camera</i>'s value: <br>
-//     * "camera" : "local://ameter.jpg"
-//     * 
-//     * @param <T>
-//     *            Response
-//     * @param request
-//     * @param files
-//     *            file name and files
-//     * @return response
-//     * @throws EnvisionException
-//     * @throws IOException error to read files
-//     */
-//    public <T extends BaseMqttResponse> T publishMultipart(BaseMqttRequest<T> request, Map<String, File> files)
-//            throws EnvisionException, IOException
-//    {
-//        Call call = generateMultipartPublishCall(request, files);
-//        return publishCall(call, request);
-//    }
-//    
-//    
-//    /**
-//     * Post a request to EnOS IOT HTTP Broker with files, handle the response in a callback function
-//     * 
-//     * Inside the request, the file should be identified by a prefix "local://".
-//     * <br>
-//     * For example, to post a file named "ameter.jpg" as measure point
-//     * <i>camera</i>'s value: <br>
-//     * "camera" : "local://ameter.jpg"
-//     * 
-//     * @param <T>
-//     *            Response
-//     * @param request
-//     * @param files
-//     *            file name and files
-//     * @param callback
-//     * @return response
-//     * @throws EnvisionException
-//     * @throws IOException error to read files
-//     */
-//    public <T extends BaseMqttResponse> void publishMultipart(BaseMqttRequest<T> request, Map<String, File> files,
-//            IResponseCallback<T> callback)
-//            throws EnvisionException, IOException
-//    {
-//        Call call = generateMultipartPublishCall(request, files);
-//        publishCallAsync(call, request, callback);
-//    }
 }
