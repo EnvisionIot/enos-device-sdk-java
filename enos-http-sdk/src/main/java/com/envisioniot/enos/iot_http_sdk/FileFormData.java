@@ -2,18 +2,6 @@ package com.envisioniot.enos.iot_http_sdk;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import org.apache.commons.codec.binary.Hex;
-
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.UploadFileInfo;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
@@ -56,39 +44,6 @@ public class FileFormData
         }
         target.append('"');
         return target;
-    }
-    
-    
-    @SuppressWarnings("unused")
-    private static void anotherMd5(String[] args) throws IOException, NoSuchAlgorithmException
-    {
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        try (InputStream is = java.nio.file.Files.newInputStream(Paths.get("pom.xml"));
-             DigestInputStream dis = new DigestInputStream(is, md)) 
-        {
-            ReadableByteChannel channel = Channels.newChannel(dis);
-            
-            ByteBuffer buffer = ByteBuffer.allocate(300);
-            do
-            {
-                int result = channel.read(buffer);
-                if (result > 0)
-                {
-                    buffer.flip();
-                    System.out.print(StandardCharsets.UTF_8.decode(buffer).toString());
-                    buffer.clear();
-                }
-                else
-                {
-                    break;
-                }
-            } while (true);
-
-          /* Read decorated stream (dis) to EOF as normal... */
-        }
-        System.out.println();
-        byte[] digest = md.digest();
-        System.out.println(new String(Hex.encodeHexString(digest)));
     }
     
     

@@ -2,6 +2,8 @@ package com.envisioniot.enos.iot_http_sdk;
 
 import com.envisioniot.enos.iot_http_sdk.auth.AuthRequestBody;
 import com.envisioniot.enos.iot_http_sdk.auth.AuthResponseBody;
+import com.envisioniot.enos.iot_http_sdk.progress.IProgressListener;
+import com.envisioniot.enos.iot_http_sdk.progress.ProgressRequestWrapper;
 import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
@@ -123,6 +125,7 @@ public class HttpConnection
 
     private SessionConfiguration sessionConfiguration;
 
+    @Getter
     private OkHttpClient okHttpClient = null;
 
     // 用于自动上线设备
@@ -382,7 +385,8 @@ public class HttpConnection
     
     
     private <T extends BaseMqttResponse> Call generateMultipartPublishCall(BaseMqttRequest<T> request,
-            List<UploadFileInfo> files) throws EnvisionException, IOException
+            List<UploadFileInfo> files, IProgressListener progressListener)
+    throws EnvisionException, IOException
     {
         checkAuth();
 
@@ -399,10 +403,19 @@ public class HttpConnection
             builder.addPart(FileFormData.createFormData(uploadFile));
         }
         
-        RequestBody body = builder.build();
+        RequestBody body;
+        if (progressListener == null)
+        {
+            body = builder.build();
+        }
+        else
+        {
+            body = new ProgressRequestWrapper(builder.build(), progressListener);
+        }
         
         Request httpRequest = new Request.Builder()
-                .url(brokerUrl + "/multipart" + request.getMessageTopic() + "?sessionId=" + sessionId).post(body).build();
+                .url(brokerUrl + "/multipart" + request.getMessageTopic() + "?sessionId=" + sessionId)
+                .post(body).build();
 
         Call call = okHttpClient.newCall(httpRequest);
         return call;
@@ -416,12 +429,13 @@ public class HttpConnection
      * @throws EnvisionException
      * @throws IOException
      */
-    private <T extends BaseMqttResponse> Call generatePublishCall(BaseMqttRequest<T> request) throws EnvisionException, IOException
+    private <T extends BaseMqttResponse> Call generatePublishCall(BaseMqttRequest<T> request,
+            IProgressListener progressListener) throws EnvisionException, IOException
     {
         if (request.getFiles() != null && !request.getFiles().isEmpty())
         {
             //包含文件测点的请求
-            return generateMultipartPublishCall(request, request.getFiles());
+            return generateMultipartPublishCall(request, request.getFiles(), progressListener);
         }
         else
         {
@@ -436,13 +450,15 @@ public class HttpConnection
      * @param <T>
      *            Response
      * @param request
+     * @param progressListener used to handle file uploading progress, {@code null} if not available
      * @return response
      * @throws EnvisionException
      * @throws IOException 
      */
-    public <T extends BaseMqttResponse> T publish(BaseMqttRequest<T> request) throws EnvisionException, IOException
+    public <T extends BaseMqttResponse> T publish(BaseMqttRequest<T> request, IProgressListener progressListener) 
+            throws EnvisionException, IOException
     {
-        Call call = generatePublishCall(request);
+        Call call = generatePublishCall(request, progressListener);
         return publishCall(call, request);
     }
 
@@ -453,13 +469,15 @@ public class HttpConnection
      *            Response
      * @param request
      * @param callback
+     * @param progressListener used to handle file uploading progress, {@code null} if not available
      * @throws EnvisionException
      * @throws IOException 
      */
-    public <T extends BaseMqttResponse> void publish(BaseMqttRequest<T> request, IResponseCallback<T> callback)
+    public <T extends BaseMqttResponse> void publish(BaseMqttRequest<T> request, 
+            IResponseCallback<T> callback, IProgressListener progressListener)
             throws EnvisionException, IOException
     {
-        Call call = generatePublishCall(request);
+        Call call = generatePublishCall(request, progressListener);
         publishCallAsync(call, request, callback);
     }
 }

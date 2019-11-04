@@ -23,10 +23,23 @@ public class MeasurepointPostSample
 //    static final String DEVICE_KEY = "device_key";
 //    static final String DEVICE_SECRET = "device_secret";
 
-    static final String BROKER_URL = "http://iot-http-broker.alpha-k8s-cn4.eniot.io";
-    static final String PRODUCT_KEY = "FZEYbbGq";
-    static final String DEVICE_KEY = "sample_device";
-    static final String DEVICE_SECRET = "sRlGhkC0TCGBz5sdSrkU";
+//    static final String BROKER_URL = "http://iot-http-broker.beta-k8s-cn4.eniot.io/";
+//    static final String PRODUCT_KEY = "TZrXVtm5";
+//    static final String DEVICE_KEY = "DynamicActivating1";
+//    static final String DEVICE_SECRET = "EWdFnTEalsndjrPqEGjL";
+
+    static final String BROKER_URL = "http://iot-http-broker.alpha-k8s-cn4.eniot.io/";
+    static final String PRODUCT_KEY = "nAMs31QI";
+    static final String DEVICE_KEY = "fBbhyb13Hn";
+    static final String DEVICE_SECRET = "TTL1oiKgyfxqq2GLhu3w";
+    
+    private static MeasurepointPostRequest buildMeasurepointPostRequest()
+    {
+        return MeasurepointPostRequest.builder()
+                .addMeasurePoint("Int_value", 100)
+//              .addMeasurePoint("voltage", 5.0)
+              .build();
+    }
     
     public static void main(String[] args) throws InterruptedException
     {
@@ -35,19 +48,17 @@ public class MeasurepointPostSample
                 PRODUCT_KEY, DEVICE_KEY, DEVICE_SECRET);
         
         // construct a http connection
-        SessionConfiguration configuration = SessionConfiguration.builder().lifetime(10_000).build();
+        SessionConfiguration configuration = SessionConfiguration.builder().lifetime(30_000).build();
 
         HttpConnection connection = new HttpConnection.Builder(BROKER_URL, credential)
                 .sessionConfiguration(configuration)
                 .build();
 
-        MeasurepointPostRequest request = MeasurepointPostRequest.builder()
-                .addMeasurePoint("mp_int", 4)
-//                .addMeasurePoint("voltage", 5.0)
-                .build();
+        MeasurepointPostRequest request = buildMeasurepointPostRequest();
+
         try
         {
-            MeasurepointPostResponse response = connection.publish(request);
+            MeasurepointPostResponse response = connection.publish(request, null);
             System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(response));
         } catch (EnvisionException | IOException e)
         {
@@ -56,10 +67,12 @@ public class MeasurepointPostSample
         
         // Wait for more than life time, the connection shall automatically re-auth
         System.out.println("current sessionId: " + connection.getSessionId());
-        TimeUnit.SECONDS.sleep(15L);
+        TimeUnit.MINUTES.sleep(2L);
+        
+        request = buildMeasurepointPostRequest();
         try
         {
-            MeasurepointPostResponse response = connection.publish(request);
+            MeasurepointPostResponse response = connection.publish(request, null);
             System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(response));
         } catch (EnvisionException | IOException e)
         {
@@ -68,6 +81,7 @@ public class MeasurepointPostSample
         System.out.println("new sessionId: " + connection.getSessionId());
         
         // Asynchronously call the measurepoint post
+        request = buildMeasurepointPostRequest();
         try
         {
             connection.publish(request, new IResponseCallback<MeasurepointPostResponse>()
@@ -84,7 +98,7 @@ public class MeasurepointPostSample
                 {
                     failure.printStackTrace();
                 }
-            });
+            }, null);
         } catch (EnvisionException | IOException e)
         {
             e.printStackTrace();

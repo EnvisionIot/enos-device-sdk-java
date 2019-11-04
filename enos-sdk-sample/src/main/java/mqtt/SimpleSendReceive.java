@@ -31,7 +31,7 @@ import com.google.common.collect.Lists;
  * @date 2018/8/3.
  */
 public class SimpleSendReceive {
-    public static final String local = "tcp://localhost:11883";
+    public static final String local = "tcp://beta-iot-as-mqtt-cn4.eniot.io:11883";
     public static final String alpha = "tcp://10.27.21.6:11883";
     public static final String beta = "tcp://10.27.20.142:11883";
     public static final String prd = "tcp://10.24.8.76:11883";
@@ -54,9 +54,9 @@ public class SimpleSendReceive {
 
     //beta
     // json device
-    public static final String productKey = "M0Py0kfg";
-    public static final String deviceKey = "F7i1aBv8IR";
-    public static final String deviceSecret = "meaRIXyXrVRLW3sYYkAk";
+    public static final String productKey = "TZrXVtm5";
+    public static final String deviceKey = "DynamicActivating1";
+    public static final String deviceSecret = "EWdFnTEalsndjrPqEGjL";
 
     // 透传 device
     public static final String parserProductKey = "WwVF5nKj";
@@ -92,7 +92,7 @@ public class SimpleSendReceive {
 
         initWithCallback();
 
-        updateTag();
+//        updateTag();
 //        updateSubDeviceTag();
 //        deleteTag();
 //        deleteSubDeviceTag();
@@ -119,7 +119,7 @@ public class SimpleSendReceive {
 //        fastpostMeasurepoint();
 
 //         alwaysPostSubMeasurepoint();
-//        alwaysPostMeasurepoint();
+        alwaysPostMeasurepoint();
 //        downRawHandler();
 //        postUpRaw();
 
@@ -162,7 +162,7 @@ public class SimpleSendReceive {
         client.connect(new IConnectCallback() {
             @Override
             public void onConnectSuccess() {
-                subDeviceLogin();
+//                subDeviceLogin();
                 System.out.println("connect success");
             }
 
@@ -507,7 +507,7 @@ public class SimpleSendReceive {
         Random random = new Random();
         System.out.println("start post measurepoint ...");
         MeasurepointPostRequest request = MeasurepointPostRequest.builder()
-                .addMeasurePoint("point1", random.nextInt(100)).build();
+                .addMeasurePoint("Int_value", random.nextInt(100)).build();
         try {
             MeasurepointPostResponse rsp = client.publish(request);
             System.out.println("-->" + rsp);
@@ -521,7 +521,7 @@ public class SimpleSendReceive {
         Random random = new Random();
         System.out.println("start post measurepoint ...");
         MeasurepointPostRequest request = MeasurepointPostRequest.builder()
-                .addMeasurePoint("point1", random.nextInt(100)).build();
+                .addMeasurePoint("reverseFlowAlarmThreshold", random.nextInt(100)).build();
         try {
             client.fastPublish(request);
 
