@@ -2,6 +2,7 @@ package http;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 import com.envisioniot.enos.iot_http_sdk.HttpConnection;
 import com.envisioniot.enos.iot_http_sdk.StaticDeviceCredential;
@@ -17,10 +18,29 @@ import com.google.gson.GsonBuilder;
  */
 public class PostFileSample
 {
-    static final String BROKER_URL = "http://10.16.13.192:8080";
-    static final String PRODUCT_KEY = "product_key";
-    static final String DEVICE_KEY = "device_key";
-    static final String DEVICE_SECRET = "device_secret";
+//    static final String BROKER_URL = "http://10.16.13.192:8080";
+//    static final String PRODUCT_KEY = "product_key";
+//    static final String DEVICE_KEY = "device_key";
+//    static final String DEVICE_SECRET = "device_secret";
+//
+//    static final String BROKER_URL = "http://iot-http-broker.beta-k8s-cn4.eniot.io/";
+//    static final String PRODUCT_KEY = "TZrXVtm5";
+//    static final String DEVICE_KEY = "DynamicActivating1";
+//    static final String DEVICE_SECRET = "EWdFnTEalsndjrPqEGjL";
+
+    static final String BROKER_URL = "http://iot-http-broker.alpha-k8s-cn4.eniot.io/";
+    static final String PRODUCT_KEY = "nAMs31QI";
+    static final String DEVICE_KEY = "fBbhyb13Hn";
+    static final String DEVICE_SECRET = "TTL1oiKgyfxqq2GLhu3w";
+    
+    private static MeasurepointPostRequest buildMeasurepointPostRequest()
+    {
+        return MeasurepointPostRequest.builder()
+                .addMeasurePoint("Int_value", new Random().nextInt(100))
+                .addMeasurePoint("File_value", new File("big_file.mp4"))
+//              .addMeasurePoint("voltage", 5.0)
+              .build();
+    }
     
     public static void main(String[] args) throws InterruptedException
     {
@@ -32,14 +52,15 @@ public class PostFileSample
         HttpConnection connection = new HttpConnection.Builder(BROKER_URL, credential).build();
 
         // we are going to post a file "example.jpg"
-        MeasurepointPostRequest request = MeasurepointPostRequest.builder()
-                .addMeasurePoint("current", 4.5)
-                .addMeasurePoint("file", new File("example.jpg"))
-                .build();
+        MeasurepointPostRequest request = buildMeasurepointPostRequest();
 
         try
         {
-            MeasurepointPostResponse response = connection.publish(request);
+            MeasurepointPostResponse response = connection.publish(request,
+                    (bytes, length) ->
+            {
+                System.out.println(String.format("Progress: %.2f %"));
+            });
             System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(response));
         } catch (IOException | EnvisionException e)
         {
@@ -47,6 +68,7 @@ public class PostFileSample
         }
         
         // Asynchronously call the measurepoint post
+        request = buildMeasurepointPostRequest();
         try
         {
             connection.publish(request, new IResponseCallback<MeasurepointPostResponse>()
@@ -63,6 +85,9 @@ public class PostFileSample
                 {
                     failure.printStackTrace();
                 }
+            }, (bytes, length) ->
+            {
+                System.out.println(String.format("Progress: %.2f %"));
             });
         } catch (IOException | EnvisionException e)
         {

@@ -17,7 +17,7 @@ import okio.Sink;
 public class CountingSink extends ForwardingSink
 {
     private long bytesWritten = 0L;
-    private ProgressListener listener;
+    private IProgressListener listener;
     private long contentLength = 0L;
 
     public CountingSink(Sink delegate)
@@ -25,7 +25,7 @@ public class CountingSink extends ForwardingSink
         super(delegate);
     }
 
-    public CountingSink(Sink delegate, ProgressListener listener, long contentLength)
+    public CountingSink(Sink delegate, IProgressListener listener, long contentLength)
     {
         super(delegate);
         this.listener = listener;

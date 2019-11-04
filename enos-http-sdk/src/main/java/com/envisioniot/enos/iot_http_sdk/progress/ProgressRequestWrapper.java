@@ -14,6 +14,7 @@ import okio.Okio;
 public class ProgressRequestWrapper extends RequestBody
 {
     RequestBody delegate;
+    IProgressListener listener;
 
     @Override
     public MediaType contentType()
@@ -26,7 +27,7 @@ public class ProgressRequestWrapper extends RequestBody
     {
         BufferedSink bufferedSink;
 
-        CountingSink countingSink = new CountingSink(sink);
+        CountingSink countingSink = new CountingSink(sink, listener, delegate.contentLength());
         bufferedSink = Okio.buffer(countingSink);
 
         delegate.writeTo(bufferedSink);
