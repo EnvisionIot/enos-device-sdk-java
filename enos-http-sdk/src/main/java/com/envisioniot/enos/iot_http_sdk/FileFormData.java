@@ -70,7 +70,6 @@ public class FileFormData
         Headers headers = new Headers.Builder()
                 .addUnsafeNonAscii("Content-Disposition", disposition.toString())
                 .addUnsafeNonAscii("Content-MD5", md5(fileInfo.getFile()))
-                .add("Content-Length", String.valueOf(fileInfo.getFile().length()))
                 .build();
 
         return MultipartBody.Part.create(headers, 

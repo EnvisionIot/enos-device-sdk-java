@@ -37,7 +37,7 @@ public class PostFileSample
     {
         return MeasurepointPostRequest.builder()
                 .addMeasurePoint("Int_value", new Random().nextInt(100))
-                .addMeasurePoint("File_value", new File("big_file.mp4"))
+                .addMeasurePoint("File_value", new File("small_text.txt"))
 //              .addMeasurePoint("voltage", 5.0)
               .build();
     }
@@ -59,7 +59,7 @@ public class PostFileSample
             MeasurepointPostResponse response = connection.publish(request,
                     (bytes, length) ->
             {
-                System.out.println(String.format("Progress: %.2f %"));
+                System.out.println(String.format("Progress: %.2f %%", (float) bytes / length));
             });
             System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(response));
         } catch (IOException | EnvisionException e)
@@ -87,7 +87,7 @@ public class PostFileSample
                 }
             }, (bytes, length) ->
             {
-                System.out.println(String.format("Progress: %.2f %"));
+                System.out.println(String.format("Progress: %.2f %%", (float) bytes / length));
             });
         } catch (IOException | EnvisionException e)
         {
