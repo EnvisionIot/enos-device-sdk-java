@@ -26,12 +26,14 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.CLIENT_ERROR;
+import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.SOCKET_ERROR;
 import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.UNSUCCESSFUL_AUTH;
 import static com.google.common.net.MediaType.JSON_UTF_8;
 import static com.google.common.net.MediaType.OCTET_STREAM;
@@ -89,7 +91,12 @@ public class HttpConnection
             // allocate client
             if (okHttpClient == null)
             {
-                okHttpClient = new OkHttpClient();
+                okHttpClient = new OkHttpClient.Builder()
+                        .connectTimeout(10L, TimeUnit.SECONDS)
+                        .readTimeout(2L, TimeUnit.MINUTES)
+                        .writeTimeout(2L, TimeUnit.MINUTES)
+                        .retryOnConnectionFailure(false)
+                        .build();
             }
             instance.okHttpClient = okHttpClient;
 
@@ -303,6 +310,10 @@ public class HttpConnection
                 log.info("failed to decode response: " + response, e);
                 throw new EnvisionException(CLIENT_ERROR);
             }
+        } catch (SocketException e)
+        {
+            log.info("failed to execute request due to socket error {}", e.getMessage());
+            throw new EnvisionException(SOCKET_ERROR);
         } catch (Exception e)
         {
             log.warn("failed to execute request", e);
@@ -415,7 +426,8 @@ public class HttpConnection
         
         Request httpRequest = new Request.Builder()
                 .url(brokerUrl + "/multipart" + request.getMessageTopic() + "?sessionId=" + sessionId)
-                .post(body).build();
+                .post(body)
+                .build();
 
         Call call = okHttpClient.newCall(httpRequest);
         return call;
