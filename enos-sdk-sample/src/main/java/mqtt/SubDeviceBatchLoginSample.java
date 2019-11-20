@@ -8,7 +8,6 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginB
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostBatchRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostBatchResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import java.util.Random;
@@ -16,30 +15,24 @@ import java.util.Random;
 public class SubDeviceBatchLoginSample {
 
     public static void main(String[] args) throws Exception {
-//        String betaUrl = "tcp://localhost:11883";
+        // user: 周敏beta测试
         String betaUrl = "tcp://beta-iot-as-mqtt-cn4.eniot.io:11883";
 
-        int batchCount = 200;
-        int mpn = 10;
+        int batchCount = 1;
+        int mpn = 1;
 
         MqttClient client = new MqttClient(new DefaultProfile(
-                new NormalDeviceLoginInput(betaUrl, "Lx5Q1X6M", "will_gw02", "rQcAEfBGB5dZTqcaIyjX")
+                new NormalDeviceLoginInput(betaUrl, "bChjZTxn", "GXJ0cVMMWv", "t9uKUFdLk2hcLHUyurzg")
         ));
         client.getProfile().setAutoLoginSubDevice(false);
         client.connect();
 
         SubDeviceLoginBatchRequest request = SubDeviceLoginBatchRequest.builder()
-                .addSubDeviceInfo("x4jwTsoz", "xGKFwfkEXz", "wNDGE8f0EAdh6i7OzNwk")
-                .addSubDeviceInfo("x4jwTsoz", "cS9MdVJwO9", "CXqWUK0J47JnH08QLsRN")
-                .addSubDeviceInfo("x4jwTsoz", "viWaBURIDm", "nbhsPwqhtSy6pE9ZOkZk")
-                .addSubDeviceInfo("x4jwTsoz", "dev_perm_03", "U2kDkCw8Ff0Qhhf51D0G")
-                .addSubDeviceInfo("x4jwTsoz", "dev_perm_04", "uHuA8vBaW3xSHDuXcXi8")
-                .addSubDeviceInfo("x4jwTsoz", "dev_perm_05", "jvtoRVR5wAWH9MUAYGGj")
-                .addSubDeviceInfo("x4jwTsoz", "dev_perm_06", "oBhMxH7uteASxNWYmWwa")
-                .addSubDeviceInfo("x4jwTsoz", "dev_perm_07", "n2bNLFECEQDClnclw36R")
-                .setClientId("Lx5Q1X6M")
+                .addSubDeviceInfo("69nJVYaU", "Nov14201954006AM", "VtCpz81UFOxMVRYP1A1s")
+                // "69nJVYaU" also mirrors whose devices are: Nov20201972358PM, Nov182019101752AM
+                .addSubDeviceInfo("69nJVYaU", "CqXniesegD", "fqF9Tvs3oL6S4h0ALUEb")
+                .setClientId("GXJ0cVMMWv")
                 .build();
-
 
         SubDeviceLoginBatchResponse response = client.publish(request);
 
@@ -66,13 +59,10 @@ public class SubDeviceBatchLoginSample {
                                 .setProductKey(result.productKey)
                                 .setDeviceKey(result.deviceKey)
                                 .addMeasurePoints(ImmutableMap.of(
-                                        "value", rand.nextDouble(),
-                                        "temp", rand.nextFloat(),
-                                        "struct", ImmutableMap.of(
-                                                "books", ImmutableList.of("Computer" + rand.nextInt(), "Redis" + rand.nextInt(), "Netty" + rand.nextInt()),
-                                                "name", "test" + rand.nextInt(),
-                                                "age", rand.nextInt()
-                                        )))
+                                        "datetime", "hello",
+                                        "int1", 100,
+                                        "float1", 88.88
+                                        ))
                                 .build();
 
                         builder.addRequest(req);
