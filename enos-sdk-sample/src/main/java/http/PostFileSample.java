@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Random;
 
 import com.envisioniot.enos.iot_http_sdk.HttpConnection;
+import com.envisioniot.enos.iot_http_sdk.SessionConfiguration;
 import com.envisioniot.enos.iot_http_sdk.StaticDeviceCredential;
 import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
@@ -28,16 +29,16 @@ public class PostFileSample
 //    static final String DEVICE_KEY = "DynamicActivating1";
 //    static final String DEVICE_SECRET = "EWdFnTEalsndjrPqEGjL";
 
-    static final String BROKER_URL = "http://iot-http-broker.alpha-k8s-cn4.eniot.io/";
-    static final String PRODUCT_KEY = "nAMs31QI";
-    static final String DEVICE_KEY = "fBbhyb13Hn";
-    static final String DEVICE_SECRET = "TTL1oiKgyfxqq2GLhu3w";
+    static final String BROKER_URL = "http://iot-http-broker.beta-k8s-cn4.eniot.io/";
+//    static final String BROKER_URL = "http://localhost:8080";
+    static final String PRODUCT_KEY = "SL7XiNoK";
+    static final String DEVICE_KEY = "1030a";
+    static final String DEVICE_SECRET = "MMoxZlmv9OrFTfn2ktKI";
     
     private static MeasurepointPostRequest buildMeasurepointPostRequest()
     {
         return MeasurepointPostRequest.builder()
-                .addMeasurePoint("Int_value", new Random().nextInt(100))
-                .addMeasurePoint("File_value", new File("small_text.txt"))
+                .addMeasurePoint("file1x", new File("big_file.mp4"))
 //              .addMeasurePoint("voltage", 5.0)
               .build();
     }
@@ -48,23 +49,32 @@ public class PostFileSample
         StaticDeviceCredential credential = new StaticDeviceCredential(
                 PRODUCT_KEY, DEVICE_KEY, DEVICE_SECRET);
         
+        SessionConfiguration configuration = SessionConfiguration.builder()
+                .lifetime(30_000)
+                .build();
+        
         // construct a http connection
-        HttpConnection connection = new HttpConnection.Builder(BROKER_URL, credential).build();
+        HttpConnection connection = new HttpConnection.Builder(BROKER_URL, credential)
+                .sessionConfiguration(configuration)
+                .build();
 
         // we are going to post a file "example.jpg"
         MeasurepointPostRequest request = buildMeasurepointPostRequest();
 
+        long start = System.currentTimeMillis();
         try
         {
             MeasurepointPostResponse response = connection.publish(request,
                     (bytes, length) ->
             {
-                System.out.println(String.format("Progress: %.2f %%", (float) bytes / length));
+                System.out.println(String.format("Progress: %.2f %%", (float) bytes / length * 100.0));
             });
             System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(response));
         } catch (IOException | EnvisionException e)
         {
             e.printStackTrace();
+            System.out.println((System.currentTimeMillis() - start) + " milliseconds");
+            System.exit(1);
         }
         
         // Asynchronously call the measurepoint post
@@ -87,7 +97,7 @@ public class PostFileSample
                 }
             }, (bytes, length) ->
             {
-                System.out.println(String.format("Progress: %.2f %%", (float) bytes / length));
+                System.out.println(String.format("Progress: %.2f %%", (float) bytes / length * 100.0));
             });
         } catch (IOException | EnvisionException e)
         {
