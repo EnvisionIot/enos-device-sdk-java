@@ -2,7 +2,7 @@
 
 ## Maven依赖方式
 
-Maven依赖，在工程`pom.xml``dependencies`下添加如下依赖。
+Maven依赖，在工程`pom.xml` `dependencies`下添加如下依赖。
 
 ```xml
 <dependency>
