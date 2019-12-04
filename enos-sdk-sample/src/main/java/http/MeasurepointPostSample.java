@@ -28,16 +28,16 @@ public class MeasurepointPostSample
 //    static final String DEVICE_KEY = "DynamicActivating1";
 //    static final String DEVICE_SECRET = "EWdFnTEalsndjrPqEGjL";
 
-    static final String BROKER_URL = "http://iot-http-broker.alpha-k8s-cn4.eniot.io/";
-    static final String PRODUCT_KEY = "nAMs31QI";
-    static final String DEVICE_KEY = "fBbhyb13Hn";
-    static final String DEVICE_SECRET = "TTL1oiKgyfxqq2GLhu3w";
+    static final String BROKER_URL = "https://iot-http-ppe1.envisioniot.com/";
+    static final String PRODUCT_KEY = "EScz2lv2";
+    static final String DEVICE_KEY = "file_service";
+    static final String DEVICE_SECRET = "KN0m7eeeaQvbLmNZq9if";
     
     private static MeasurepointPostRequest buildMeasurepointPostRequest()
     {
         return MeasurepointPostRequest.builder()
-                .addMeasurePoint("Int_value", 100)
-//              .addMeasurePoint("voltage", 5.0)
+              .addMeasurePoint("Int_value", 100)
+              .addMeasurePoint("DI_value_01", 5)
               .build();
     }
     

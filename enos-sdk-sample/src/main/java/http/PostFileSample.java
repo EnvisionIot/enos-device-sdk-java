@@ -29,17 +29,16 @@ public class PostFileSample
 //    static final String DEVICE_KEY = "DynamicActivating1";
 //    static final String DEVICE_SECRET = "EWdFnTEalsndjrPqEGjL";
 
-    static final String BROKER_URL = "http://iot-http-broker.beta-k8s-cn4.eniot.io/";
-//    static final String BROKER_URL = "http://localhost:8080";
-    static final String PRODUCT_KEY = "SL7XiNoK";
-    static final String DEVICE_KEY = "1030a";
-    static final String DEVICE_SECRET = "MMoxZlmv9OrFTfn2ktKI";
+    static final String BROKER_URL = "https://iot-http-ppe1.envisioniot.com/";
+    static final String PRODUCT_KEY = "EScz2lv2";
+    static final String DEVICE_KEY = "file_service";
+    static final String DEVICE_SECRET = "KN0m7eeeaQvbLmNZq9if";
     
     private static MeasurepointPostRequest buildMeasurepointPostRequest()
     {
         return MeasurepointPostRequest.builder()
-                .addMeasurePoint("file1x", new File("big_file.mp4"))
-//              .addMeasurePoint("voltage", 5.0)
+              .addMeasurePoint("newFile", new File("small_text.txt"))
+              .addMeasurePoint("DI_value_01", 4)
               .build();
     }
     
