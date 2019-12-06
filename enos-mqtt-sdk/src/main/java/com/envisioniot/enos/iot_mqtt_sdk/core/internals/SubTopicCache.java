@@ -2,18 +2,22 @@ package com.envisioniot.enos.iot_mqtt_sdk.core.internals;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SubTopicCache {
+class SubTopicCache {
     private ConcurrentHashMap<String, String> topicMap = new ConcurrentHashMap<>();
 
-    public boolean exists(String topic) {
+    boolean exists(String topic) {
         return topicMap.containsKey(topic);
     }
 
-    public void put(String topic) {
+    void put(String topic) {
         topicMap.put(topic, "");
     }
 
-    public void clean() {
+    void remove(String topic) {
+        topicMap.remove(topic);
+    }
+
+    void clean() {
         topicMap.clear();
     }
 }

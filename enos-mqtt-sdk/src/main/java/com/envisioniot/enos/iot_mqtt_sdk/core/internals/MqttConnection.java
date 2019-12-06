@@ -349,7 +349,7 @@ public class MqttConnection {
         transport = null;
     }
 
-    public DefaultProcessor getProcessor() {
+    private DefaultProcessor getProcessor() {
         return mqttProcessor;
     }
 
@@ -359,7 +359,25 @@ public class MqttConnection {
             throw new IllegalStateException("fastPublish is not allowed at state: " + state);
         }
 
+        // If we use fast publish, it means that we don't want the reply
+        if (request instanceof IAnswerable) {
+            String topic = ((IAnswerable) request).getAnswerTopic();
+            if (subTopicCache.exists(topic)) {
+                unsubscribe(topic);
+            }
+        }
+
         new Deliverer<>(request).execute();
+    }
+
+    void unsubscribe(String topic) {
+        try {
+            transport.unsubscribe(topic);
+            subTopicCache.remove(topic);
+        } catch (Exception e) {
+            // normally this should not happen
+            logger.error("failed to unsubscribe topic {}", topic, e);
+        }
     }
 
     /**
@@ -422,8 +440,12 @@ public class MqttConnection {
         return false;
     }
 
-    public void cleanSubscribeTopicCache() {
+    void cleanSubscribeTopicCache() {
         this.subTopicCache.clean();
+    }
+
+    boolean isTopicSubscribed(String topic) {
+        return subTopicCache.exists(topic);
     }
 
     /**

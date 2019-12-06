@@ -116,11 +116,16 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
 
             // 2. handle the msg
             if (msg instanceof IMqttResponse) {
-
                 IMqttResponse mqttRsp = (IMqttResponse) msg;
                 MqttResponseToken<IMqttResponse> token = deregisterResponseToken(topic + "_" + mqttRsp.getMessageId());
                 if (token == null) {
-                    logger.error("no request answer the response, topic {} , msg {}", topic, msg);
+                    if (connection.isTopicSubscribed(topic)) {
+                        logger.error("no request answers the response (it could be caused by too long delay), topic {}, msg {}", topic, msg);
+                    } else {
+                        logger.error("we don't subscribe topic {}, but received its response {}", topic, msg);
+                        // do the un-subscribe as we don't do the subscription at all
+                        connection.unsubscribe(topic);
+                    }
                     return;
                 }
                 token.markSuccess(mqttRsp);
