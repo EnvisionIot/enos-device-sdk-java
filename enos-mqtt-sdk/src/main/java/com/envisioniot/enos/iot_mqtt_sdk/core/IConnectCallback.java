@@ -4,6 +4,7 @@ package com.envisioniot.enos.iot_mqtt_sdk.core;
  * @author zhensheng.cai
  * @date 2018/8/15.
  */
+@Deprecated
 public interface IConnectCallback {
     /**
      * Called when the connection to the server is completed successfully.

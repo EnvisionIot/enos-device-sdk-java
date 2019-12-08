@@ -111,7 +111,12 @@ public class MqttClient {
      * @param callback which would be called after it fails to connect or succeeds in
      *                 connecting or connection is lost.
      */
+    @Deprecated
     public void connect(IConnectCallback callback) {
+        this.connection.connect(callback);
+    }
+
+    public void connect(ConnCallback callback) {
         this.connection.connect(callback);
     }
 
