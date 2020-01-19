@@ -18,23 +18,17 @@ import java.util.concurrent.TimeUnit;
  */
 public class MeasurepointPostSample
 {
-//    static final String BROKER_URL = "http://10.16.13.192:8080";
-//    static final String PRODUCT_KEY = "product_key";
-//    static final String DEVICE_KEY = "device_key";
-//    static final String DEVICE_SECRET = "device_secret";
+    // EnOS HTTP Broker URL, which can be obtained from Environment Information page in EnOS Console
+    static final String BROKER_URL = "https://broker_url/";
 
-//    static final String BROKER_URL = "http://iot-http-broker.beta-k8s-cn4.eniot.io/";
-//    static final String PRODUCT_KEY = "TZrXVtm5";
-//    static final String DEVICE_KEY = "DynamicActivating1";
-//    static final String DEVICE_SECRET = "EWdFnTEalsndjrPqEGjL";
-
-    static final String BROKER_URL = "https://iot-http-ppe1.envisioniot.com/";
-    static final String PRODUCT_KEY = "EScz2lv2";
-    static final String DEVICE_KEY = "file_service";
-    static final String DEVICE_SECRET = "KN0m7eeeaQvbLmNZq9if";
+    // Device credentials, which can be obtained from Device Details page in EnOS Console
+    static final String PRODUCT_KEY = "productKey";
+    static final String DEVICE_KEY = "deviceKey";
+    static final String DEVICE_SECRET = "deviceSecret";
     
     private static MeasurepointPostRequest buildMeasurepointPostRequest()
     {
+        // Measurepoints are defined in ThingModel
         return MeasurepointPostRequest.builder()
               .addMeasurePoint("Int_value", 100)
               .addMeasurePoint("DI_value_01", 5)

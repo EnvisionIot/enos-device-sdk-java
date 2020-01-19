@@ -1,4 +1,4 @@
-package mqtt;
+package mqtt.old;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMessageHandler;
@@ -16,7 +16,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogout
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostResponse;
 
-import mqtt.helper.Helper;
+import mqtt.old.helper.Helper;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

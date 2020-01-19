@@ -15,7 +15,16 @@
     <packaging>jar</packaging>
 
     <name>EnOS IoT SDK for HTTP</name>
-    <inceptionYear>2019</inceptionYear>
+    <inceptionYear>2018</inceptionYear>
+    <url>https://github.com/EnvisionIot/enos-device-sdk-java</url>
+
+    <developers>
+        <developer>
+            <id>EnvisionIot</id>
+            <name>EnOS Core</name>
+            <email>sw.tc@envisioncn.com</email>
+        </developer>
+    </developers>
 
     <description>
 	    0.1.0-SNAPSHOT initial commit
@@ -40,7 +49,7 @@
         <dependency>
             <groupId>com.envisioniot</groupId>
             <artifactId>enos-core</artifactId>
-            <version>0.1.1</version>
+            <version>0.1.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>

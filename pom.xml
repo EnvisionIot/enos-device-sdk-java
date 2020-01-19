@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <name>EnOS IoT SDK</name>
-    <url>http://www.envision-digital.com</url>
+    <url>http://www.envisioniot.com</url>
 
     <properties>
         <file_encoding>UTF-8</file_encoding>

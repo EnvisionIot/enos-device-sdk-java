@@ -1,6 +1,6 @@
-package mqtt;
+package mqtt.old;
 
-import static mqtt.helper.Helper.*;
+import static mqtt.old.helper.Helper.*;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
@@ -11,7 +11,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginR
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogoutRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogoutResponse;
 
-import mqtt.helper.BaseConnectCallback;
+import mqtt.old.helper.BaseConnectCallback;
 
 /**
  * Keep the sample running and we could see onConnectLost event happen from

@@ -1,4 +1,4 @@
-package mqtt;
+package mqtt.old;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
@@ -9,8 +9,8 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.integration.*;
 import com.google.common.collect.ImmutableMap;
 
-import mqtt.helper.BaseConnectCallback;
-import mqtt.helper.Helper;
+import mqtt.old.helper.BaseConnectCallback;
+import mqtt.old.helper.Helper;
 
 import org.apache.commons.codec.binary.Hex;
 

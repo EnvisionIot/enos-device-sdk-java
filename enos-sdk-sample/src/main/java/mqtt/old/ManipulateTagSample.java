@@ -1,4 +1,4 @@
-package mqtt;
+package mqtt.old;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
@@ -7,7 +7,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.login.NormalDeviceLoginInput;
 import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultProfile;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tag.*;
 
-import mqtt.helper.Helper;
+import mqtt.old.helper.Helper;
 
 import java.util.*;
 

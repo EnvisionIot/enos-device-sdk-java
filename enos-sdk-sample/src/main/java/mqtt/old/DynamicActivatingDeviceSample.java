@@ -1,4 +1,4 @@
-package mqtt;
+package mqtt.old;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.login.DynamicActivatingDeviceLoginInput;
@@ -8,8 +8,8 @@ import com.envisioniot.enos.iot_mqtt_sdk.util.SecureModeUtil;
 import com.envisioniot.enos.iot_mqtt_sdk.util.StringUtil;
 import com.google.common.base.Preconditions;
 
-import mqtt.helper.BaseConnectCallback;
-import mqtt.helper.Helper;
+import mqtt.old.helper.BaseConnectCallback;
+import mqtt.old.helper.Helper;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
