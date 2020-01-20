@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.envisioniot</groupId>
@@ -17,14 +17,6 @@
     <name>EnOS IoT SDK for MQTT</name>
     <inceptionYear>2018</inceptionYear>
     <url>https://github.com/EnvisionIot/enos-device-sdk-java</url>
-
-    <developers>
-        <developer>
-            <id>EnvisionIot</id>
-            <name>EnOS Core</name>
-            <email>sw.tc@envisioncn.com</email>
-        </developer>
-    </developers>
 
     <description>
         0.0.3-SNAPSHOT remove command DeleteDeviceCommand DisableDeviceCommand
