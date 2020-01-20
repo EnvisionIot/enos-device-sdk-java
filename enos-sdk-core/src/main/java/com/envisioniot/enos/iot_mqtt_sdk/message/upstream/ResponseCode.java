@@ -10,9 +10,6 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttResponse;
  * @date 2018/7/6.
  */
 public class ResponseCode {
-    /**
-     * 成功
-     */
     public static final int SUCCESS = IMqttAck.SUCCESS_CODE;
 
     public static final int COMMON_PRODUCT_ERR = 600;

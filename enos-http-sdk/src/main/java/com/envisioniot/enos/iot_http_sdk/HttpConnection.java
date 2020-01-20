@@ -135,7 +135,7 @@ public class HttpConnection
     @Getter
     private OkHttpClient okHttpClient = null;
 
-    // 用于自动上线设备
+    // For automatic online devices
     private Monitor authMonitor = new Monitor();
 
     private volatile AuthResponseBody lastAuthResponse = null;
@@ -168,7 +168,7 @@ public class HttpConnection
     static final String MEDIA_TYPE_OCTET_STREAM = OCTET_STREAM.toString();
 
     /**
-     * 执行设备上线请求
+     * Perform device login request
      * 
      * @return auth response
      * @throws EnvisionException
@@ -177,7 +177,7 @@ public class HttpConnection
     {
         if (authMonitor.tryEnter())
         {
-            // 执行auth请求
+            // Execute auth request
             try
             {
                 // clean up old auth response
@@ -195,9 +195,9 @@ public class HttpConnection
                 if (response.isSuccessful())
                 {
                     lastAuthResponse = new Gson().fromJson(response.body().charStream(), AuthResponseBody.class);
-                    // 更新sessionId
+                    // update sessionId
                     sessionId = lastAuthResponse.getData().getSessionId();
-                    // 存储lastPostTimestamp
+                    // save lastPostTimestamp
                     lastPublishTimestamp = System.currentTimeMillis();
 
                     log.info("auth success, store sessionId = " + sessionId);
@@ -225,7 +225,7 @@ public class HttpConnection
             }
         } else if (authMonitor.enter(10L, TimeUnit.SECONDS))
         {
-            // 至多等待10秒钟，尝试获取 Auth Response
+            // Wait at most 10 seconds and try to get Auth Response
             try
             {
                 if (lastAuthResponse != null)
@@ -238,12 +238,12 @@ public class HttpConnection
             }
         }
         throw new EnvisionException(UNSUCCESSFUL_AUTH);
-        // 无法获取auth response
+        // Unable to get auth response
     }
 
     private void checkAuth() throws EnvisionException
     {
-        // 如果没有sessionId，需要先登录获取sessionId
+        // If there is no sessionId, you need to log in first to obtain the sessionId
         if (Strings.isNullOrEmpty(sessionId) || 
             System.currentTimeMillis() - lastPublishTimestamp > sessionConfiguration.getLifetime())
         {
@@ -287,7 +287,7 @@ public class HttpConnection
     }
     
     /**
-     * 执行okHttp Call，获取Response
+     * OkHttp Call to get Response
      * @param <T>
      * @param call
      * @param request
@@ -322,7 +322,7 @@ public class HttpConnection
     }
     
     /**
-     * 异步执行okHttp Call，通过Callback方法处理Response
+     * OkHttp Call is executed asynchronously, and Response is handled through the Callback method
      * @param <T>
      * @param call
      * @param request
@@ -365,7 +365,7 @@ public class HttpConnection
     }
 
     /**
-     * 生成一个用于okHttp的请求消息
+     * Generate a request message for okHttp
      * @param <T>
      * @param request
      * @return
@@ -374,13 +374,13 @@ public class HttpConnection
     private <T extends BaseMqttResponse> Call generatePlainPublishCall(BaseMqttRequest<T> request) throws EnvisionException
     {
         checkAuth();
-        // 将请求消息设置完整
+        // complete the request message 
         fillRequest(request);
 
         RequestBody body;
         if (!isUpRaw(request))
         {
-            // 准备请求消息
+            // Prepare request message
             body = RequestBody.create(MediaType.parse(MEDIA_TYPE_JSON_UTF_8), new String(request.encode(), UTF_8));
         } else
         {
@@ -401,10 +401,10 @@ public class HttpConnection
     {
         checkAuth();
 
-        // 将请求消息设置完整
+        // complete the request message 
         fillRequest(request);
         
-        // 准备一个Multipart请求消息
+        // Prepare a Multipart request message
         MultipartBody.Builder builder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("enos-message", new String(request.encode(), UTF_8));
@@ -434,7 +434,7 @@ public class HttpConnection
     }
     
     /**
-     * 生成一个HTTP请求的okHttp Call
+     * Generate an okHttp Call for HTTP request
      * @param <T>
      * @param request
      * @return
@@ -446,12 +446,12 @@ public class HttpConnection
     {
         if (request.getFiles() != null && !request.getFiles().isEmpty())
         {
-            //包含文件测点的请求
+            //Request including file points
             return generateMultipartPublishCall(request, request.getFiles(), progressListener);
         }
         else
         {
-            //没有文件测点的请求
+            //Request without file points
             return generatePlainPublishCall(request);
         }
     }

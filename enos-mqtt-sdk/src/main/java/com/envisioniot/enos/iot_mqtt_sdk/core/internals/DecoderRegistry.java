@@ -10,8 +10,6 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * 做成静态工具类 ？？？ 本身应该只需要register一次
- *
  * @author zhensheng.cai
  * @date 2018/7/10.
  */
@@ -24,8 +22,8 @@ public class DecoderRegistry {
     private static List<IMqttArrivedMessage> unmodefiDecoderList = Collections.unmodifiableList(decoderList);
 
     static {
-        // 对于上行的response 可以动态加载
-        // 只需要静态加载各类Command的的编码方式即可
+        // For uplink response can be dynamically loaded
+        // Just need to statically load the encoding method of various Commands
         try {
             for (Class<?> clss : PackageScanUtil.scan(DECODER_PACKAGE, IMqttArrivedMessage.class)) {
                 IMqttArrivedMessage decoder = (IMqttArrivedMessage) clss.newInstance();

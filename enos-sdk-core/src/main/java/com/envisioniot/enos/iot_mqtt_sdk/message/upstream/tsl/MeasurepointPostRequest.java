@@ -68,7 +68,7 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
         
         
         /**
-         * 通过bean提供一个结构体测点值，支持文件字段
+         * Provide a structure measuring point value through the bean, and support file fields
          * @param key
          * @param value
          * @return
@@ -100,7 +100,7 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
         }
         
         /**
-         * 通过Map提供一个结构体测点值，支持文件字段
+         * Provide a structure measurement point value through Map and support file fields
          * @param key
          * @param value
          * @return
@@ -125,14 +125,14 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
         
 
         /**
-         * 添加一个测点值，支持文件类型
+         * Add a test point value, support file type
          * @param key
          * @param value
          * @return
          */
         public Builder addMeasurePoint(String key, Object value)
         {
-            // TODO: 目前为每个文件都单独生成一个文件对象；后续可以考虑优化合并相同的文件
+            // TODO: A separate file object is currently generated for each file; you can consider optimizing and merging the same files later
             if (value instanceof File)
             {
                 // store value as file

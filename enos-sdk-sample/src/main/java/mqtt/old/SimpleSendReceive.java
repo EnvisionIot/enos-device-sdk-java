@@ -40,45 +40,19 @@ public class SimpleSendReceive {
     private static final String alphaSSL = "ssl://10.27.21.6:18883";
     private static final String betaSSL = "ssl://10.24.101.51:18883";
 
-
-    //alpha环境网关设备三元组
-//    public static final String productKey = "fKInRgVP";
-//    public static final String deviceKey = "zscai_test_edge";
-//    public static final String deviceSecret = "npGe2Z4HFBbBB2cyTfeg";
-//
-//    public static final String subProductKey = "ShmY4q9h";
-//    public static final String subDeviceKey = "zscai_sub_device";
-//    public static final String subDeviceSecret = "iVkJmo0bUjzZj0e3J5lD";
-    /*alpha*/
-
-
     //beta
     // json device
     public static final String productKey = "TZrXVtm5";
     public static final String deviceKey = "DynamicActivating1";
     public static final String deviceSecret = "EWdFnTEalsndjrPqEGjL";
 
-    // 透传 device
+    // raw data device
     public static final String parserProductKey = "WwVF5nKj";
     public static final String parserDevicekey = "device1";
     public static final String parserDeviceSecret = "mOpcSKsxSQsvr0nUHUiK";
     public static final String subProductKey = "f8F5hjsS";
     public static final String subDeviceKey = "zscai_sub_device";
     public static final String subDeviceSecret = "3bvQHli93B8qn3UXhaVA";
-
-//	private static final String productKey = "E8Fw4uiX";
-//	public static final String deviceKey = "zscai-test-device2";
-//	public static final String deviceSecret = "ivCESTLGx5nejNQg2EkR";
-
-
-//	private static final String productKey = "NyDmJcbZ";
-//	public static final String deviceKey = "xCPLxZtLKg";
-//	public static final String deviceSecret = "0sfmTw2c9gY5JcopMrvd";
-//
-//	public static final String subProductKey = "muB7helV";
-//	public static final String subDeviceKey = "UKaQFBAemf";
-//	public static final String subDeviceSecret = "MEwVRDFptW6YctnS2GlF";
-
 
     private static MqttClient client;
 
@@ -157,7 +131,7 @@ public class SimpleSendReceive {
         System.out.println("start connect with callback ... ");
         client = new MqttClient(local, productKey, deviceKey, deviceSecret); // json device
 
-//            client = new MqttClient(local, parserProductKey, parserDevicekey, parserDeviceSecret); // 透传device
+//            client = new MqttClient(local, parserProductKey, parserDevicekey, parserDeviceSecret); // raw data device
         client.getProfile().setConnectionTimeout(60).setAutoReconnect(false);
         client.connect(new IConnectCallback() {
             @Override
@@ -459,7 +433,7 @@ public class SimpleSendReceive {
                 .build();
         try {
             /*
-             * 当前版本Post消息没有对应的reply
+             * There is no corresponding reply for the current version of Post messages
              */
             client.fastPublish(postRequest);
         } catch (Exception e) {
@@ -475,12 +449,8 @@ public class SimpleSendReceive {
         System.out.println("start post measurepoint ...");
         MeasurepointPostRequest request = MeasurepointPostRequest.builder()
                 .addMeasurePoint("point1", random.nextInt(100)).build();
-//				.addMeasurePoint("p2", "{'value':123.4,  quality:2}").build();
         try {
             client.fastPublish(request);
-
-//			System.out.println("-->" + rsp);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -541,9 +511,7 @@ public class SimpleSendReceive {
                 .setProductKey(subProductKey)
                 .build();
         try {
-            /**
-             * 当前版本Post消息没有对应的reply
-             */
+            /* There is no corresponding reply for the current version of Post messages */
             client.fastPublish(postRequest);
         } catch (Exception e) {
             e.printStackTrace();
@@ -604,7 +572,7 @@ public class SimpleSendReceive {
     private static byte[] getPayload() {
         byte[] array = new byte[100];
         int index = 0;
-        // 云端脚本定义了0x01对应的method=thing.model.measurepoint.post
+        // Cloud script defines the method corresponding to 0x01: thing.model.measurepoint.post
         byte method = 0x01;
         array[index++] = method; // method;
         int id = idInc++;

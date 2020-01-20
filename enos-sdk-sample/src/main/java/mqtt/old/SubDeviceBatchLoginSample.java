@@ -15,7 +15,6 @@ import java.util.Random;
 public class SubDeviceBatchLoginSample {
 
     public static void main(String[] args) throws Exception {
-        // user: 周敏beta测试
         String betaUrl = "tcp://beta-iot-as-mqtt-cn4.eniot.io:11883";
 
         int batchCount = 1;

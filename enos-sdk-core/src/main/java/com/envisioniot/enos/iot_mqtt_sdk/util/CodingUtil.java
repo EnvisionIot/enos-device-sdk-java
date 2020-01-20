@@ -17,11 +17,11 @@ public class CodingUtil {
         }
 
         try {
-            // 写len
+            // write len
             bos.write(encodeUnsignInt(data.length));
-            // 写内容
+            // write content
             bos.write(data);
-        } catch (IOException e) {// 不可能到这里
+        } catch (IOException e) { // not expected
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -42,17 +42,17 @@ public class CodingUtil {
 
     public static byte[] encodeBytes(byte[] data) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        // null或者空串,直接用0表示
+        // null or empty string, directly represented by 0
         if (data == null || data.length == 0) {
             return new byte[]{0};
         }
 
         try {
-            // 写len
+            // write length
             bos.write(encodeUnsignInt(data.length));
-            // 写内容
+            // write content
             bos.write(data);
-        } catch (IOException e) {// 不可能到这里
+        } catch (IOException e) {// not expected
             throw new RuntimeException(e.getMessage());
         }
         return bos.toByteArray();
@@ -92,19 +92,20 @@ public class CodingUtil {
         return readString(ByteBuffer.wrap(data));
     }
 
-    public static byte[] encodeUnsignInt(int value) {// 前2bit表示要用几个byte存储,只能存非负数,存储最大值1,073,741,824
+    public static byte[] encodeUnsignInt(int value) {
+        // first 2bit means to use several bytes to store, only non-negative numbers can be stored, and the maximum value is 1,073,741,824
         int len = 0;
         if (value < 0) {
             throw new RuntimeException("Value must > 0.");
-        } else if (value <= 63) {// 用1字节存
+        } else if (value <= 63) {// use 1 byte
             len = 1;
-        } else if (value <= 16383) {// 用2字节存
+        } else if (value <= 16383) {// use 2 bytes
             len = 2;
-        } else if (value <= 4194303) {// 用3字节存
+        } else if (value <= 4194303) {// use 3 bytes
             len = 3;
-        } else if (value <= 1073741823) {// 用4字节存
+        } else if (value <= 1073741823) {// use 4 bytes
             len = 4;
-        } else {// 超出可存储最大值
+        } else {// exceed max
             throw new RuntimeException("Value too large!");
         }
 
@@ -144,7 +145,7 @@ public class CodingUtil {
         return result;
     }
 
-    //将无符号int转换为long，专为QQ号码21亿切换的工具
+    //A tool for converting unsigned int to long, specially designed for QQ number 2.1 billion switching
     public static int uin21LongToInt(long uinL) {
         return (int) uinL;
     }
@@ -157,7 +158,7 @@ public class CodingUtil {
         return intList;
     }
 
-    //将long转化为无符号的int，专为QQ号码21亿切换的工具
+    //Convert long to unsigned int, a tool for switching 2.1 billion QQ numbers
     public static long uin21IntToLong(int uin) {
         return uin & 0xFFFFFFFFL;
     }
@@ -170,10 +171,10 @@ public class CodingUtil {
         return longList;
     }
 
-    public static byte[] encodeInt(int v) {// 前3bit表示要用几个byte存储,第4bit表示符号
+    public static byte[] encodeInt(int v) {
+        // The first 3 bits indicate how many bytes to store, and the 4th bit indicates the symbol
         int flag = v < 0 ? 1 : 0;
-        int value = Math.abs(v);// Integer.MIN_VALUE要特殊处理,用-0表示
-        // System.out.println(value);
+        int value = Math.abs(v);// Integer.MIN_VALUE is treated specially, represented by -0
         int len = value <= 15 ? 1 : value <= 4095 ? 2 : value <= 1048575 ? 3 : value <= 268435455 ? 4 : 5;
         byte[] data = new byte[len];
         for (int i = 0; i < len && i < 4; i++) {
@@ -186,7 +187,6 @@ public class CodingUtil {
     public static int decodeInt(byte[] data) {
         int result = 0;
         int len = (data[0] & 0xE0) >>> 5;
-        // System.out.println("len:"+ len +" "+ data[0]);
         boolean flag = ((data[0] & 0x10) != 0);
         data[0] &= 0x0F;
         byte b;
@@ -204,7 +204,6 @@ public class CodingUtil {
     public static int readInt(ByteBuffer bf) {
         int result = 0;
         byte b = bf.get();
-        // System.out.println("b::"+ b);
         int len = (b & 0xE0) >>> 5;
 
         boolean flag = ((b & 0x10) != 0);
@@ -225,7 +224,6 @@ public class CodingUtil {
     public static long decodeLong(byte[] data) {
         long result = 0;
         int len = (data[0] & 0xF8) >>> 4;
-        // System.out.println("len:"+ len +" "+ data[0]);
         boolean flag = ((data[0] & 0x08) != 0);
         data[0] &= 0x07;
         byte b;
@@ -244,7 +242,6 @@ public class CodingUtil {
         long result = 0;
         byte b = bf.get();
         int len = (b & 0xF8) >>> 4;
-        // System.out.println("len:"+ len +" "+ data[0]);
         boolean flag = ((b & 0x08) != 0);
         b &= 0x07;
         for (int i = len; ; i--) {
@@ -259,10 +256,9 @@ public class CodingUtil {
         return result;
     }
 
-    public static byte[] encodeLong(long v) {// 4bit表示要用几个byte存储,第5bit表示符号
+    public static byte[] encodeLong(long v) {// 4bit means to use several bytes for storage, and 5bit means the symbol
         int flag = v < 0 ? 1 : 0;
         long value = Math.abs(v);
-        // System.out.println(value);
         int len = value <= 7L ? 1 : value <= 2047L ? 2 : value <= 524287L ? 3 : value <= 134217727L ? 4 : value <= 34359738367L ? 5 : value <= 8796093022207L ? 6 : value <= 2251799813685247L ? 7 : value <= 576460752303423487L ? 8 : 9;
 
         byte[] data = new byte[len];
@@ -279,34 +275,6 @@ public class CodingUtil {
 
     public static byte[] encodeBoolean(boolean value) {
         return new byte[]{value ? (byte) 1 : (byte) 0};
-    }
-
-    public static void main(String[] args) {
-        /*
-         * for (int i = 1; i <= 8; i++) { long aa = getMaxStoreValue_l(5,i);
-         * System.out.print((aa-1) +"L,"+ aa +"L,"+ (aa+1) +"L,"); }
-         */
-        /*
-         * long bb = System.currentTimeMillis(); for (int i = 0; i <= 1000000;
-         * i++) { encodeString("stone"); ///long v = i + 100000000L;
-         * //if(ByteUtil.debyteLong(ByteUtil.enbyteLong(v)) != v)
-         * //if(decodeLong(encodeLong(v)) != v)
-         * //if(decodeUnsignInt(encodeUnsignInt(i)) != i)
-         * //if(decodeInt(encodeInt(i)) != i)
-         * //if(ByteUtil.debyteInt(ByteUtil.enbyteInt(i)) != i) {
-         * System.out.println(v); break; } }
-         * System.out.println(System.currentTimeMillis() - bb);
-         */
-        /*
-         * long bb = System.currentTimeMillis(); for (int i = 0; i < 4; i++) {
-         * //System.out.println(getMaxStoreValue_l(4,i+1)); //int a = -1 >>> 18;
-         * //getMaxStoreValue_i(2,4); }
-         * System.out.println(System.currentTimeMillis() - bb);
-         */
-        long uinL = 2200000001L;
-        System.out.println(uin21LongToInt(uinL));
-        int uin = uin21LongToInt(uinL);
-        System.out.println(uin21IntToLong(uin));
     }
 
 }

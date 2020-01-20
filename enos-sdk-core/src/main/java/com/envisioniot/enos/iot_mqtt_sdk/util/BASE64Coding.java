@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 public class BASE64Coding {
     /**
-     * 按系统默认编码encode该字符串
+     * Encode the string according to the system default encoding 
      *
      * @param s
      * @return String
@@ -14,7 +14,7 @@ public class BASE64Coding {
     }
 
     /**
-     * 对字节数组进行encode
+     * Encode byte array
      *
      * @param bytes
      * @return String
@@ -24,7 +24,7 @@ public class BASE64Coding {
     }
 
     /**
-     * 对ByteBuffer进行encode
+     * Encode ByteBuffer
      *
      * @param buf
      * @return String
@@ -34,7 +34,7 @@ public class BASE64Coding {
     }
 
     /**
-     * 对BASE64的字符串进行decode，若decode失败，则返回null
+     * Decodes a BASE64 string, or null if the decode fails
      *
      * @param str
      * @return byte[]

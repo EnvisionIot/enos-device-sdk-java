@@ -153,7 +153,6 @@ public class MultiThreadSend {
                 SimpleSendReceive.deviceKey,
                 SimpleSendReceive.deviceSecret); // json device
 
-//            client = new MqttClient(local, parserProductKey, parserDevicekey, parserDeviceSecret); // 透传device
         client.getProfile().setConnectionTimeout(60).setMaxInFlight(10000);
         client.connect(new IConnectCallback() {
             @Override

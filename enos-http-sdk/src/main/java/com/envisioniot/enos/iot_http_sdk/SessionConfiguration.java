@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class SessionConfiguration
 {
-    // 默认lifetime是5分钟
+    // default lifetime is 5 minutes
     public static final int DEFAULT_LIFETIME = 300_000;
 
     @Builder.Default

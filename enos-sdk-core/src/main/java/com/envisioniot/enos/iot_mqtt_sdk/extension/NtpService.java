@@ -39,8 +39,10 @@ public class NtpService {
     );
 
     /**
-     * 如果重新设置对时周期，那么会取消当前的对时调度任务，开始执行一次对时任务，
-     * 这是为了防止设置了一个大的对时任务任务之后，这个setInterval需要在上次的对时任务执行完成之后才能生效
+     * If you reset the time synchronization period, the current time scheduling task will be canceled, 
+     * and a time synchronization task will be started.
+     * This is to prevent the setInterval from taking effect after the execution of the last synchronization task 
+     * is completed after setting a large synchronization task task.
      *
      * @param interval
      * @param timeUnit
@@ -49,7 +51,7 @@ public class NtpService {
         this.interval = interval;
         this.timeUnit = timeUnit;
         if (this.currentFuture != null) {
-            //取消当前的调度任务，重新开始定时执行对时任务。
+            //Cancel the currently scheduled task and restart the scheduled task.
             this.currentFuture.cancel(false);
             this.currentFuture = scheduler.schedule(new PullTask(this), this.interval, this.timeUnit);
         }

@@ -11,7 +11,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.util.StringUtil;
 import java.util.List;
 
 /**
- * Notice： 需要有一个仅包含topic参数的构造方法。
+ * Notice： Need to have a constructor that contains only topic parameters
  *
  * @author zhensheng.cai
  * @date 2018/7/10.
@@ -104,7 +104,7 @@ public abstract class BaseMqttReply extends BaseAckMessage implements IMqttReply
     }
 
 
-    /*默认的方法，对于有多个topic参数的场景需要重写该方法*/
+    /*The default method, which needs to be overridden for scenarios with multiple topic parameters*/
     @Override
     public String getMessageTopic() {
         return String.format(_getPK_DK_FormatTopic(), getProductKey(), getDeviceKey());

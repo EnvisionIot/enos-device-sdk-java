@@ -33,7 +33,7 @@ public class FileUtil
     }
     
     /**
-     * 生成一个可以用于传输的文件名
+     * Generate a file name that can be used for transfer
      * @param file
      * @return
      */
