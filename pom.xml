@@ -33,14 +33,15 @@
 
     <licenses>
         <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <distribution>repo</distribution>
         </license>
     </licenses>
 
     <scm>
         <url>https://github.com/EnvisionIot/enos-device-sdk-java.git</url>
-        <connection>scm:https://github.com/EnvisionIot/enos-device-sdk-java.git</connection>
+        <connection>scm:git@github.com:EnvisionIot/enos-device-sdk-java.git</connection>
         <developerConnection>scm:https://github.com/EnvisionIot/enos-device-sdk-java.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
