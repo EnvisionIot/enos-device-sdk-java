@@ -1,4 +1,4 @@
-package mqtt;
+package mqtt.old;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
@@ -8,7 +8,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultProfile;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostResponse;
 
-import mqtt.helper.Helper;
+import mqtt.old.helper.Helper;
 
 /**
  * This sample demo how to correctly use SDK APIs defined in MqttClient.

@@ -1,4 +1,4 @@
-package mqtt;
+package mqtt.old;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
@@ -153,7 +153,6 @@ public class MultiThreadSend {
                 SimpleSendReceive.deviceKey,
                 SimpleSendReceive.deviceSecret); // json device
 
-//            client = new MqttClient(local, parserProductKey, parserDevicekey, parserDeviceSecret); // 透传device
         client.getProfile().setConnectionTimeout(60).setMaxInFlight(10000);
         client.connect(new IConnectCallback() {
             @Override

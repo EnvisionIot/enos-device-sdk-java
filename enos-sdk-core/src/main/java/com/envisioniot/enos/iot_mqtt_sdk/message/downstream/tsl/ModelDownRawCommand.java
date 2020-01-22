@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * 数据流转Topic为{productKey}/{deviceName}/thing/downlink/reply/message。
- * 
  * @author zhensheng.cai
  * @date 2018/7/12.
  */

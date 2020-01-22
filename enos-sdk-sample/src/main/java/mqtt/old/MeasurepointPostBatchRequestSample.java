@@ -1,4 +1,4 @@
-package mqtt;
+package mqtt.old;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
@@ -14,10 +14,10 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostBa
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
 import com.google.common.collect.ImmutableMap;
 
-import mqtt.helper.BaseConnectCallback;
-import mqtt.helper.Helper;
+import mqtt.old.helper.BaseConnectCallback;
+import mqtt.old.helper.Helper;
 
-import static mqtt.helper.Helper.*;
+import static mqtt.old.helper.Helper.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +91,6 @@ public class MeasurepointPostBatchRequestSample {
     }
 
     // testNormalCase (two on-line devices with valid measurepoints) [flat 4]
-    //两个设备都上线，并且发送的测点都没有问题
     public static void testNormalCase(boolean skipInvalid, boolean allowoffline) throws InterruptedException {
         System.out.println();
         System.out.println("<-------------------------------------------->");
@@ -112,7 +111,6 @@ public class MeasurepointPostBatchRequestSample {
     }
 
     // testOneOfflineDev (two on-line devices with valid measurepoints) [flat 4]
-    //一个设备离线，一个设备上线，两个发送的测点都正常
     public static void testOneOfflineDev(boolean skipInvalid, boolean allowoffline) throws InterruptedException {
         System.out.println("<-------------------------------------------->");
         System.out.println("test for OneOfflineDev, " + "skipInvalid = " + skipInvalid + ", allowoffline = " + allowoffline);
@@ -131,7 +129,6 @@ public class MeasurepointPostBatchRequestSample {
     }
 
     // testOneInvalidMP (two on-line devices with valid measurepoints) [flat 4]
-    //两个设备都上线，有一个发送的测点有问题
     public static void testOneInvalidMP(boolean skipInvalid, boolean allowoffline) throws InterruptedException {
         System.out.println("<-------------------------------------------->");
         System.out.println("test for OneInvalidMP, " + "skipInvalid = " + skipInvalid + ", allowoffline = " + allowoffline);
@@ -152,7 +149,6 @@ public class MeasurepointPostBatchRequestSample {
     }
 
     // testOneDevWithOfflineAndInvalidMP (two on-line devices with valid measurepoints) [flat 4]
-    //一个设备离线，并且发送的测点有问题；另外一个设备上线，并且发送的测点没有问题
     public static void testOneDevWithOfflineAndInvalidMP(boolean skipInvalid, boolean allowoffline) throws InterruptedException {
         System.out.println("<-------------------------------------------->");
         System.out.println("test for OneDevWithOfflineAndInvalidMP, " + "skipInvalid = " + skipInvalid + ", allowoffline = " + allowoffline);
@@ -172,7 +168,6 @@ public class MeasurepointPostBatchRequestSample {
     }
 
     //testOneDevWithOfflineAndAnotherdevWithInvalidMP
-    //一个设备离线，发送的测点没问题；另外一个设备上线，发送的测点有问题
     public static void testOneDevWithOfflineAndAnotherdevWithInvalidMP(boolean skipInvalid, boolean allowoffline) throws InterruptedException {
         System.out.println("<-------------------------------------------->");
         System.out.println("test for OneDevWithOfflineAndAnotherdevWithInvalidMP, " + "skipInvalid = " + skipInvalid + ", allowoffline = " + allowoffline);

@@ -1,4 +1,4 @@
-package mqtt;
+package mqtt.old;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
@@ -6,7 +6,8 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.login.LoginInput;
 import com.envisioniot.enos.iot_mqtt_sdk.core.login.NormalDeviceLoginInput;
 import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultProfile;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.topo.*;
-import mqtt.helper.Helper;
+
+import mqtt.old.helper.Helper;
 
 public class ManipulateTopoSample {
     private final static String SERVER_URL = "tcp://localhost:11883";

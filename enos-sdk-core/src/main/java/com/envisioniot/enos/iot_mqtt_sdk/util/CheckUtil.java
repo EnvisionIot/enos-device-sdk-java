@@ -13,7 +13,6 @@ import java.util.Map;
  */
 public class CheckUtil {
 
-    // check productKey 和 check deviceKey 很常用，这里特化了这两个check
     // specific check productKey
     public static void checkProductKey(String productKey) throws EnvisionException {
         checkStringNotEmpty(productKey, "productKey");

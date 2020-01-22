@@ -13,16 +13,16 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
 /**
- * @version $Id: EnvisionTrustManager.java, v 0.1 2017年3月10日 下午4:34:07
+ * @version $Id: EnvisionTrustManager.java, v 0.1
  *          lvjianwen Exp $
  */
 public class EnvisionTrustManager extends X509ExtendedTrustManager {
 
-    // 根证书认证
+    // Root certificate authentication
     private X509TrustManager rootTrusm;
 
     public EnvisionTrustManager() throws Exception {
-        // CA根证书，可以从官网下载
+        // CA root certificate can be downloaded from the official website
         InputStream in = EnvisionTrustManager.class.getResourceAsStream("/sChat.jks");
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         Certificate ca = null;
@@ -53,7 +53,7 @@ public class EnvisionTrustManager extends X509ExtendedTrustManager {
     @Override
     public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
 
-        // 验证服务器证书合法性
+        // Verify server certificate validity
         rootTrusm.checkServerTrusted(chain, authType);
     }
 
@@ -74,14 +74,14 @@ public class EnvisionTrustManager extends X509ExtendedTrustManager {
     @Override
     public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) throws CertificateException {
 
-        // 验证服务器证书合法性
+        // Verify server certificate validity
         rootTrusm.checkServerTrusted(chain, authType);
     }
 
     @Override
     public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
             throws CertificateException {
-        // 验证服务器证书合法性
+        // Verify server certificate validity
         rootTrusm.checkServerTrusted(chain, authType);
     }
 

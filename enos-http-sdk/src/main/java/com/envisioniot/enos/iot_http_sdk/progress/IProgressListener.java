@@ -1,7 +1,7 @@
 package com.envisioniot.enos.iot_http_sdk.progress;
 
 /**
- * 用来监听HTTP请求的进度。
+ * Used to monitor the progress of HTTP requests
  * @author shenjieyuan
  */
 public interface IProgressListener

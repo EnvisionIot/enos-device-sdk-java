@@ -1,4 +1,4 @@
-package mqtt;
+package mqtt.old;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
@@ -15,10 +15,10 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRe
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import mqtt.helper.BaseConnectCallback;
-import mqtt.helper.Helper;
+import mqtt.old.helper.BaseConnectCallback;
+import mqtt.old.helper.Helper;
 
-import static mqtt.helper.Helper.*;
+import static mqtt.old.helper.Helper.*;
 
 import java.util.LinkedList;
 import java.util.List;

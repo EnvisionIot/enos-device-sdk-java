@@ -218,7 +218,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
         logger.error("Client <{}> Connection Lost", this.connection.getClientId(), throwable);
 
         logger.info("clear the subscriptions");
-        //无论怎样都对cache清空
+        //Clear the cache anyway
         this.connection.cleanSubscribeTopicCache();
 
         if (connectCallback != null) {

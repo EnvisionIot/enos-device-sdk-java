@@ -1,4 +1,4 @@
-package mqtt;
+package mqtt.old;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
@@ -7,8 +7,8 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.login.*;
 import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultProfile;
 import com.google.common.collect.ImmutableList;
 
-import mqtt.helper.BaseConnectCallback;
-import mqtt.helper.Helper;
+import mqtt.old.helper.BaseConnectCallback;
+import mqtt.old.helper.Helper;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
