@@ -16,7 +16,7 @@ public class SignUtil {
     {
         StringBuilder stringBuilder = new StringBuilder();
         if(params != null) {
-            // 对参数名进行字典排序
+            // Sorting parameter names by dictionary
             String[] keyArray = params.keySet().toArray(new String[0]);
             Arrays.sort(keyArray);
             for (String key : keyArray)

@@ -1,4 +1,4 @@
-package mqtt;
+package mqtt.old;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.login.LoginInput;
@@ -8,7 +8,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.register.DeviceRegiste
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.register.DeviceRegisterResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.util.StringI18n;
 
-import mqtt.helper.Helper;
+import mqtt.old.helper.Helper;
 
 import java.util.Locale;
 

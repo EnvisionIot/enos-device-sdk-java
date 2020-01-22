@@ -8,17 +8,6 @@ import com.google.common.collect.ImmutableMap;
 import java.util.*;
 
 /**
- * "params":[
- {
- "tagKey":key
- },{
- "tagKey":key2
- },{
- …
- }
- ],
- @update 2018年11月21日
- ====>
  "params": [
  "tags": ["tag1", "tag2"]
  ],

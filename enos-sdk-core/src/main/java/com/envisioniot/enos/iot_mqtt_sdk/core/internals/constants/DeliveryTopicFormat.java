@@ -6,7 +6,7 @@ package com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants;
  */
 public class DeliveryTopicFormat {
     /**
-     * 设备端上行的请求Topic格式
+     * Upstream Topic Patterns
      */
     public static final String MEASUREPOINT_POST = "/sys/%s/%s/thing/measurepoint/post";
     public static final String EVENT_POST = "/sys/%s/%s/thing/event/%s/post";
@@ -39,7 +39,7 @@ public class DeliveryTopicFormat {
 
 
     /**
-     * 云端指令的返回Topic格式
+     * Downstream Commands Patterns
      */
     public static final String MEASUREPOINT_SET_REPLY = "/sys/%s/%s/thing/service/measurepoint/set_reply";
     public static final String SERVICE_INVOKE_REPLY = "/sys/%s/%s/thing/service/%s_reply";

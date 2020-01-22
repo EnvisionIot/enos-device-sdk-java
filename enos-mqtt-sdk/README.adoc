@@ -1,0 +1,186 @@
+= Using EnOS Device SDK For Java (MQTT)
+:toc:
+
+== Installation
+
+=== Prerequisites
+
+==== Installing Java JDK SE
+
+*Java SE 8* is required to use the SDK and run the samples.
+
+==== Optional: Installing Maven
+
+The Java SDK for MQTT is maven-based. If you use Maven 3, you just need
+to add the dependency upon the Java SDK for MQTT to the main _pom.xml_
+file of your project, saving the efforts to download and build from
+source code.
+
+For instructions on downloading and installing *Maven 3*, see
+https://maven.apache.org/install.html[here].
+
+=== Installing EnOS Device SDK for Java (MQTT)
+
+Select one of the following ways to install the Java SDK for MQTT: * If
+your project is maven-based, add the dependency on the Java SDK to the
+main _pom.xml_ of your project. * Download the source code and build on
+your machine.
+
+=== Adding the Maven Dependency to Your Project
+
+*This is the recommended method to use EnOS Device SDKs in your project.
+Your project has to be a Maven project and you have installed Maven on
+your machine.*
+
+[arabic]
+. Go to http://search.maven.org/[http://search.maven.org]. Search for
+*com.envisioniot enos-mqtt* and find the version number for the SDK that
+you want to use.
+. In your main _pom.xml_ file, add the dependency on the SDK of your
+desired version by inserting the following code snippet:
+
+[source,xml]
+----
+    <dependency>
+        <groupId>com.envisioniot</groupId>
+        <artifactId>enos-mqtt</artifactId>
+        <version>2.2.1</version>
+        <!--This is latest current version number when this document is being written. Yours may vary.-->
+    </dependency>
+----
+
+=== Building From the Source Code
+
+[arabic]
+. Download the source code of *EnOS Device SDK for Java* from the
+*master* branch of the GitHub repository:
+https://github.com/EnvisionIot/enos-device-sdk-java
++
+If you use the command-line interface, the command for download is as
+follows:
++
+[source,shell]
+----
+git clone https://github.com/EnvisionIot/enos-device-sdk-java.git
+----
+. Build the SDK from source code using the following command in your
+command-line interface:
++
+[source,shell]
+----
+cd enos-device-sdk-java/enos-mqtt-sdk
+mvn install
+----
+
+The compiled JAR file with all dependencies bundled can then be found in
+the following file:
+
+....
+{Device SDK for Java root}/enos-mqtt-sdk/target/enos-mqtt-{version}.jar
+....
+
+If you want to use the device SDK in your own project, include this JAR
+file and any JAR files that the device SDK depends on in your project.
+
+== Feature List
+
+For the list of features supported by this SDK and the availability of
+EnOS device connectivity and management features in all SDKs we provide,
+see https://github.com/EnvisionIot/enos-iot-device-sdk[EnOS Device SDK].
+
+== Quick Start
+
+[arabic]
+. Create an HTTP connection and specify the connection parameters.
+
+[source,java]
+----
+// Create an MQTT client using static authentication (passing the product key, device key, and device secret)
+// BROKER_URL is the URL of the EnOS MQTT Broker for Devices, which can be obtained in Environment Information page in EnOS Console
+// ProductKey, DeviceKey and DeviceSecrect can be obtained in Device Details page in EnOS Console
+MqttClient client = new MqttClient(BROKER_URL, PRODUCT_KEY, DEVICE_KEY, DEVICE_SECRET);
+
+// Enable the auto-reconnect feature
+client.getProfile().setConnectionTimeout(60).setAutoReconnect(true);
+
+// Connect to EnOS Cloud and register callbacks. The onConnectSuccess method will be called 
+client.connect(new IConnectCallback() {
+            @Override
+            public void onConnectSuccess() {
+                System.out.println("connect success");
+            }
+
+            @Override
+            public void onConnectLost() {
+                System.out.println("connect lost");
+            }
+
+            @Override
+            public void onConnectFailed(int reasonCode) {
+                System.out.println("connect failed: " + reasonCode);
+            }
+        });
+----
+
+[arabic, start=2]
+. Report the measurement points via the MQTT connection.
+
+[source,java]
+----
+// Build a measurepoint post request
+// MeasurePoint1 is a measurement point defined in EnOS console > Model.
+MeasurepointPostRequest request = MeasurepointPostRequest.builder()
+                .addMeasurePoint("MeasurePoint1", 100)
+                .build();
+
+// Publish the request synchronously and check the response
+try {
+    MeasurepointPostResponse response = client.publish(request);
+} catch (Exception e) {
+    e.printStackTrace();
+}
+----
+
+[arabic, start=3]
+. Close the MQTT connection.
+
+[source,java]
+----
+client.disconnect();
+----
+
+== Sample Code
+
+* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Establishing
+Connection with EnOS Cloud]
+* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
+Tags]
+* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
+Attributes]
+* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Reporting
+Measurement Points]
+* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Reporting
+Events]
+* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Receiving
+Commands from Cloud]
+* link:enos-sdk-sample/src/main/java/mqtt/PassingThroughInformation.java[Passing
+Through Device Information or Receiving Passed-through Information from
+Cloud]
+* link:enos-sdk-sample/src/main/java/mqtt/ManageSubDevices.java[Managing
+Sub-devices]
+
+== Related Information
+
+* To learn more about EnOS IoT Hub, see
+https://support.envisioniot.com/docs/device-connection/en/latest/device_management_overview.html[EnOS
+IoT Hub Documentation].
+* To learn more about how to develop your device for EnOS IoT Hub, see
+link:[EnOS Device Development Guide (Java)].
+
+== API Reference
+
+Under development
+
+== Release Notes
+
+* 2020/01/15 (2.2.2): Support reporting offline measurement points.

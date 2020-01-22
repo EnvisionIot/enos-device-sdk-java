@@ -9,7 +9,7 @@ package com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants;
 public class ArrivedTopicPattern {
 
     /**
-     * 上行请求的返回
+     * Reply to Upstream Requests
      */
     // public static final String MEASUREPOINT_POST_REPLY =
     // "/sys/(.*)/(.*)/thing/event/measurepoint/post_reply";
@@ -42,12 +42,12 @@ public class ArrivedTopicPattern {
     public static final String ATTRIBUTE_DELETE_REPLY = "/sys/(.*)/(.*)/thing/attribute/delete_reply";
 
     /**
-     * 动态激活返回密码
+     * Dynamic Activation Reply
      */
     public static final String ACTIVATE_INFO = "/ext/session/(.*)/(.*)/thing/activate/info";
 
     /**
-     * 下行控制指令
+     * Downstream Commands
      */
     public static final String MEASUREPOINT_SET_COMMAND = "/sys/(.*)/(.*)/thing/service/measurepoint/set";
     public static final String SERVICE_INVOKE_COMMAND = "/sys/(.*)/(.*)/thing/service/(.*)";

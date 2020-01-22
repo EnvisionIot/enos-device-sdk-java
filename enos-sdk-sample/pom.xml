@@ -15,22 +15,7 @@
 
     <name>EnOS IoT SDK Samples</name>
     <inceptionYear>2018</inceptionYear>
-    <url>https://github.com/EnvisionIot/enos-mqtt-sdk-java</url>
-
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-    </licenses>
-
-    <scm>
-        <url>https://github.com/EnvisionIot/enos-mqtt-sdk-java.git</url>
-        <connection>scm:git:https://github.com/EnvisionIot/enos-mqtt-sdk-java.git</connection>
-        <!--写权限 -->
-        <developerConnection>scm:git:https://github.com/EnvisionIot/enos-mqtt-sdk-java.git</developerConnection>
-        <tag>HEAD</tag>
-    </scm>
+    <url>https://github.com/EnvisionIot/enos-device-sdk-java</url>
 
     <developers>
         <developer>
@@ -62,7 +47,7 @@
         <dependency>
             <groupId>com.envisioniot</groupId>
             <artifactId>enos-mqtt</artifactId>
-            <version>2.2.1</version>
+            <version>2.2.2</version>
         </dependency>
         <dependency>
             <groupId>com.envisioniot</groupId>

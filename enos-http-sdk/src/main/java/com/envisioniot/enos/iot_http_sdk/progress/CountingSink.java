@@ -9,7 +9,7 @@ import okio.ForwardingSink;
 import okio.Sink;
 
 /**
- * 一个可以统计数据流量的Sink继承类
+ * A Sink inherited class that can count data traffic
  * @author shenjieyuan
  */
 @Data
