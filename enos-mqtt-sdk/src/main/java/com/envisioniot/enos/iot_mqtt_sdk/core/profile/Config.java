@@ -70,6 +70,7 @@ public class Config {
     private String sslPassword = "";
     private String sslAlgorithm = "SunX509";
     private String sslJksPath = "";
+    private boolean isEccConnect = false;
 
     // Use String for easy serialization/de-serialization
     private String signMethodName = SignUtil.DEFAULT_SIGN_METHOD.getName();
@@ -233,6 +234,15 @@ public class Config {
     public Config setSignMethod(SignMethod signMethod) {
         this.signMethodName = signMethod.getName();
         return this;
+    }
+
+    public Config setEccConnect(boolean isEccConnect){
+        this.isEccConnect = isEccConnect;
+        return this;
+    }
+
+    public Boolean isEccConnect(){
+        return this.isEccConnect;
     }
 
     public void store(String path, String comments) throws IOException {

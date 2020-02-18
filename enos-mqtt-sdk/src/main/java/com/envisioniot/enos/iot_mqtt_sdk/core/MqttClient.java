@@ -6,8 +6,6 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.msg.*;
 import com.envisioniot.enos.iot_mqtt_sdk.core.profile.BaseProfile;
 import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultProfile;
 import com.envisioniot.enos.iot_mqtt_sdk.extension.ExtServiceFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class defines the most important APIs to communicate with enos mqtt broker.
@@ -19,7 +17,6 @@ import org.slf4j.LoggerFactory;
  * @author jian.zhang4
  */
 public class MqttClient {
-    private static Logger logger = LoggerFactory.getLogger(MqttClient.class);
 
     private MqttConnection connection;
     private ExtServiceFactory serviceFactory = new ExtServiceFactory();
