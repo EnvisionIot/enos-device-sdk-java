@@ -29,7 +29,11 @@ public class EccSSLSocketFactory extends SSLSocketFactory {
             }
         }
         this.factory = factory;
+    }
 
+    @Override
+    public Socket createSocket() throws IOException {
+        return encapsulated(factory.createSocket());
     }
 
     @Override
