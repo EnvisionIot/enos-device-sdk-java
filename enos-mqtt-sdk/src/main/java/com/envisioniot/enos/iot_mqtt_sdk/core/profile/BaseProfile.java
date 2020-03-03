@@ -109,7 +109,12 @@ public abstract class BaseProfile {
                     throw new RuntimeException("create SSL context failed", e.fillInStackTrace());
                 }
             }
-            connectOptions.setSocketFactory(this.sslContext.getSocketFactory());
+            if (this.config.isEccConnect()) {
+                //  Ensure SSLSocketFactory is created on the basis of enabling bi-directional authentication
+                connectOptions.setSocketFactory(new EccSSLSocketFactory(this.sslContext.getSocketFactory()));
+            } else {
+                connectOptions.setSocketFactory(this.sslContext.getSocketFactory());
+            }
         }
 
         return connectOptions;
@@ -227,6 +232,11 @@ public abstract class BaseProfile {
 
     public BaseProfile setServerUrl(String serverUrl) {
         this.config.setServerUrl(serverUrl);
+        return this;
+    }
+
+    public BaseProfile setEccConnect(boolean isEccConnect) {
+        this.config.setEccConnect(isEccConnect);
         return this;
     }
 
