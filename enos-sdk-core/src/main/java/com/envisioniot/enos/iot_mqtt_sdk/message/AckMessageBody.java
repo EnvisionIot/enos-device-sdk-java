@@ -4,7 +4,6 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.ResponseCode;
 import com.envisioniot.enos.iot_mqtt_sdk.util.ExactValue;
 import com.envisioniot.enos.iot_mqtt_sdk.util.GsonUtil;
 
-import com.envisioniot.enos.iot_mqtt_sdk.message.AnswerableMessageBody;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.BaseMqttReply;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttResponse;
 
@@ -78,7 +77,7 @@ public class AckMessageBody extends BaseMessageBody implements Serializable {
 
     @Override
     public String toString() {
-        return "AckMessageBody{" + "id='" + id + '\'' + ", code=" + code + ", data=" + data + ", message='" + message
+        return this.getClass().getSimpleName() + "{" + "id='" + id + '\'' + ", code=" + code + ", data=" + data + ", message='" + message
                 + '\'' + '}';
     }
 }

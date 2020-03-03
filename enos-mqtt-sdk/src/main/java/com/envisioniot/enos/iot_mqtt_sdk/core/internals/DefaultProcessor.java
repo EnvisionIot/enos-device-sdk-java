@@ -121,7 +121,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
                     } catch (Exception e) {
                         logger.error("handle the arrived msg err , may because of registered arrived msg callback ,", e);
                         try {
-                            BaseMqttReply reply = buildMqttReply((BaseMqttCommand) msg, pathList,
+                            BaseMqttReply reply = buildMqttReply((BaseMqttCommand<?>) msg, pathList,
                                     ResponseCode.COMMAND_HANDLER_EXECUTION_FAILED,
                                     String.format("command handler execution failed, %s", e.getMessage()));
                             connection.fastPublish(reply);
@@ -131,7 +131,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
                     }
                 });
             } else if (msg instanceof BaseMqttCommand) {
-                handleCommandWithNoHandler((BaseMqttCommand) msg, pathList);
+                handleCommandWithNoHandler((BaseMqttCommand<?>) msg, pathList);
             }
         } catch (Exception e) {
             logger.error("UGLY INTERNAL ERR!! , processing the arrived  msg err , topic {}  uncaught exception : ",
@@ -140,7 +140,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
     }
 
 
-    private void handleCommandWithNoHandler(BaseMqttCommand msg, List<String> pathList) {
+    private void handleCommandWithNoHandler(BaseMqttCommand<?> msg, List<String> pathList) {
         connection.getExecutorFactory().getPublishExecutor().execute(() -> {
             try {
                 BaseMqttReply reply = buildMqttReply(msg, pathList,
@@ -177,7 +177,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
         }
     }
 
-    private BaseMqttReply buildMqttReply(BaseMqttCommand msg, List<String> pathList, int code, String message) throws IllegalAccessException, InstantiationException {
+    private BaseMqttReply buildMqttReply(BaseMqttCommand<?> msg, List<String> pathList, int code, String message) throws IllegalAccessException, InstantiationException {
         BaseMqttReply reply = (BaseMqttReply) msg.getAnswerType().newInstance();
         reply.setMessageId(msg.getMessageId());
         reply.setProductKey(msg.getProductKey());
@@ -209,6 +209,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
         return connectCallback;
     }
 
+    @SuppressWarnings("unlikely-arg-type")
     public void removeArrivedMsgHandler(String topic) {
         arrivedMsgHandlerMap.remove(topic);
     }

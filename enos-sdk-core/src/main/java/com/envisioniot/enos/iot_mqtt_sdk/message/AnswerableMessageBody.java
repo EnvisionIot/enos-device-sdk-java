@@ -85,7 +85,7 @@ public class AnswerableMessageBody extends BaseMessageBody implements Serializab
 
     @Override
     public String toString() {
-        return "AnswerableMessageBody{" + "id='" + id + '\'' + ", method='" + method + '\'' + ", version='" + version
+        return this.getClass().getSimpleName() + "{" + "id='" + id + '\'' + ", method='" + method + '\'' + ", version='" + version
                 + '\'' + ", params=" + params + '}';
     }
 }
