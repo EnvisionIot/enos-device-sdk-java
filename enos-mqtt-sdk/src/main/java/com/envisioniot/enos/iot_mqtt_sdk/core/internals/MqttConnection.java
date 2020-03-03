@@ -451,7 +451,7 @@ public class MqttConnection {
 
             // Also populate request version for IMqttRequest
             if (delivered instanceof IMqttRequest) {
-                IMqttRequest request = (IMqttRequest) delivered;
+                IMqttRequest<?> request = (IMqttRequest<?>) delivered;
                 if (StringUtil.isEmpty(request.getVersion())) {
                     request.setVersion(BaseProfile.VERSION);
                 }
@@ -662,7 +662,7 @@ public class MqttConnection {
 
             IResponseCallback<M> wrapped = callback;
             if (Objects.nonNull(wrapped)) {
-                final ScheduledFuture future = executorFactory.getTimeoutScheduler().schedule(
+                final ScheduledFuture<?> future = executorFactory.getTimeoutScheduler().schedule(
                         () -> {
                             logger.error("callback task timeout {}", answerTopicId);
                             getProcessor().deregisterResponseToken(answerTopicId);
