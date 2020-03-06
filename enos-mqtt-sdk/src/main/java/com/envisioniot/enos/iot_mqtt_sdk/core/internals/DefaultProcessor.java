@@ -258,7 +258,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
 
         if (connCallback != null) {
             connection.getExecutorFactory().getCallbackExecutor().execute(() -> {
-                connCallback.connectionLost(throwable);
+                connCallback.connectLost(throwable);
             });
         }
 
