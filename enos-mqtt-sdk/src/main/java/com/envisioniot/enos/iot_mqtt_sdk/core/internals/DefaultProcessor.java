@@ -336,7 +336,11 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
         }
     }
 
-    private void startReconnectTimer() {
+    /**
+     * Here we have to ensure that we only start one timer that
+     * does the schedule of reconnection。
+     */
+    private synchronized void startReconnectTimer() {
         if (reconnectTimer != null) {
             // re-connection is in progress
             return;
@@ -359,11 +363,12 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
 
     private void stopReconnectTimer() {
         logger.info("stop reconnect timer now");
+        reconnectDelay = RECONN_INIT_DELAY_MILLIS;
+
         if (reconnectTimer != null) {
             reconnectTimer.cancel();
-            reconnectTimer = null;
         }
-        reconnectDelay = RECONN_INIT_DELAY_MILLIS;
+        reconnectTimer = null;
     }
 
     private class ReconnectTask extends TimerTask {
