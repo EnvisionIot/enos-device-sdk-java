@@ -339,6 +339,9 @@ public class MqttConnection {
 
         try {
             if (transport != null) {
+                if (transport.isConnected()) {
+                    transport.disconnect();
+                }
                 transport.close();
             }
         } catch (MqttException e) {
