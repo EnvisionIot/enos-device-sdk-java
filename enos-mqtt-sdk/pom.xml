@@ -28,7 +28,6 @@
         2.1.1 support dynamic activate(login by productSecret)
         support init by config file
         2.1.2 support ota feature
-        2.1.2 release
         2.1.3 message integration
         2.1.4 internal logic refactor, fix thread pool resource leak
         2.1.5 support device name internationalization for device registering
@@ -38,8 +37,8 @@
         2.2.0 seperate the common part (message parsing etc.) into independent project
         2.2.1 add file check in mqtt request (file is not supported yet)
         2.2.2 upgrade to paho mqtt 1.2.1 due to security check
-        2.2.3 add ecc support to connect mqtt-broker
-        2.2.4 solve decoder initialization defect in SpringBoot application
+        2.2.3 solve decoder initialization defect in SpringBoot application, solve the problem of checking sans by default due to paho upgrade
+        2.2.5 add ecc support to connect mqtt-broker
     </description>
 
     <properties>
