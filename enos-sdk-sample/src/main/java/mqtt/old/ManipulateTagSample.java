@@ -2,14 +2,14 @@ package mqtt.old;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
-import com.envisioniot.enos.iot_mqtt_sdk.core.login.LoginInput;
-import com.envisioniot.enos.iot_mqtt_sdk.core.login.NormalDeviceLoginInput;
 import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultProfile;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tag.*;
-
 import mqtt.old.helper.Helper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ManipulateTagSample {
 
@@ -49,11 +49,8 @@ public class ManipulateTagSample {
 
     }
 
-    public static String SERVER_URL = "tcp://localhost:11883";
-
     public static void main(String[] args) throws EnvisionException {
-        LoginInput input = new NormalDeviceLoginInput(SERVER_URL, Helper.GW_PRODUCT_KEY, Helper.GW_DEV_KEY, Helper.GW_DEV_SECRET);
-        final MqttClient client = new MqttClient(new DefaultProfile(input));
+        final MqttClient client = new MqttClient(new DefaultProfile(Helper.getNormalDeviceLoginInput()));
         client.connect();
         try{
             System.out.println("query tags at now!");
@@ -92,11 +89,8 @@ public class ManipulateTagSample {
             System.out.println("query tags at now!");
             queryTags(client);
         } finally {
-            Helper.cleanConnection(client);
+            client.close();
         }
-
-
-
 
     }
 

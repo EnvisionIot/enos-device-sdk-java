@@ -22,11 +22,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class DynamicActivatingDeviceSample {
 
-    private static String PRODUCT_KEY = "aVpQQTDp";
-    private static String PRODUCT_SECRET = "aPmYSwVD5VI";
+    private static String PRODUCT_KEY = Helper.GW_PRODUCT_KEY;
+    private static String PRODUCT_SECRET = Helper.GW_PRODUCT_SECRET;
 
     // The status for the following device MUST be inactive for this test
-    private static String DEVICE_KEY = "xD6pcvmzKI";
+    private static String DEVICE_KEY = Helper.GW_DEV_KEY;
 
     /**
      * Reconnect to broker using the updated profile, which includes the
@@ -89,7 +89,7 @@ public class DynamicActivatingDeviceSample {
             }
         }
 
-        Helper.cleanConnection(client);
+        client.close();
 
         // Test reconnect with updated profile
         if (!StringUtil.isEmpty(newProfile.getDeviceSecret())) {

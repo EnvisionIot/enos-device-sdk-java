@@ -67,8 +67,15 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
                 ? ((MqttException) error).getReasonCode()
                 : -1;
 
-        if (reasonCode == MqttException.REASON_CODE_NOT_AUTHORIZED) {
-            logger.error("Not authorized mqtt connect request, please refer to EnOS portal connective service log ");
+        if (connCallback == null) {
+            logger.error("Client <{}> Connection Lost", this.connection.getClientId(), error);
+        } else {
+            /**
+             * If user has defined the callback that takes the exception, we don't
+             * log out the exception stack here.
+             */
+            logger.error("Client <{}> Connection Lost, error: {}",
+                    connection.getClientId(), Utils.getRootMessage(error));
         }
 
         // We call legacy callback on each conn failure
@@ -243,6 +250,8 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
         arrivedMsgHandlerMap.remove(topic);
     }
 
+
+
     @Override
     public void connectionLost(Throwable throwable) {
         // We always clean the cache for this event
@@ -263,7 +272,16 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
             return;
         }
 
-        logger.error("Client <{}> Connection Lost", this.connection.getClientId(), throwable);
+        if (connCallback == null) {
+            logger.error("Client <{}> Connection Lost", this.connection.getClientId(), throwable);
+        } else {
+            /**
+             * If user has defined the callback that takes the exception, we don't
+             * log out the exception stack here.
+             */
+            logger.error("Client <{}> Connection Lost, error: {}",
+                    connection.getClientId(), Utils.getRootMessage(throwable));
+        }
 
         if (legacyCallback != null) {
             connection.getExecutorFactory().getCallbackExecutor().execute(() -> {

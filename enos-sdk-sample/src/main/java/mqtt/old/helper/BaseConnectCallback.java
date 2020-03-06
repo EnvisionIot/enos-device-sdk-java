@@ -1,14 +1,16 @@
 package mqtt.old.helper;
 
-import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
+import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * Helper class that extends IConnectCallback
+ * Helper class that extends {@link ConnCallback}
  *
  * @author jian.zhang4
  */
-public class BaseConnectCallback implements IConnectCallback {
+@Slf4j
+public class BaseConnectCallback implements ConnCallback {
     private final MqttClient client;
     protected final String tip;
 
@@ -30,15 +32,15 @@ public class BaseConnectCallback implements IConnectCallback {
     }
 
     @Override
-    public void onConnectSuccess() {
-        System.out.println("onConnectSuccess: " + tip);
+    public void connectComplete(boolean reconnect) {
+        log.info("connectComplete: reconnect=" + reconnect);
 
         // Here we call the user customized callback in async way.
         Thread asyncWorker = new Thread(() -> {
             onSuccess(client);
 
             if (cleanConnectionOnSuccess) {
-                Helper.cleanConnection(client);
+                client.close();
             }
         });
         asyncWorker.setDaemon(false);
@@ -46,15 +48,15 @@ public class BaseConnectCallback implements IConnectCallback {
     }
 
     @Override
-    public void onConnectLost() {
-        System.out.println("onConnectLost: " + tip);
-        Helper.cleanConnection(client);
+    public void connectLost(Throwable error) {
+        log.error("connectLost", error);
+        client.close();
     }
 
     @Override
-    public void onConnectFailed(int reasonCode) {
-        System.err.println("onConnectFailed: " + tip);
-        Helper.cleanConnection(client);
+    public void connectFailed(Throwable error) {
+        log.error("connectLost", error);
+        client.close();
     }
 
     // User should customize this
