@@ -42,22 +42,24 @@ public class MqttConnection {
         NOT_CONNECTED,
 
         /**
-         * This is the temp state used by {@link MqttConnection#connect(IConnectCallback)}.
+         * This is the temp state used by {@link MqttConnection#connect(ConnCallback)}.
          */
         CONNECTING,
 
         /**
          * This is the state after we call {@link MqttConnection#connect()} or
-         * {@link MqttConnection#connect(IConnectCallback)} from NOT_CONNECTED.
-         * And it can transfer to CONNECTED again by {@link MqttConnection#reconnect(boolean)}
+         * {@link MqttConnection#connect(ConnCallback)} from NOT_CONNECTED.
+         * And it can transfer to CONNECTED again by {@link MqttConnection#reconnect()}
          * or to DISCONNECTED by {@link MqttConnection#disconnect()}
          * or to CLOSED by {@link MqttConnection#close()}
          */
         CONNECTED,
 
+        DISCONNECTING,
+
         /**
          * This is the state after we call disconnect successfully from CONNECTED.
-         * And it can transfer to connect by {@link MqttConnection#reconnect(boolean)}
+         * And it can transfer to connect by {@link MqttConnection#reconnect()}
          * and to CLOSED by {@link MqttConnection#close()}
          */
         DISCONNECTED,
@@ -102,6 +104,10 @@ public class MqttConnection {
             this.mqttProcessor = new DefaultProcessor(this);
     }
 
+    State getState() {
+        return state;
+    }
+
     public BaseProfile getProfile() {
         return this.profile;
     }
@@ -120,15 +126,23 @@ public class MqttConnection {
             throw new IllegalStateException("reconnect is not allowed at state: " + state);
         }
 
+        if (state == State.CONNECTING) {
+            log.info("connection is ongoing");
+            return;
+        }
+
+        state = State.CONNECTING;
+
         // Close current underlying transport firstly
         closeUnderlyingTransport();
 
-        // It turns to be DISCONNECTED now since underlying transport is closed
-        state = State.DISCONNECTED;
-
-        doConnect();
-
-        state = State.CONNECTED;
+        try {
+            doConnect();
+            state = State.CONNECTED;
+        } catch (EnvisionException error){
+            state = State.DISCONNECTED;
+            throw error;
+        }
     }
 
     boolean isReconnectAllowed() {
@@ -178,14 +192,19 @@ public class MqttConnection {
             throw new IllegalStateException("connect is not allowed at state: " + state);
         }
 
+        state = State.CONNECTING;
         doConnect();
-
         // Mark the state as CONNECTED if no exception is thrown
         state = State.CONNECTED;
     }
 
     @Deprecated
     public synchronized void connect(IConnectCallback callback) {
+        if (state != State.NOT_CONNECTED) {
+            // We can't use EnvisionException here as we don't want to mark this method throwing exception
+            throw new IllegalStateException("connect is not allowed at state: " + state);
+        }
+
         if (callback == null) {
             throw new IllegalArgumentException("callback should not be null");
         }
@@ -194,21 +213,22 @@ public class MqttConnection {
     }
 
     public synchronized void connect(ConnCallback callback) {
-        if (callback == null) {
-            throw new IllegalArgumentException("callback should not be null");
-        }
-        this.mqttProcessor.setConnCallback(callback);
-        doConnectAsync();
-    }
-
-    private void doConnectAsync() {
         if (state != State.NOT_CONNECTED) {
             // We can't use EnvisionException here as we don't want to mark this method throwing exception
             throw new IllegalStateException("connect is not allowed at state: " + state);
         }
 
+        if (callback == null) {
+            throw new IllegalArgumentException("callback should not be null");
+        }
+
         state = State.CONNECTING;
 
+        this.mqttProcessor.setConnCallback(callback);
+        doConnectAsync();
+    }
+
+    private void doConnectAsync() {
         executorFactory.getConnectExecutor().execute(() -> {
             try {
                 doConnect();
@@ -271,7 +291,7 @@ public class MqttConnection {
     }
 
     public synchronized void disconnect() {
-        if (state == State.DISCONNECTED) {
+        if (state == State.DISCONNECTED || state == State.DISCONNECTING) {
             log.warn("connection is already disconnected");
             return;
         }
@@ -280,6 +300,7 @@ public class MqttConnection {
             throw new IllegalStateException("disconnect is not allowed at state: " + state);
         }
 
+        state = State.DISCONNECTING;
         disconnectUnderlyingTransport();
         state = State.DISCONNECTED;
     }
@@ -290,7 +311,6 @@ public class MqttConnection {
 
     public synchronized void close() {
         if (state == State.CLOSED || state == State.CLOSING) {
-            log.warn("connection is already closed");
             return;
         }
 
@@ -303,10 +323,6 @@ public class MqttConnection {
         executorFactory.shutdownExecutorServices();
 
         state = State.CLOSED;
-    }
-
-    State getState() {
-        return state;
     }
 
     private void registerDeviceActivateInfoCommand() {
