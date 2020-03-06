@@ -100,7 +100,7 @@ public abstract class BaseProfile {
         connectOptions.setAutomaticReconnect(this.config.getAutoReconnect());
         connectOptions.setConnectionTimeout(this.config.getConnectionTimeout());
         connectOptions.setMaxInflight(this.config.getMaxInFlight());
-        connectOptions.setHttpsHostnameVerificationEnabled(this.config.isEnabledHostnameVerify());
+        connectOptions.setHttpsHostnameVerificationEnabled(this.config.isHostnameVerifyEnabled());
         if (config.getSslSecured()) {
             if (this.sslContext == null) {
                 try {
@@ -240,8 +240,8 @@ public abstract class BaseProfile {
         return this;
     }
 
-    public BaseProfile setEnableHostnameVerity(boolean enableHostnameVerity) {
-        this.config.setEnabledHostnameVerify(enableHostnameVerity);
+    public BaseProfile setHostnameVerifyEnabled(boolean hostnameVerifyEnabled) {
+        this.config.setHostnameVerifyEnabled(hostnameVerifyEnabled);
         return this;
     }
 

@@ -73,8 +73,7 @@ public class Config {
     private String sslAlgorithm = "SunX509";
     private String sslJksPath = "";
     private boolean isEccConnect = false;
-    private boolean enabledHostnameVerify = false;
-
+    private boolean hostnameVerifyEnabled = false;
 
     // Use String for easy serialization/de-serialization
     private String signMethodName = SignUtil.DEFAULT_SIGN_METHOD.getName();
@@ -249,12 +248,12 @@ public class Config {
         return this.isEccConnect;
     }
 
-    public Boolean isEnabledHostnameVerify() {
-        return this.enabledHostnameVerify;
+    public Boolean isHostnameVerifyEnabled() {
+        return this.hostnameVerifyEnabled;
     }
 
-    public Config setEnabledHostnameVerify(boolean enabledHostnameVerify) {
-        this.enabledHostnameVerify = enabledHostnameVerify;
+    public Config setHostnameVerifyEnabled(boolean hostnameVerifyEnabled) {
+        this.hostnameVerifyEnabled = hostnameVerifyEnabled;
         return this;
     }
 
