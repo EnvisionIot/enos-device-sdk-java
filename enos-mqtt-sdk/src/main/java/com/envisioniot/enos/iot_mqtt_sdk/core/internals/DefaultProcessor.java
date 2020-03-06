@@ -51,7 +51,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
     // use auto reconnect feature in paho library.
     private boolean manageAutoConnect = false;
 
-    private Timer reconnectTimer; // Automatic reconnect timer
+    private volatile Timer reconnectTimer; // Automatic reconnect timer
     private int reconnectDelay = RECONN_INIT_DELAY_MILLIS; // Reconnect delay, starts at 8s
 
     public DefaultProcessor(MqttConnection connection) {
@@ -245,19 +245,25 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
 
     @Override
     public void connectionLost(Throwable throwable) {
-        if (connection.getState() == MqttConnection.State.CLOSING
-                || connection.getState() == MqttConnection.State.CLOSED) {
-            // ignore this if this is caused by close event (otherwise we
-            // could trigger end-less re-connect as we manage the reconnect
-            // ourselves now).
+        // We always clean the cache for this event
+        this.connection.cleanSubscribeTopicCache();
+
+        if (connection.getState() != MqttConnection.State.CONNECTED ) {
+            // This lost MUST come from close, disconnect or reconnect operation
+            // from the user. Since user himself choose to break the connection,
+            // there is no need to feed the connect lost event to them.
+            logger.info("ignored connection lost for state {}", connection.getState());
+            return;
+        }
+
+        if (reconnectTimer != null) {
+            // If we are still in progress of handling previous lost connection, there is
+            // no need to handle the new one.
+            logger.info("ignored connection lost as re-connection is in progress");
             return;
         }
 
         logger.error("Client <{}> Connection Lost", this.connection.getClientId(), throwable);
-
-        logger.info("clear the subscriptions");
-        //Clear the cache anyway
-        this.connection.cleanSubscribeTopicCache();
 
         if (legacyCallback != null) {
             connection.getExecutorFactory().getCallbackExecutor().execute(() -> {
@@ -313,6 +319,10 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
     }
 
     private void startReconnectTimer() {
+        if (reconnectTimer != null) {
+            // re-connection is in progress
+            return;
+        }
         logger.info("start reconnect timer in {}ms", reconnectDelay);
         reconnectTimer = new Timer("MQTT Reconnect: " + connection.getClientId());
         reconnectTimer.schedule(new ReconnectTask(), reconnectDelay);
