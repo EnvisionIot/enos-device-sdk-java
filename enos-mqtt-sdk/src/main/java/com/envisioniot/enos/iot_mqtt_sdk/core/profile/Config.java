@@ -6,6 +6,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.util.GsonUtil;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
+import javax.net.ssl.HostnameVerifier;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -71,6 +72,9 @@ public class Config {
     private String sslAlgorithm = "SunX509";
     private String sslJksPath = "";
     private boolean isEccConnect = false;
+    private boolean enabledHostnameVerify = false;
+    private HostnameVerifier sslHostnameVerifier = null;
+
 
     // Use String for easy serialization/de-serialization
     private String signMethodName = SignUtil.DEFAULT_SIGN_METHOD.getName();
@@ -244,6 +248,27 @@ public class Config {
     public Boolean isEccConnect(){
         return this.isEccConnect;
     }
+    
+    public Boolean isEnabledHostnameVerify(){
+        return this.enabledHostnameVerify;
+    }
+
+    public Config setEnabledHostnameVerify(boolean enabledHostnameVerify){
+        this.enabledHostnameVerify = enabledHostnameVerify;
+        return this;
+    }
+
+    public Config setSslHostnameVerifier(HostnameVerifier sslHostnameVerifier){
+        this.sslHostnameVerifier = sslHostnameVerifier;
+        return this;
+    }
+
+    public HostnameVerifier getSslHostnameVerifier(){
+        return sslHostnameVerifier;
+    }
+
+
+    
 
     public void store(String path, String comments) throws IOException {
         StringBuilder builder = new StringBuilder();
