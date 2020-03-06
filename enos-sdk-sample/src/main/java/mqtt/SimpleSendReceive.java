@@ -11,24 +11,14 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tag.TagQueryRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tag.TagQueryResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tag.TagUpdateRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tag.TagUpdateResponse;
-import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.AttributeQueryRequest;
-import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.AttributeQueryResponse;
-import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.AttributeUpdateRequest;
-import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.AttributeUpdateResponse;
-import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.EventPostRequest;
-import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.EventPostResponse;
-import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
-import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostResponse;
+import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.*;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
-
-public class SimpleSendReceive
-{
+public class SimpleSendReceive {
     // EnOS HTTP Broker URL, which can be obtained from Environment Information page in EnOS Console
     static final String BROKER_URL = "tcp://broker_url:11883";
 
@@ -38,23 +28,18 @@ public class SimpleSendReceive
     static final String DEVICE_SECRET = "deviceSecret";
 
     static MqttClient client;
-    
+
     // this is a sample handler to handle measurement point - temperature setting
-    static class TemperatureSetHandler implements IMessageHandler<MeasurepointSetCommand, MeasurepointSetReply>
-    {
+    static class TemperatureSetHandler implements IMessageHandler<MeasurepointSetCommand, MeasurepointSetReply> {
         @Override
         public MeasurepointSetReply onMessage(MeasurepointSetCommand arrivedMessage, List<String> argList)
-                throws Exception
-        {
+                throws Exception {
             System.out.println(arrivedMessage);
-            if (arrivedMessage.<Map<String,String>>getParams().containsKey("temperature"))
-            {
+            if (arrivedMessage.<Map<String, String>>getParams().containsKey("temperature")) {
                 return MeasurepointSetReply.builder()
                         .setCode(200)           // 200 means a success reply
                         .build();
-            }
-            else
-            {
+            } else {
                 return MeasurepointSetReply.builder()
                         .setCode(405)           // device can make a negative reply
                         .setMessage("measurepoint setting not allowed")
@@ -63,8 +48,7 @@ public class SimpleSendReceive
         }
     }
 
-    public static void main(String[] args) throws InterruptedException
-    {   
+    public static void main(String[] args) throws Exception {
         // construct an MQTT client by static device credential
         // BROKER_URL is the URL of EnOS MQTT Broker for Devices, which can be obtained in Environment Information page in EnOS Console
         // ProductKey, DeviceKey and DeviceSecrect can be obtained in Device Details page in EnOS Console
@@ -75,121 +59,78 @@ public class SimpleSendReceive
 
         // Sample: set handler to handle measurepoint set commands
         client.setArrivedMsgHandler(MeasurepointSetCommand.class, new TemperatureSetHandler());
-        
-        final Object lock = new Object();
 
-        // connect to EnOS Cloud and register callbacks. onConnectSuccess method will be called 
-        client.connect(new IConnectCallback()
-        {
-            @Override
-            public void onConnectSuccess()
-            {
-                System.out.println("connect success");
-                synchronized (lock)
-                {
-                    lock.notifyAll();
-                }
-            }
 
-            @Override
-            public void onConnectLost()
-            {
-                System.out.println("connect lost");
-            }
+        // connect to EnOS Cloud and register callbacks. onConnectSuccess method will be called
+        client.connect();
 
-            @Override
-            public void onConnectFailed(int reasonCode)
-            {
-                System.out.println("connect failed: " + reasonCode);
-            }
-        });        
-        
-        // wait until connected to EnOS Cloud
-        if (!client.isConnected())
-        {
-            synchronized (lock)
-            {
-                lock.wait();
-            }
-        }
-        
         int loop = 10000;
-        while ((--loop) >= 0)
-        {
-            try
-            {
+        while ((--loop) >= 0) {
+            try {
                 // device tags samples
                 queryDeviceTags();
                 updateDeviceTags();
-            
+
                 // device attributes samples
                 queryDeviceAttributes();
                 updateDeviceAttributes();
-            
+
                 // reporting measurepoints
                 postMeasurepoint();
                 resumeMeasurepoint();
-            
+
                 // reporting events
                 postEvent();
-            }
-            catch (EnvisionException e)
-            {
+            } catch (EnvisionException e) {
                 e.printStackTrace();
             }
-            
+
             TimeUnit.SECONDS.sleep(1L);
         }
-        
+
         // disconnect EnOS Cloud
-        try
-        {
+        try {
             client.disconnect();
-        } catch (EnvisionException e)
-        {
+        } catch (EnvisionException e) {
             e.printStackTrace();
         }
     }
 
     // Sample: query device tags
-    static void queryDeviceTags() throws EnvisionException
-    {
+    static void queryDeviceTags() throws EnvisionException {
         // device tags can be set and viewed on Device Details page in EnOS Console
         TagQueryRequest request = TagQueryRequest.builder()
                 .addKey("tag1").addKey("tag2")
                 .build();
-        
+
         TagQueryResponse response = client.publish(request);
         System.out.println(response);
     }
-    
+
     // Sample: update device tags
-    static void updateDeviceTags() throws EnvisionException
-    {
+    static void updateDeviceTags() throws EnvisionException {
         // device tags can be set and viewed on Device Details page in EnOS Console
         TagUpdateRequest request = TagUpdateRequest.builder()
                 .addTag("Temperature", "36.8")
                 .build();
-        
+
         TagUpdateResponse response = client.publish(request);
         System.out.println(response);
     }
-    
+
     // Sample: query device attributes
-    static void queryDeviceAttributes() throws EnvisionException
-    {
+    static void queryDeviceAttributes() throws EnvisionException {
         // device attributes are defined in ThingModel, which can be viewed in Model Details page in EnOS Console
         AttributeQueryRequest request = AttributeQueryRequest.builder()
                 .addAttribute("attr1").addAttribute("attr2")
                 .build();
-        
+
         AttributeQueryResponse response = client.publish(request);
         System.out.println(response);
     }
-    
+
     // Sample: update device attributes
-    static void updateDeviceAttributes() throws EnvisionException
-    {
+    static void updateDeviceAttributes() throws EnvisionException {
         // device attributes are defined in ThingModel, which can be viewed in Model Details page in EnOS Console
         AttributeUpdateRequest request = AttributeUpdateRequest.builder()
                 .addAttribute("Temperature", 36.8)
@@ -198,10 +139,9 @@ public class SimpleSendReceive
         AttributeUpdateResponse response = client.publish(request);
         System.out.println(response);
     }
-    
+
     // Sample: post measurepoint
-    static void postMeasurepoint() throws EnvisionException
-    {
+    static void postMeasurepoint() throws EnvisionException {
         // device measurement points are defined in ThingModel, which can be viewed in Model Details page in EnOS Console
         MeasurepointPostRequest request = MeasurepointPostRequest.builder()
                 .addMeasreuPointWithQuality("Power", 1, 9)
@@ -212,24 +152,22 @@ public class SimpleSendReceive
         MeasurepointPostResponse response = client.publish(request);
         System.out.println(response);
     }
-    
+
     // Sample: post event
-    static void resumeMeasurepoint() throws EnvisionException
-    {
+    static void resumeMeasurepoint() throws EnvisionException {
         // device measurement points are defined in ThingModel, which can be viewed in Model Details page in EnOS Console
         MeasurepointResumeRequest request = MeasurepointResumeRequest.builder()
                 .addMeasreuPointWithQuality("Power", 1, 9)
                 .addMeasurePoint("temp", 1.02)
                 .addMeasurePoint("branchCurr", Arrays.asList(1.02, 2.02, 7.93))
                 .build();
-        
+
         MeasurepointResumeResponse response = client.publish(request);
         System.out.println(response);
     }
 
     // Sample: post event
-    static void postEvent() throws EnvisionException
-    {
+    static void postEvent() throws EnvisionException {
         // device events are defined in ThingModel, which can be viewed in Model Details page in EnOS Console
         EventPostRequest request = EventPostRequest.builder()
                 .setEventIdentifier("events")

@@ -73,7 +73,7 @@ public class SubDeviceSample {
                 }
                 logoutSubDevices(client, loginedSubDevices);
 
-                Helper.cleanConnection(client);
+                client.close();
 
                 isTestSubDevicesByManuallyLoginDone = true;
             }

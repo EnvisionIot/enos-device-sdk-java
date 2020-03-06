@@ -1,7 +1,6 @@
 package mqtt.old;
 
-import static mqtt.old.helper.Helper.*;
-
+import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.login.NormalDeviceLoginInput;
@@ -10,8 +9,9 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginR
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogoutRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogoutResponse;
+import lombok.extern.slf4j.Slf4j;
 
-import mqtt.old.helper.BaseConnectCallback;
+import static mqtt.old.helper.Helper.*;
 
 /**
  * Keep the sample running and we could see onConnectLost event happen from
@@ -20,38 +20,47 @@ import mqtt.old.helper.BaseConnectCallback;
  *
  * @author jian.zhang4
  */
+@Slf4j
 public class SubDeviceAutoReconnectSample {
+
     public static void main(String[] args) throws Exception {
         MqttClient client = new MqttClient(new DefaultProfile(
                 new NormalDeviceLoginInput(SERVER_URL, GW_PRODUCT_KEY, GW_DEV_KEY, GW_DEV_SECRET)
         ));
 
         // enable auto connect
-        client.getProfile().setKeepAlive(30).setAutoReconnect(true);
+        client.getProfile()
+                .setTimeToWait(3)
+                .setConnectionTimeout(3)
+                .setKeepAlive(30)
+                .setAutoLoginSubDevice(true)
+                .setAutoReconnect(true);
 
-        client.connect(new BaseConnectCallback(client, "test sub-devices by manual login", false) {
-
+        client.connect(new ConnCallback() {
             @Override
-            public void onConnectSuccess() {
-                System.out.println("onConnectSuccess: " + super.tip);
+            public void connectComplete(boolean reconnect) {
+                log.info("connectComplete: reconnect={}", reconnect);
+
+                if (!reconnect) {
+                    // We need to do the sub-device login for the first time. And
+                    // in the future, the sdk would do the auto-login for us.
+                    loginSubDevices(client);
+                }
             }
 
             @Override
-            public void onConnectLost() {
-                System.out.println("onConnectLost: " + super.tip);
+            public void connectLost(Throwable cause) {
+                log.info("connectLost", cause);
             }
 
             @Override
-            public void onConnectFailed(int reasonCode) {
-                System.err.println("onConnectFailed: " + super.tip);
+            public void connectFailed(Throwable cause) {
+                log.info("connectFailed", cause);
             }
         });
 
-        Thread.sleep(5 * 1000);
-
-        loginSubDevices(client);
-
-//      logoutSubDevices(client)
+        System.in.read();
+        client.close();
     }
 
     private static void loginSubDevices(final MqttClient client) {

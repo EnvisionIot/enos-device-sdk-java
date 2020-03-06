@@ -266,7 +266,7 @@ public class MqttConnection {
             registerDeviceActivateInfoCommand();
         } catch (Throwable e) {
             // No need to log the exception stack here as we would return the exception to client
-            log.error("failed to connect to {}, error: {}", profile.getServerUrl(), getRootCause(e).getMessage());
+            log.error("failed to connect to {}, error: {}", profile.getServerUrl(), Utils.getRootMessage(e));
 
             // Release potential initialized resources
             closeUnderlyingTransport();
@@ -281,13 +281,6 @@ public class MqttConnection {
 
             throw error;
         }
-    }
-
-    private static Throwable getRootCause(Throwable error) {
-        if (error.getCause() == null) {
-            return error;
-        }
-        return getRootCause(error.getCause());
     }
 
     public synchronized void disconnect() {

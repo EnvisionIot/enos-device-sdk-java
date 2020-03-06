@@ -7,17 +7,13 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.tsl.ModelDownRawComm
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.tsl.ModelDownRawReply;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.ModelUpRawRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.ModelUpRawResponse;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-
-import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
-
-public class PassingThroughInformation
-{
+public class PassingThroughInformation {
     // EnOS HTTP Broker URL, which can be obtained from Environment Information page in EnOS Console
     static final String BROKER_URL = "tcp://broker_url:11883";
 
@@ -27,14 +23,12 @@ public class PassingThroughInformation
     static final String DEVICE_SECRET = "deviceSecret";
 
     static MqttClient client;
-    
+
     // this is a sample handler to handle passing through information from Cloud
-    static class PassingThroughInformationHandler implements IMessageHandler<ModelDownRawCommand, ModelDownRawReply>
-    {
+    static class PassingThroughInformationHandler implements IMessageHandler<ModelDownRawCommand, ModelDownRawReply> {
         @Override
         public ModelDownRawReply onMessage(ModelDownRawCommand arrivedMessage, List<String> argList)
-                throws Exception
-        {
+                throws Exception {
             System.out.println(Hex.encodeHexString(arrivedMessage.getPayload()));
             // a passing through reply can be sent as byte array.
             // a script should be defined in EnOS Console to handle the passing through reply.
@@ -42,8 +36,7 @@ public class PassingThroughInformation
         }
     }
 
-    public static void main(String[] args) throws InterruptedException
-    {   
+    public static void main(String[] args) throws Exception {
         // construct an MQTT client by static device credential
         // BROKER_URL is the URL of EnOS MQTT Broker for Devices, which can be obtained in Environment Information page in EnOS Console
         // ProductKey, DeviceKey and DeviceSecrect can be obtained in Device Details page in EnOS Console
@@ -54,79 +47,38 @@ public class PassingThroughInformation
 
         // Sample: set handler to handle passing through information from Cloud
         client.setArrivedMsgHandler(ModelDownRawCommand.class, new PassingThroughInformationHandler());
-        
-        final Object lock = new Object();
 
         // connect to EnOS Cloud and register callbacks. onConnectSuccess method will be called 
-        client.connect(new IConnectCallback()
-        {
-            @Override
-            public void onConnectSuccess()
-            {
-                System.out.println("connect success");
-                synchronized (lock)
-                {
-                    lock.notifyAll();
-                }
-            }
+        client.connect();
 
-            @Override
-            public void onConnectLost()
-            {
-                System.out.println("connect lost");
-            }
-
-            @Override
-            public void onConnectFailed(int reasonCode)
-            {
-                System.out.println("connect failed: " + reasonCode);
-            }
-        });        
-        
-        // wait until connected to EnOS Cloud
-        if (!client.isConnected())
-        {
-            synchronized (lock)
-            {
-                lock.wait();
-            }
-        }
-        
         int loop = 10000;
-        while ((--loop) >= 0)
-        {
-            try
-            {
+        while ((--loop) >= 0) {
+            try {
                 // send passing through information to EnOS Cloud
                 sendPassingThroughInformation();
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            
+
             TimeUnit.SECONDS.sleep(1L);
         }
-        
+
         // disconnect EnOS Cloud
-        try
-        {
+        try {
             client.disconnect();
-        } catch (EnvisionException e)
-        {
+        } catch (EnvisionException e) {
             e.printStackTrace();
         }
     }
 
     // Sample: send passing through information to EnOS Cloud
-    static void sendPassingThroughInformation() throws EnvisionException, DecoderException
-    {
+    static void sendPassingThroughInformation() throws EnvisionException, DecoderException {
         // a passing through information can be sent as byte array.
         // a script should be defined in EnOS Console to handle the passing through information.
         ModelUpRawRequest request = ModelUpRawRequest.builder()
                 .setPayload(Hex.decodeHex("0100000014010004000025f502000a6162636465666768696a0300083ff23d70".toCharArray()))
                 .build();
-        
+
         ModelUpRawResponse response = client.publish(request);
         System.out.println(Hex.encodeHexString(response.getPayload()));
     }

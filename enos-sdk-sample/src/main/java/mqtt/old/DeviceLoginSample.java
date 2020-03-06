@@ -3,10 +3,9 @@ package mqtt.old;
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
-import com.envisioniot.enos.iot_mqtt_sdk.core.login.*;
+import com.envisioniot.enos.iot_mqtt_sdk.core.login.LoginInput;
 import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultProfile;
 import com.google.common.collect.ImmutableList;
-
 import mqtt.old.helper.BaseConnectCallback;
 import mqtt.old.helper.Helper;
 
@@ -47,7 +46,7 @@ public class DeviceLoginSample {
             e.printStackTrace();
         }
 
-        Helper.cleanConnection(client);
+        client.close();
     }
 
     /**
@@ -90,7 +89,7 @@ public class DeviceLoginSample {
     public static void main(String[] args) {
         // Test four login modes we have right now
         List<LoginInput> inputs = ImmutableList.of(
-                Helper.getDynamicActivatingDeviceLoginInput(Helper.PRODUCT_KEY, Helper.PRODUCT_SECRET, Helper.DEV01_KEY),
+                Helper.getDynamicActivatingDeviceLoginInput(Helper.DEV_PRODUCT_KEY, Helper.DEV_PRODUCT_SECRET, Helper.DEV02_KEY),
                 Helper.getNormalDeviceLoginInput(),
                 Helper.getMessageIntegrationLoginInput(),
                 Helper.getVirtualGatewayLoginInput()
