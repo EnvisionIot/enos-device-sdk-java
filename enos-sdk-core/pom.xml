@@ -18,14 +18,6 @@
     <inceptionYear>2018</inceptionYear>
     <url>https://github.com/EnvisionIot/enos-device-sdk-java</url>
 
-    <developers>
-        <developer>
-            <id>EnvisionIot</id>
-            <name>EnOS Core</name>
-            <email>sw.tc@envisioncn.com</email>
-        </developer>
-    </developers>
-
     <description>
     </description>
 
