@@ -1,5 +1,6 @@
 package com.envisioniot.enos.iot_mqtt_sdk.core.internals;
 
+import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.ExecutorFactory;
 import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
@@ -134,10 +135,12 @@ public class MqttConnection {
     public void notifyConnectSuccess() {
         executorFactory.getPublishExecutor().execute(buffer.createRepublishDisconnetedMessageTask(this));
 
-        // immutableCopy is necessary here as we don't want the union to be a changeable view.
-        Set<DeviceCredential> currSubDevices = Sets.union(loginedSubDevices, profile.getSubDevices()).immutableCopy();
-        if (!currSubDevices.isEmpty() && profile.isAutoLoginSubDevice()) {
-            executorFactory.getPublishExecutor().execute(() -> autoLoginSubDevices(currSubDevices));
+        if (profile.isAutoLoginSubDevice()) {
+            // immutableCopy is necessary here as we don't want the union to be a changeable view.
+            Set<DeviceCredential> currSubDevices = Sets.union(loginedSubDevices, profile.getSubDevices()).immutableCopy();
+            if (!currSubDevices.isEmpty()) {
+                executorFactory.getPublishExecutor().execute(() -> autoLoginSubDevices(currSubDevices));
+            }
         }
     }
 
@@ -178,18 +181,30 @@ public class MqttConnection {
         state = State.CONNECTED;
     }
 
+    @Deprecated
     public synchronized void connect(IConnectCallback callback) {
         if (callback == null) {
             throw new IllegalArgumentException("callback should not be null");
         }
+        this.mqttProcessor.setConnectCallback(callback);
+        doConnectAsync();
+    }
 
+    public synchronized void connect(ConnCallback callback) {
+        if (callback == null) {
+            throw new IllegalArgumentException("callback should not be null");
+        }
+        this.mqttProcessor.setConnCallback(callback);
+        doConnectAsync();
+    }
+
+    private void doConnectAsync() {
         if (state != State.NOT_CONNECTED) {
             // We can't use EnvisionException here as we don't want to mark this method throwing exception
             throw new IllegalStateException("connect is not allowed at state: " + state);
         }
 
         state = State.CONNECTING;
-        this.mqttProcessor.setConnectCallback(callback);
 
         executorFactory.getConnectExecutor().execute(() -> {
             try {
@@ -227,21 +242,17 @@ public class MqttConnection {
 
             registerDeviceActivateInfoCommand();
         } catch (Throwable e) {
-            int reasonCode = -1;
-            if (e instanceof MqttException) {
-                reasonCode = ((MqttException)e).getReasonCode();
-            }
-
-            String message = "failed to connect: " + profile.getServerUrl();
-            logger.error(message, e);
+            String action = mqttProcessor.isOnceConnected() ? "re-connect" : "connect";
+            String errorMsg = "failed to " + action + " to " + profile.getServerUrl();
+            logger.error(errorMsg, e);
 
             // Release potential initialized resources
             closeUnderlyingTransport();
 
             // invoke connect related callbacks
-            this.mqttProcessor.onConnectFailed(reasonCode);
+            this.mqttProcessor.onConnectFailed(e);
 
-            throw new EnvisionException(message, e, EnvisionError.MQTT_CLIENT_CONNECT_FAILED);
+            throw new EnvisionException(errorMsg, e, EnvisionError.MQTT_CLIENT_CONNECT_FAILED);
         }
     }
 
@@ -328,6 +339,9 @@ public class MqttConnection {
 
         try {
             if (transport != null) {
+                if (transport.isConnected()) {
+                    transport.disconnect();
+                }
                 transport.close();
             }
         } catch (MqttException e) {
@@ -338,7 +352,7 @@ public class MqttConnection {
         transport = null;
     }
 
-    public DefaultProcessor getProcessor() {
+    private DefaultProcessor getProcessor() {
         return mqttProcessor;
     }
 
@@ -348,7 +362,25 @@ public class MqttConnection {
             throw new IllegalStateException("fastPublish is not allowed at state: " + state);
         }
 
+        // If we use fast publish, it means that we don't want the reply
+        if (request instanceof IAnswerable) {
+            String topic = ((IAnswerable) request).getAnswerTopic();
+            if (subTopicCache.exists(topic)) {
+                unsubscribe(topic);
+            }
+        }
+
         new Deliverer<>(request).execute();
+    }
+
+    void unsubscribe(String topic) {
+        try {
+            transport.unsubscribe(topic);
+            subTopicCache.remove(topic);
+        } catch (Exception e) {
+            // normally this should not happen
+            logger.error("failed to unsubscribe topic {}", topic, e);
+        }
     }
 
     /**
@@ -411,8 +443,12 @@ public class MqttConnection {
         return false;
     }
 
-    public void cleanSubscribeTopicCache() {
+    void cleanSubscribeTopicCache() {
         this.subTopicCache.clean();
+    }
+
+    boolean isTopicSubscribed(String topic) {
+        return subTopicCache.exists(topic);
     }
 
     /**
