@@ -7,7 +7,6 @@ import com.envisioniot.enos.iot_mqtt_sdk.util.SecureMode;
 import com.envisioniot.enos.iot_mqtt_sdk.util.SecureModeUtil;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.util.HashMap;
 import java.util.Map;
@@ -102,7 +101,6 @@ public abstract class BaseProfile {
         connectOptions.setConnectionTimeout(this.config.getConnectionTimeout());
         connectOptions.setMaxInflight(this.config.getMaxInFlight());
         connectOptions.setHttpsHostnameVerificationEnabled(this.config.isEnabledHostnameVerify());
-        connectOptions.setSSLHostnameVerifier(this.config.getSslHostnameVerifier());
         if (config.getSslSecured()) {
             if (this.sslContext == null) {
                 try {
@@ -242,17 +240,10 @@ public abstract class BaseProfile {
         return this;
     }
 
-    public BaseProfile setEnableHostnameVerity(boolean enableHostnameVerity){
+    public BaseProfile setEnableHostnameVerity(boolean enableHostnameVerity) {
         this.config.setEnabledHostnameVerify(enableHostnameVerity);
         return this;
     }
-
-    public BaseProfile setSslHostnameVerifier(HostnameVerifier sslHostnameVerifier){
-        this.config.setSslHostnameVerifier(sslHostnameVerifier);
-        return this;
-    }
-
-
 
     private static SSLContext createContext(String keyPath, String pwd, String algorithm) throws Exception {
         return SslContextBuilder.builder()

@@ -6,46 +6,47 @@ import com.envisioniot.enos.iot_mqtt_sdk.util.GsonUtil;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
-import javax.net.ssl.HostnameVerifier;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
+ * {
+ * //store properties by mqtt sdk
+ * //Thu Jan 10 14:53:58 CST 2019
+ * //serverUrl=tcp://alpha-k8s-cn4.eniot.io:11883
+ * //"assetId":"FgEWZ6Fz"
+ * "serverUrl":"ssl://10.27.21.6:18883",
+ * "productKey":"fKInRgVP",
+ * "productSecret":"c3PW03srd6c,
+ * "deviceKey":"zscai_test_activate",
+ * "deviceSecret":"DrihKncQARUwVXUvRH6k",
+ * "operationTimeout":60,
+ * "sslPassword":"",
+ * "maxInFlight":"10000",
+ * "sslAlgorithm":"SunX509",
+ * "connectionTimeout":30,
+ * "sslJksPath":"",
+ * "autoReconnect":true,
+ * "keepAlive":60,
+ * "subDevices":[
+ * {
+ * "productKey":"subProduct",
+ * "deviceKey":"subdevice",
+ * "deviceSecret":"xxx",
+ * "product":"secret"
+ * },
+ * {
+ * "productKey":"subProduct",
+ * "deviceKey":"subdevice",
+ * "deviceSecret":"xxx",
+ * "product":"secret"
+ * }
+ * ]
+ * }
  *
- {
- //store properties by mqtt sdk
- //Thu Jan 10 14:53:58 CST 2019
- //serverUrl=tcp://alpha-k8s-cn4.eniot.io:11883
- //"assetId":"FgEWZ6Fz"
- "serverUrl":"ssl://10.27.21.6:18883",
- "productKey":"fKInRgVP",
- "productSecret":"c3PW03srd6c,
- "deviceKey":"zscai_test_activate",
- "deviceSecret":"DrihKncQARUwVXUvRH6k",
- "operationTimeout":60,
- "sslPassword":"",
- "maxInFlight":"10000",
- "sslAlgorithm":"SunX509",
- "connectionTimeout":30,
- "sslJksPath":"",
- "autoReconnect":true,
- "keepAlive":60,
- "subDevices":[
- {
- "productKey":"subProduct",
- "deviceKey":"subdevice",
- "deviceSecret":"xxx",
- "product":"secret"
- },
- {
- "productKey":"subProduct",
- "deviceKey":"subdevice",
- "deviceSecret":"xxx",
- "product":"secret"
- }
- ]
- }
  * @author zhensheng.cai
  * @date 2019/1/14.
  */
@@ -73,7 +74,6 @@ public class Config {
     private String sslJksPath = "";
     private boolean isEccConnect = false;
     private boolean enabledHostnameVerify = false;
-    private HostnameVerifier sslHostnameVerifier = null;
 
 
     // Use String for easy serialization/de-serialization
@@ -240,35 +240,23 @@ public class Config {
         return this;
     }
 
-    public Config setEccConnect(boolean isEccConnect){
+    public Config setEccConnect(boolean isEccConnect) {
         this.isEccConnect = isEccConnect;
         return this;
     }
 
-    public Boolean isEccConnect(){
+    public Boolean isEccConnect() {
         return this.isEccConnect;
     }
-    
-    public Boolean isEnabledHostnameVerify(){
+
+    public Boolean isEnabledHostnameVerify() {
         return this.enabledHostnameVerify;
     }
 
-    public Config setEnabledHostnameVerify(boolean enabledHostnameVerify){
+    public Config setEnabledHostnameVerify(boolean enabledHostnameVerify) {
         this.enabledHostnameVerify = enabledHostnameVerify;
         return this;
     }
-
-    public Config setSslHostnameVerifier(HostnameVerifier sslHostnameVerifier){
-        this.sslHostnameVerifier = sslHostnameVerifier;
-        return this;
-    }
-
-    public HostnameVerifier getSslHostnameVerifier(){
-        return sslHostnameVerifier;
-    }
-
-
-    
 
     public void store(String path, String comments) throws IOException {
         StringBuilder builder = new StringBuilder();
