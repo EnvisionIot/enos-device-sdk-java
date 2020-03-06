@@ -17,7 +17,7 @@ public interface ConnCallback {
      *
      * @param cause the reason behind the loss of connection.
      */
-    void connectionLost(Throwable cause);
+    void connectLost(Throwable cause);
 
     /**
      * Called when it failed to build initial connection to the server. Note
