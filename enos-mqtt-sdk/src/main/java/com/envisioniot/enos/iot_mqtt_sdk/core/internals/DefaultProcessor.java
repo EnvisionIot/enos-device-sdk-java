@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
     private static Logger logger = LoggerFactory.getLogger(DefaultProcessor.class);
+    private static final int RECONN_INIT_DELAY_MILLIS = 8000;
 
     private final MqttConnection connection;
 
@@ -51,7 +52,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
     private boolean manageAutoConnect = false;
 
     private Timer reconnectTimer; // Automatic reconnect timer
-    private int reconnectDelay = 8000; // Reconnect delay, starts at 8s
+    private int reconnectDelay = RECONN_INIT_DELAY_MILLIS; // Reconnect delay, starts at 8s
 
     public DefaultProcessor(MqttConnection connection) {
         this.connection = connection;
@@ -244,6 +245,14 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
 
     @Override
     public void connectionLost(Throwable throwable) {
+        if (connection.getState() == MqttConnection.State.CLOSING
+                || connection.getState() == MqttConnection.State.CLOSED) {
+            // ignore this if this is caused by close event (otherwise we
+            // could trigger end-less re-connect as we manage the reconnect
+            // ourselves now).
+            return;
+        }
+
         logger.error("Client <{}> Connection Lost", this.connection.getClientId(), throwable);
 
         logger.info("clear the subscriptions");
@@ -326,7 +335,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
             reconnectTimer.cancel();
             reconnectTimer = null;
         }
-        reconnectDelay = 1000;
+        reconnectDelay = RECONN_INIT_DELAY_MILLIS;
     }
 
     private class ReconnectTask extends TimerTask {
