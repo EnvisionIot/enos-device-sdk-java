@@ -125,24 +125,7 @@ public class MqttConnection {
         if (!isReconnectAllowed()) {
             throw new IllegalStateException("reconnect is not allowed at state: " + state);
         }
-
-        if (state == State.CONNECTING) {
-            log.info("connection is ongoing");
-            return;
-        }
-
-        state = State.CONNECTING;
-
-        // Close current underlying transport firstly
-        closeUnderlyingTransport();
-
-        try {
-            doConnect();
-            state = State.CONNECTED;
-        } catch (EnvisionException error){
-            state = State.DISCONNECTED;
-            throw error;
-        }
+        doSyncConnect(true);
     }
 
     boolean isReconnectAllowed() {
@@ -191,10 +174,25 @@ public class MqttConnection {
         if (state != State.NOT_CONNECTED) {
             throw new IllegalStateException("connect is not allowed at state: " + state);
         }
+        doSyncConnect(false);
+    }
+
+    /**
+     * synchronized lock MUST be held before calling this method
+     */
+    private void doSyncConnect(boolean doClose) throws EnvisionException {
+        if (state == State.CONNECTING) {
+            log.info("connection is ongoing");
+            return;
+        }
 
         state = State.CONNECTING;
 
         try {
+            if (doClose) {
+                closeUnderlyingTransport();
+            }
+
             doConnect();
             // Mark the state as CONNECTED if no exception is thrown
             state = State.CONNECTED;
@@ -210,12 +208,10 @@ public class MqttConnection {
             // We can't use EnvisionException here as we don't want to mark this method throwing exception
             throw new IllegalStateException("connect is not allowed at state: " + state);
         }
-
         if (callback == null) {
             throw new IllegalArgumentException("callback should not be null");
         }
-        this.mqttProcessor.setConnectCallback(callback);
-        doConnectAsync();
+        doAsyncConnect(() -> mqttProcessor.setConnectCallback(callback));
     }
 
     public synchronized void connect(ConnCallback callback) {
@@ -223,27 +219,20 @@ public class MqttConnection {
             // We can't use EnvisionException here as we don't want to mark this method throwing exception
             throw new IllegalStateException("connect is not allowed at state: " + state);
         }
-
         if (callback == null) {
             throw new IllegalArgumentException("callback should not be null");
         }
-
-        state = State.CONNECTING;
-
-        this.mqttProcessor.setConnCallback(callback);
-        doConnectAsync();
+        doAsyncConnect(() -> mqttProcessor.setConnCallback(callback));
     }
 
-    private void doConnectAsync() {
+    private void doAsyncConnect(Runnable callbackSetter) {
         executorFactory.getConnectExecutor().execute(() -> {
             try {
-                doConnect();
-                state = State.CONNECTED;
+                callbackSetter.run();
+                doSyncConnect(false);
             } catch (EnvisionException e) {
-                state = State.NOT_CONNECTED;
-
                 // callback would be invoked in doConnect when error happens.
-                // So we don't call the callback here again.
+                // Also the exception would be delegated to the callback
             }
         });
     }

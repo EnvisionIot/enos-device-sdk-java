@@ -49,10 +49,10 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
 
     // Indicates if we should manage the auto connect ourselves rather than
     // use auto reconnect feature in paho library.
-    private boolean manageAutoConnect = false;
+    private volatile boolean manageAutoConnect = false;
 
     private volatile Timer reconnectTimer; // Automatic reconnect timer
-    private int reconnectDelay = RECONN_INIT_DELAY_MILLIS; // Reconnect delay, starts at 8s
+    private volatile int reconnectDelay = RECONN_INIT_DELAY_MILLIS; // Reconnect delay, starts at 8s
 
     public DefaultProcessor(MqttConnection connection) {
         this.connection = connection;
