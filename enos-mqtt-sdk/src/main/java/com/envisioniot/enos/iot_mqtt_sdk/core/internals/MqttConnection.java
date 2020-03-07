@@ -193,9 +193,15 @@ public class MqttConnection {
         }
 
         state = State.CONNECTING;
-        doConnect();
-        // Mark the state as CONNECTED if no exception is thrown
-        state = State.CONNECTED;
+
+        try {
+            doConnect();
+            // Mark the state as CONNECTED if no exception is thrown
+            state = State.CONNECTED;
+        } catch (EnvisionException error) {
+            state = State.NOT_CONNECTED;
+            throw error;
+        }
     }
 
     @Deprecated
