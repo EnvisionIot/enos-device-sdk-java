@@ -18,4 +18,11 @@ public class UploadFileInfo
     String featureType;
     
     String featureId;
+    
+    // either assetId or productKey + deviceKey should be provided to upload a file
+    String assetId;
+    
+    String productKey;
+    
+    String deviceKey;
 }
