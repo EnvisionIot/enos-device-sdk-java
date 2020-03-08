@@ -27,7 +27,6 @@ import okhttp3.*;
 
 import java.io.IOException;
 import java.net.SocketException;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.CLIENT_ERROR;
 import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.SOCKET_ERROR;
 import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.UNSUCCESSFUL_AUTH;
+import static com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.FormDataConstants.ENOS_MESSAGE;
 import static com.google.common.net.MediaType.JSON_UTF_8;
 import static com.google.common.net.MediaType.OCTET_STREAM;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -55,7 +55,7 @@ public class HttpConnection
     /**
      * Builder for http connection. A customized OkHttpClient can be provided, to
      * define specific connection pool, proxy etc. Find more at
-     * {@link #OkHttpClient}
+     * {@link #okHttpClient}
      * 
      * @author shenjieyuan
      */
@@ -107,7 +107,7 @@ public class HttpConnection
                     instance.auth();
                 } catch (EnvisionException e)
                 {
-                    // do nothing, already handled
+                     // do nothing, already handled
                 }
             });
 
@@ -260,6 +260,7 @@ public class HttpConnection
      */
     private void fillRequest(BaseMqttRequest<?> request)
     {
+        // generate a message id is not generated yet
         if (Strings.isNullOrEmpty(request.getMessageId()))
         {
             request.setMessageId(String.valueOf(requestId.incrementAndGet()));
@@ -268,10 +269,21 @@ public class HttpConnection
         // Also populate request version for IMqttRequest
         request.setVersion(VERSION);
 
+        // use credential pk / dk as request pk / dk
         if (Strings.isNullOrEmpty(request.getProductKey()) && Strings.isNullOrEmpty(request.getDeviceKey()))
         {
             request.setProductKey(((StaticDeviceCredential) credential).getProductKey());
             request.setDeviceKey(((StaticDeviceCredential) credential).getDeviceKey());
+        }
+        
+        // fill pk / dk in upload files
+        if (request.getFiles() != null)
+        {
+            request.getFiles().stream()
+            .forEach(fileInfo -> {
+                fileInfo.setProductKey(((StaticDeviceCredential) credential).getProductKey());
+                fileInfo.setDeviceKey(((StaticDeviceCredential) credential).getDeviceKey());
+            });
         }
     }
 
@@ -395,8 +407,8 @@ public class HttpConnection
     }
     
     
-    private <T extends BaseMqttResponse> Call generateMultipartPublishCall(BaseMqttRequest<T> request,
-            List<UploadFileInfo> files, IProgressListener progressListener)
+    private <T extends BaseMqttResponse> Call generateMultipartPublishCall(
+            BaseMqttRequest<T> request, IProgressListener progressListener)
     throws EnvisionException, IOException
     {
         checkAuth();
@@ -407,9 +419,9 @@ public class HttpConnection
         // Prepare a Multipart request message
         MultipartBody.Builder builder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("enos-message", new String(request.encode(), UTF_8));
+                .addFormDataPart(ENOS_MESSAGE, new String(request.encode(), UTF_8));
         
-        for (UploadFileInfo uploadFile: files)
+        for (UploadFileInfo uploadFile: request.getFiles())
         {
             builder.addPart(FileFormData.createFormData(uploadFile));
         }
@@ -447,7 +459,7 @@ public class HttpConnection
         if (request.getFiles() != null && !request.getFiles().isEmpty())
         {
             //Request including file points
-            return generateMultipartPublishCall(request, request.getFiles(), progressListener);
+            return generateMultipartPublishCall(request, progressListener);
         }
         else
         {

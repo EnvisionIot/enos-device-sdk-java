@@ -1,7 +1,10 @@
 package com.envisioniot.enos.iot_http_sdk;
 
+import static com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.FormDataConstants.ENOS_FILE;
+
 import java.io.File;
 import java.io.IOException;
+
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.UploadFileInfo;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
@@ -56,7 +59,7 @@ public class FileFormData
     public static Part createFormData(@NonNull UploadFileInfo fileInfo) throws IOException
     {
         StringBuilder disposition = new StringBuilder("form-data; name=");
-        appendQuotedString(disposition, fileInfo.getFilename());
+        appendQuotedString(disposition, ENOS_FILE);
 
         disposition.append("; filename=");
         appendQuotedString(disposition, fileInfo.getFilename());
@@ -66,6 +69,8 @@ public class FileFormData
 
         disposition.append("; feature-id=");
         appendQuotedString(disposition, fileInfo.getFeatureId());
+
+        // product key and device key will be filled after filling request
 
         Headers headers = new Headers.Builder()
                 .addUnsafeNonAscii("Content-Disposition", disposition.toString())
