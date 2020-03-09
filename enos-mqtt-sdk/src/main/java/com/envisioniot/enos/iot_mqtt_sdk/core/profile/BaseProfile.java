@@ -100,7 +100,7 @@ public abstract class BaseProfile {
         connectOptions.setAutomaticReconnect(this.config.getAutoReconnect());
         connectOptions.setConnectionTimeout(this.config.getConnectionTimeout());
         connectOptions.setMaxInflight(this.config.getMaxInFlight());
-
+        connectOptions.setHttpsHostnameVerificationEnabled(this.config.isHostnameVerifyEnabled());
         if (config.getSslSecured()) {
             if (this.sslContext == null) {
                 try {
@@ -227,6 +227,11 @@ public abstract class BaseProfile {
 
     public BaseProfile setServerUrl(String serverUrl) {
         this.config.setServerUrl(serverUrl);
+        return this;
+    }
+
+    public BaseProfile setHostnameVerifyEnabled(boolean hostnameVerifyEnabled) {
+        this.config.setHostnameVerifyEnabled(hostnameVerifyEnabled);
         return this;
     }
 

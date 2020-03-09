@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -11,7 +11,7 @@
 
     <groupId>com.envisioniot</groupId>
     <artifactId>enos-iot-sdk-parent</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <packaging>pom</packaging>
 
     <name>EnOS IoT SDK</name>
@@ -67,6 +67,22 @@
 
     <profiles>
         <profile>
+            <id>envisionrepo</id>
+            <distributionManagement>
+                <repository>
+                    <id>envision.repo</id>
+                    <name>envision internal repository for released artifacts</name>
+                    <url>http://nexus.envisioncn.com/content/repositories/releases</url>
+                </repository>
+                <snapshotRepository>
+                    <id>envision.repo.snapshots</id>
+                    <name>envision internal repository for snapshots artifacts</name>
+                    <url>http://nexus.envisioncn.com/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+
+        <profile>
             <id>release</id>
             <build>
                 <plugins>
@@ -114,17 +130,6 @@
                                 </goals>
                             </execution>
                         </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.3</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>oss</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
-                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
