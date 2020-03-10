@@ -148,14 +148,14 @@ public class EmulatingDeviceSample {
                         client.setArrivedMsgHandler(SubDeviceDisableCommand.class, new IMessageHandler<SubDeviceDisableCommand, SubDeviceDisableReply>() {
                             @Override
                             public SubDeviceDisableReply onMessage(SubDeviceDisableCommand arrivedMessage, List<String> argList) throws Exception {
-                                System.out.println("argList: " + argList + ", topic: " + arrivedMessage.getAnswerTopic());
+                                System.out.println("argList: " + argList + ", topic: " + arrivedMessage.getMessageTopic());
                                 return null;
                             }
                         });
                         client.setArrivedMsgHandler(SubDeviceDeleteCommand.class, new IMessageHandler<SubDeviceDeleteCommand, SubDeviceDeleteReply>() {
                             @Override
                             public SubDeviceDeleteReply onMessage(SubDeviceDeleteCommand arrivedMessage, List<String> argList) throws Exception {
-                                System.out.println("argList: " + argList + ", topic: " + arrivedMessage.getAnswerTopic());
+                                System.out.println("argList: " + argList + ", topic: " + arrivedMessage.getMessageTopic());
                                 return null;
                             }
                         });

@@ -17,6 +17,13 @@ class SubTopicCache {
         topicMap.remove(topic);
     }
 
+    void remove(String productKey, String deviceKey) {
+        topicMap.entrySet().removeIf(entry -> {
+            String topic = entry.getKey();
+            return topic.contains(productKey) && topic.contains(deviceKey);
+        });
+    }
+
     void clean() {
         topicMap.clear();
     }

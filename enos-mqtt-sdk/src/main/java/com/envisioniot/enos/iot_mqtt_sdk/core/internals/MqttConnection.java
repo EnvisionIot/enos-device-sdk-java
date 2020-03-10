@@ -133,6 +133,8 @@ public class MqttConnection {
     }
 
     public void notifyConnectSuccess() {
+        cleanSubscribeTopicCache();
+
         executorFactory.getPublishExecutor().execute(buffer.createRepublishDisconnetedMessageTask(this));
 
         if (profile.isAutoLoginSubDevice()) {
@@ -498,6 +500,12 @@ public class MqttConnection {
                 (!((BaseMqttRequest<?>) delivered).getFiles().isEmpty()))
             {
                 throw new EnvisionException("file publishing is not supported yet in MQTT");
+            }
+
+            // Clean all its cache if it's sub-device login
+            if (delivered instanceof SubDeviceLoginRequest) {
+                DeviceCredential dev = ((SubDeviceLoginRequest)delivered).getCredential();
+                subTopicCache.remove(dev.getProductKey(), dev.getDeviceKey());
             }
         }
 
