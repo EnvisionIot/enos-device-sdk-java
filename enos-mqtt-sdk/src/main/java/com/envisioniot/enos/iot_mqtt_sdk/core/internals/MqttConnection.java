@@ -125,7 +125,7 @@ public class MqttConnection {
         if (!isReconnectAllowed()) {
             throw new IllegalStateException("reconnect is not allowed at state: " + state);
         }
-        doSyncConnect(true);
+        doSyncConnect(true, State.DISCONNECTED);
     }
 
     boolean isReconnectAllowed() {
@@ -174,13 +174,13 @@ public class MqttConnection {
         if (state != State.NOT_CONNECTED) {
             throw new IllegalStateException("connect is not allowed at state: " + state);
         }
-        doSyncConnect(false);
+        doSyncConnect(false, State.NOT_CONNECTED);
     }
 
     /**
      * synchronized lock MUST be held before calling this method
      */
-    private void doSyncConnect(boolean doClose) throws EnvisionException {
+    private void doSyncConnect(boolean doClose, State failedState) throws EnvisionException {
         if (state == State.CONNECTING) {
             log.info("connection is ongoing");
             return;
@@ -197,7 +197,7 @@ public class MqttConnection {
             // Mark the state as CONNECTED if no exception is thrown
             state = State.CONNECTED;
         } catch (EnvisionException error) {
-            state = State.NOT_CONNECTED;
+            state = failedState;
             throw error;
         }
     }
@@ -211,7 +211,7 @@ public class MqttConnection {
         if (callback == null) {
             throw new IllegalArgumentException("callback should not be null");
         }
-        doAsyncConnect(() -> mqttProcessor.setConnectCallback(callback));
+        doAsyncConnect(() -> mqttProcessor.setConnectCallback(callback), State.NOT_CONNECTED);
     }
 
     public synchronized void connect(ConnCallback callback) {
@@ -222,14 +222,14 @@ public class MqttConnection {
         if (callback == null) {
             throw new IllegalArgumentException("callback should not be null");
         }
-        doAsyncConnect(() -> mqttProcessor.setConnCallback(callback));
+        doAsyncConnect(() -> mqttProcessor.setConnCallback(callback), State.NOT_CONNECTED);
     }
 
-    private void doAsyncConnect(Runnable callbackSetter) {
+    private void doAsyncConnect(Runnable callbackSetter, State failedState) {
         executorFactory.getConnectExecutor().execute(() -> {
             try {
                 callbackSetter.run();
-                doSyncConnect(false);
+                doSyncConnect(false, failedState);
             } catch (EnvisionException e) {
                 // callback would be invoked in doConnect when error happens.
                 // Also the exception would be delegated to the callback
