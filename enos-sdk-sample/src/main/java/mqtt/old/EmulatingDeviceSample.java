@@ -2,6 +2,10 @@ package mqtt.old;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMessageHandler;
+import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.device.SubDeviceDeleteCommand;
+import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.device.SubDeviceDeleteReply;
+import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.device.SubDeviceDisableCommand;
+import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.device.SubDeviceDisableReply;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.ota.OtaUpgradeCommand;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.ota.OtaUpgradeReply;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.tsl.MeasurepointSetCommand;
@@ -15,7 +19,6 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogout
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogoutResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostResponse;
-
 import mqtt.old.helper.Helper;
 
 import java.io.BufferedReader;
@@ -142,6 +145,20 @@ public class EmulatingDeviceSample {
                     if (validate(args, 1, false, client, false)) {
                         client.setArrivedMsgHandler(ServiceInvocationCommand.class, createServiceCommandHandler());
                         client.setArrivedMsgHandler(MeasurepointSetCommand.class, createMeasurepointSetHandler(client));
+                        client.setArrivedMsgHandler(SubDeviceDisableCommand.class, new IMessageHandler<SubDeviceDisableCommand, SubDeviceDisableReply>() {
+                            @Override
+                            public SubDeviceDisableReply onMessage(SubDeviceDisableCommand arrivedMessage, List<String> argList) throws Exception {
+                                System.out.println("argList: " + argList + ", topic: " + arrivedMessage.getAnswerTopic());
+                                return null;
+                            }
+                        });
+                        client.setArrivedMsgHandler(SubDeviceDeleteCommand.class, new IMessageHandler<SubDeviceDeleteCommand, SubDeviceDeleteReply>() {
+                            @Override
+                            public SubDeviceDeleteReply onMessage(SubDeviceDeleteCommand arrivedMessage, List<String> argList) throws Exception {
+                                System.out.println("argList: " + argList + ", topic: " + arrivedMessage.getAnswerTopic());
+                                return null;
+                            }
+                        });
                     }
                     break;
                 case "loginSubDevice":

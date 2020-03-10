@@ -68,13 +68,13 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
                 : -1;
 
         if (connCallback == null) {
-            logger.error("Client <{}> Connection Lost", this.connection.getClientId(), error);
+            logger.error("Client <{}> connect failed", this.connection.getClientId(), error);
         } else {
             /**
              * If user has defined the callback that takes the exception, we don't
              * log out the exception stack here.
              */
-            logger.error("Client <{}> Connection Lost, error: {}",
+            logger.error("Client <{}> connect failed, error: {}",
                     connection.getClientId(), Utils.getRootMessage(error));
         }
 
