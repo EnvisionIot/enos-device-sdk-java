@@ -63,6 +63,7 @@
         <module>enos-mqtt-sdk</module>
         <module>enos-http-sdk</module>
         <module>enos-sdk-sample</module>
+        <module>enos-mqtt-proxy</module>
     </modules>
 
     <profiles>
