@@ -12,40 +12,40 @@ public class Helper {
      */
     public static String SERVER_URL = "tcp://beta-iot-as-mqtt-cn4.eniot.io:11883";
 
-    public static String ORG_ID = "o15541858646501";
+    public static String ORG_ID = "o15535059999891";
 
     /**
      * Non-gate-way product info (for direct connecting device and sub-device)
      */
-    public static String DEV_PRODUCT_KEY = "lWLG8rgI";
-    public static String DEV_PRODUCT_SECRET = "KnNNQxyZOf4";
+    public static String DEV_PRODUCT_KEY = "K9HMijjG";
+    public static String DEV_PRODUCT_SECRET = "iiMGJw8ohjL";
 
     /**
      * gate-way product info
      */
-    public static String GW_PRODUCT_KEY = "jsYG9L8H";
-    public static String GW_PRODUCT_SECRET = "6Xt1lGU0IM4";
+    public static String GW_PRODUCT_KEY = "vOQSJ4dN";
+    public static String GW_PRODUCT_SECRET = "W4Vsmzpu40I";
 
     /**
      * device info for direct connecting device (non-gate-way device)
      */
     public static String DEV01_KEY = "mqtt_sdk_sample_dev01";
-    public static String DEV01_SECRET = "hTYC0IeLwhoYy5oizY5o";
+    public static String DEV01_SECRET = "23avggF6S2HKXx283IMs";
 
     public static String DEV02_KEY = "mqtt_sdk_sample_dev02";
-    public static String DEV02_SECRET = "hvvnAgSEmNje6rB9PaGI";
+    public static String DEV02_SECRET = "sV0cN56ptABCf0LbqGAH";
 
     /**
      * device info for gate-way and its sub-devices
      */
     public static String GW_DEV_KEY = "mqtt_sdk_sample_gw01";
-    public static String GW_DEV_SECRET = "i9YhWTUAJb5wkvG9HHFu";
+    public static String GW_DEV_SECRET = "KTufcRGDATp0kAl7pJ9h";
 
     public static String SUB_DEV01_KEY = "mqtt_sdk_sample_subdev01";
-    public static String SUB_DEV01_SECRET = "UQAMHCcVrxZZ6qL22QXi";
+    public static String SUB_DEV01_SECRET = "S3OGY40qNmqkrtZtkZ6p";
 
     public static String SUB_DEV02_KEY = "mqtt_sdk_sample_subdev02";
-    public static String SUB_DEV02_SECRET = "ZSwevOyEGIJU2wX8iL0G";
+    public static String SUB_DEV02_SECRET = "QI9RHWuw7jn1V6Kgxkra";
 
     public final static List<DeviceCredential> SUBDEVICES = ImmutableList.of(
             new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET),
