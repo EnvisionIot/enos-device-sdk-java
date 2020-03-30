@@ -151,22 +151,22 @@ client.disconnect();
 
 == Sample Code
 
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Establishing
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Establishing
 Connection with EnOS Cloud]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
 Tags]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
 Attributes]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Reporting
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Reporting
 Measurement Points]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Reporting
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Reporting
 Events]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Receiving
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Receiving
 Commands from Cloud]
-* link:enos-sdk-sample/src/main/java/mqtt/PassingThroughInformation.java[Passing
+* link:/enos-sdk-sample/src/main/java/mqtt/PassingThroughInformation.java[Passing
 Through Device Information or Receiving Passed-through Information from
 Cloud]
-* link:enos-sdk-sample/src/main/java/mqtt/ManageSubDevices.java[Managing
+* link:/enos-sdk-sample/src/main/java/mqtt/ManageSubDevices.java[Managing
 Sub-devices]
 
 == Related Information
