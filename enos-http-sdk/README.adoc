@@ -130,11 +130,11 @@ try
 
 == Sample Code
 
-* link:enos-sdk-sample/src/main/java/http/MeasurepointPostSample.java[Establishing
+* link:/enos-sdk-sample/src/main/java/http/MeasurepointPostSample.java[Establishing
 Connection with EnOS Cloud]
-* link:enos-sdk-sample/src/main/java/http/MeasurepointPostSample.java[Reporting
+* link:/enos-sdk-sample/src/main/java/http/MeasurepointPostSample.java[Reporting
 Measurement Points]
-* link:enos-sdk-sample/src/main/java/http/PostFileSample.java[Reporting
+* link:/enos-sdk-sample/src/main/java/http/PostFileSample.java[Reporting
 a File as Measurement Points]
 
 == Related Information
