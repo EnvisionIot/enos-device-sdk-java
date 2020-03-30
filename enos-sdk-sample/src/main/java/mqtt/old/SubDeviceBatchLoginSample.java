@@ -11,15 +11,17 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRe
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import mqtt.old.helper.BaseConnectCallback;
+import mqtt.old.helper.Helper;
+
+import java.util.Random;
 
 @Slf4j
 public class SubDeviceBatchLoginSample {
 
     public static void main(String[] args) throws Exception {
-        String betaUrl = "tcp://beta-iot-as-mqtt-cn4.eniot.io:11883";
-
         MqttClient client = new MqttClient(new DefaultProfile(
-                new NormalDeviceLoginInput(betaUrl, "bChjZTxn", "GXJ0cVMMWv", "t9uKUFdLk2hcLHUyurzg")
+                new NormalDeviceLoginInput(
+                        Helper.SERVER_URL, "vOQSJ4dN", "mqtt_sample_gwgroup_gw01", "m90jgBApzE5mBBXnkFxG")
         ));
         client.getProfile().setAutoLoginSubDevice(false);
         client.connect(new BaseConnectCallback(client, "batch-login", true) {
@@ -39,9 +41,9 @@ public class SubDeviceBatchLoginSample {
         int mpn = 1;
 
         SubDeviceLoginBatchRequest request = SubDeviceLoginBatchRequest.builder()
-                .addSubDeviceInfo("69nJVYaU", "Nov14201954006AM", "VtCpz81UFOxMVRYP1A1s")
-                // "69nJVYaU" also mirrors whose devices are: Nov20201972358PM, Nov182019101752AM
-                .addSubDeviceInfo("69nJVYaU", "CqXniesegD", "fqF9Tvs3oL6S4h0ALUEb")
+                .addSubDeviceInfo("K9HMijjG", "mqtt_sample_gwgroup_dev01", "sGCCwSIcD1AJ5wa8OcPW")
+                // "mqtt_sample_gwgroup_dev02" has mirrors whose device keys are: gwgroup_mirror_dev01, gwgroup_mirror_dev02
+                .addSubDeviceInfo("K9HMijjG", "mqtt_sample_gwgroup_dev02", "DujdqFrTarWOOvHv22Yt")
                 .setClientId("GXJ0cVMMWv")
                 .build();
 
@@ -69,9 +71,9 @@ public class SubDeviceBatchLoginSample {
                                 .setProductKey(result.productKey)
                                 .setDeviceKey(result.deviceKey)
                                 .addMeasurePoints(ImmutableMap.of(
-                                        "datetime", "hello",
-                                        "int1", 100,
-                                        "float1", 88.88
+                                        "temp", new Random().nextDouble(),
+                                        "timestamp", System.currentTimeMillis(),
+                                        "value", new Random().nextInt(10000)
                                 ))
                                 .build();
 
