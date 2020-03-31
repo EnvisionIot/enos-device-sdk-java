@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.envisioniot</groupId>
         <artifactId>enos-iot-sdk-parent</artifactId>
-        <version>0.1.0</version>
+        <version>0.1.1</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -16,14 +16,6 @@
     <name>EnOS IoT SDK Samples</name>
     <inceptionYear>2018</inceptionYear>
     <url>https://github.com/EnvisionIot/enos-device-sdk-java</url>
-
-    <developers>
-        <developer>
-            <id>EnvisionIot</id>
-            <name>EnOS Core</name>
-            <email>sw.tc@envisioncn.com</email>
-        </developer>
-    </developers>
 
     <description>
     </description>
@@ -45,14 +37,29 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.envisioniot</groupId>
             <artifactId>enos-mqtt</artifactId>
-            <version>2.2.3-SNAPSHOT</version>
+            <version>2.2.5-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.envisioniot</groupId>
             <artifactId>enos-http</artifactId>
-            <version>0.1.1</version>
+            <version>0.1.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.7</version>
         </dependency>
     </dependencies>
 

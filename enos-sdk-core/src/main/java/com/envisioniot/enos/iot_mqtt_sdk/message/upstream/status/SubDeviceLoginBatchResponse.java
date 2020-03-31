@@ -20,8 +20,6 @@ import java.util.regex.Pattern;
 public class SubDeviceLoginBatchResponse extends BaseMqttResponse {
     private static final long serialVersionUID = -1L;
 
-    private static final int HORRIBLE_ERROR_CODE = 500;
-
     private static Pattern pattern = Pattern.compile(ArrivedTopicPattern.SUB_DEVICE_LOGIN_BATCH_REPLY);
 
     private List<LoginSuccessResult> successResults;

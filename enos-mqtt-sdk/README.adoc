@@ -21,10 +21,11 @@ https://maven.apache.org/install.html[here].
 
 === Installing EnOS Device SDK for Java (MQTT)
 
-Select one of the following ways to install the Java SDK for MQTT: * If
-your project is maven-based, add the dependency on the Java SDK to the
-main _pom.xml_ of your project. * Download the source code and build on
-your machine.
+Select one of the following ways to install the Java SDK for MQTT:
+
+- If your project is maven-based, add the dependency on the Java SDK to the
+main _pom.xml_ of your project. 
+- Download the source code and build on your machine.
 
 === Adding the Maven Dependency to Your Project
 
@@ -184,3 +185,4 @@ Under development
 == Release Notes
 
 * 2020/01/15 (2.2.2): Support reporting offline measurement points.
+* 2020/03/08 (2.2.3): Solve decoder loading trouble in all-in-one JAR application.

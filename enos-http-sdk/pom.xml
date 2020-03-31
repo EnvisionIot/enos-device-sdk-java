@@ -1,16 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.envisioniot</groupId>
         <artifactId>enos-iot-sdk-parent</artifactId>
-        <version>0.1.0</version>
+        <version>0.1.1</version>
         <relativePath>..</relativePath>
     </parent>
 
     <artifactId>enos-http</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.3-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
@@ -18,16 +18,9 @@
     <inceptionYear>2018</inceptionYear>
     <url>https://github.com/EnvisionIot/enos-device-sdk-java</url>
 
-    <developers>
-        <developer>
-            <id>EnvisionIot</id>
-            <name>EnOS Core</name>
-            <email>sw.tc@envisioncn.com</email>
-        </developer>
-    </developers>
-
     <description>
-	    0.1.0-SNAPSHOT initial commit
+        0.1.1 Initial Release
+        0.1.3 Refactored to share common codes with HTTP integration
     </description>
 
     <properties>
@@ -49,7 +42,7 @@
         <dependency>
             <groupId>com.envisioniot</groupId>
             <artifactId>enos-core</artifactId>
-            <version>0.1.1</version>
+            <version>0.1.3-SNAPSHOT</version>
         </dependency>
 
         <dependency>

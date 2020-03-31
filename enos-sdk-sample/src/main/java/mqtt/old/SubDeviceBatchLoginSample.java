@@ -9,22 +9,34 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostBa
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostBatchResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
 import com.google.common.collect.ImmutableMap;
+import lombok.extern.slf4j.Slf4j;
+import mqtt.old.helper.BaseConnectCallback;
 
-import java.util.Random;
-
+@Slf4j
 public class SubDeviceBatchLoginSample {
 
     public static void main(String[] args) throws Exception {
         String betaUrl = "tcp://beta-iot-as-mqtt-cn4.eniot.io:11883";
 
-        int batchCount = 1;
-        int mpn = 1;
-
         MqttClient client = new MqttClient(new DefaultProfile(
                 new NormalDeviceLoginInput(betaUrl, "bChjZTxn", "GXJ0cVMMWv", "t9uKUFdLk2hcLHUyurzg")
         ));
         client.getProfile().setAutoLoginSubDevice(false);
-        client.connect();
+        client.connect(new BaseConnectCallback(client, "batch-login", true) {
+            @Override
+            protected void onSuccess(MqttClient client) {
+                try {
+                    performTest(client);
+                } catch (Exception e) {
+                    log.error("un-expected error", e);
+                }
+            }
+        });
+    }
+
+    private static void performTest(MqttClient client) throws Exception {
+        int batchCount = 1;
+        int mpn = 1;
 
         SubDeviceLoginBatchRequest request = SubDeviceLoginBatchRequest.builder()
                 .addSubDeviceInfo("69nJVYaU", "Nov14201954006AM", "VtCpz81UFOxMVRYP1A1s")
@@ -36,22 +48,21 @@ public class SubDeviceBatchLoginSample {
         SubDeviceLoginBatchResponse response = client.publish(request);
 
         if (response.hasServerError()) {
+            log.error("format not correct: {}", response.getMessage());
             System.out.println("request format not correct: " + response.getMessage());
         } else if (response.isSuccess()) {
-            System.out.println("all sub-devices logined successfully");
-            System.out.println("logined devices: " + response.getSuccessResults());
+            log.info("all sub-devices logined successfully");
+            log.info("logined devices: {}", response.getSuccessResults());
         } else {
-            System.out.println("part of sub-devices failed: " + response.getMessage());
-            System.out.println("logined devices: " + response.getSuccessResults());
-            System.out.println("failed devices: " + response.getFailureResults());
+            log.info("part of sub-devices failed: {}", response.getMessage());
+            log.info("logined devices: {}", response.getSuccessResults());
+            log.info("failed devices: {}", response.getFailureResults());
         }
 
-        long start = System.currentTimeMillis();
         for (int i = 0; i < batchCount; ++i) {
             if (!response.getSuccessResults().isEmpty()) {
                 MeasurepointPostBatchRequest.Builder builder = MeasurepointPostBatchRequest.builder();
 
-                final Random rand = new Random();
                 for (int j = 0; j < mpn; ++j) {
                     for (SubDeviceLoginBatchResponse.LoginSuccessResult result : response.getSuccessResults()) {
                         MeasurepointPostRequest req = MeasurepointPostRequest.builder()
@@ -61,7 +72,7 @@ public class SubDeviceBatchLoginSample {
                                         "datetime", "hello",
                                         "int1", 100,
                                         "float1", 88.88
-                                        ))
+                                ))
                                 .build();
 
                         builder.addRequest(req);
@@ -70,19 +81,12 @@ public class SubDeviceBatchLoginSample {
 
                 MeasurepointPostBatchResponse rsp = client.publish(builder.build());
                 if (rsp.isSuccess()) {
-                    System.out.println("sent measurepoint batch request");
+                    log.info("sent measurepoint batch request");
                 } else {
-                    System.out.println("failed to measure point to sub-device: " + rsp.getMessage());
+                    log.info("failed to measure point to sub-device: " + rsp.getMessage());
                 }
             }
         }
-
-        long cost = System.currentTimeMillis() - start;
-        System.out.println("cost: " + cost + "ms");
-        System.out.println("please print any key to exit ...");
-        System.in.read();
-
-        client.close();
     }
 
 }

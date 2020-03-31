@@ -15,7 +15,6 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRe
 import com.google.common.collect.ImmutableMap;
 
 import mqtt.old.helper.BaseConnectCallback;
-import mqtt.old.helper.Helper;
 
 import static mqtt.old.helper.Helper.*;
 
@@ -23,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 /**
  * This sample shows how sub-devices login/logout and publish
@@ -32,9 +30,6 @@ import java.util.stream.Collectors;
  * @author jian.zhang4
  */
 public class MeasurepointPostBatchRequestSample {
-    //connect aVpQQTDp xD6pcvmzKI 0nwcesI7PCooHd14aVal
-
-    public static String SERVER_URL = "tcp://localhost:11883"; // localhost
     final static Random rand = new Random();
 
     public static void main(String[] args) throws InterruptedException {
@@ -98,11 +93,11 @@ public class MeasurepointPostBatchRequestSample {
         List<DeviceCredential> loginedSubDevices = new ArrayList<>();
         List<DeviceCredential> publishSubDevices = new ArrayList<>();
 
-        loginedSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
-        loginedSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV02_KEY, SUB_DEV02_SECRET));
+        loginedSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
+        loginedSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV02_KEY, SUB_DEV02_SECRET));
 
-        publishSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
-        publishSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV02_KEY, SUB_DEV02_SECRET));
+        publishSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
+        publishSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV02_KEY, SUB_DEV02_SECRET));
 
         Map validMeasurepoints = ImmutableMap.of("temp", rand.nextDouble(), "value", rand.nextDouble());
 
@@ -117,10 +112,10 @@ public class MeasurepointPostBatchRequestSample {
         List<DeviceCredential> loginedSubDevices = new ArrayList<>();
         List<DeviceCredential> publishSubDevices = new ArrayList<>();
 
-        loginedSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
+        loginedSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
 
-        publishSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
-        publishSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV02_KEY, SUB_DEV02_SECRET));
+        publishSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
+        publishSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV02_KEY, SUB_DEV02_SECRET));
 
         Map validMeasurepoints = ImmutableMap.of("temp", rand.nextDouble(), "value", rand.nextDouble());
 
@@ -135,11 +130,11 @@ public class MeasurepointPostBatchRequestSample {
         List<DeviceCredential> loginedSubDevices = new ArrayList<>();
         List<DeviceCredential> publishSubDevices = new ArrayList<>();
 
-        loginedSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
-        loginedSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV02_KEY, SUB_DEV02_SECRET));
+        loginedSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
+        loginedSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV02_KEY, SUB_DEV02_SECRET));
 
-        publishSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
-        publishSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV02_KEY, SUB_DEV02_SECRET));
+        publishSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
+        publishSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV02_KEY, SUB_DEV02_SECRET));
 
         Map validMeasurepoints = ImmutableMap.of("temp", rand.nextDouble(), "value", rand.nextDouble());
         Map invalidMeasurepoints = ImmutableMap.of("temptest", rand.nextDouble(), "valuetest", rand.nextDouble());
@@ -155,10 +150,10 @@ public class MeasurepointPostBatchRequestSample {
         List<DeviceCredential> loginedSubDevices = new ArrayList<>();
         List<DeviceCredential> publishSubDevices = new ArrayList<>();
 
-        loginedSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
+        loginedSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
 
-        publishSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
-        publishSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV02_KEY, SUB_DEV02_SECRET));
+        publishSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
+        publishSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV02_KEY, SUB_DEV02_SECRET));
 
         Map validMeasurepoints = ImmutableMap.of("temp", rand.nextDouble(), "value", rand.nextDouble());
         Map invalidMeasurepoints = ImmutableMap.of("temptest", rand.nextDouble(), "valuetest", rand.nextDouble());
@@ -174,10 +169,10 @@ public class MeasurepointPostBatchRequestSample {
         List<DeviceCredential> loginedSubDevices = new ArrayList<>();
         List<DeviceCredential> publishSubDevices = new ArrayList<>();
 
-        loginedSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
+        loginedSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
 
-        publishSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV02_KEY, SUB_DEV02_SECRET));
-        publishSubDevices.add(new DeviceCredential(PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
+        publishSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV02_KEY, SUB_DEV02_SECRET));
+        publishSubDevices.add(new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET));
 
         Map validMeasurepoints = ImmutableMap.of("temp", rand.nextDouble(), "value", rand.nextDouble());
         Map invalidMeasurepoints = ImmutableMap.of("temptest", rand.nextDouble(), "valuetest", rand.nextDouble());
@@ -201,7 +196,7 @@ public class MeasurepointPostBatchRequestSample {
                 }
                 logoutSubDevices(client, loginedSubDevices);
 
-                Helper.cleanConnection(client);
+                client.close();
 
             }
         });

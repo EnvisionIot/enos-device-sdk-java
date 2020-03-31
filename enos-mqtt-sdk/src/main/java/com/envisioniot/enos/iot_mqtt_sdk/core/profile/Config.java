@@ -8,43 +8,45 @@ import com.google.common.io.Files;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
+ * {
+ * //store properties by mqtt sdk
+ * //Thu Jan 10 14:53:58 CST 2019
+ * //serverUrl=tcp://alpha-k8s-cn4.eniot.io:11883
+ * //"assetId":"FgEWZ6Fz"
+ * "serverUrl":"ssl://10.27.21.6:18883",
+ * "productKey":"fKInRgVP",
+ * "productSecret":"c3PW03srd6c,
+ * "deviceKey":"zscai_test_activate",
+ * "deviceSecret":"DrihKncQARUwVXUvRH6k",
+ * "operationTimeout":60,
+ * "sslPassword":"",
+ * "maxInFlight":"10000",
+ * "sslAlgorithm":"SunX509",
+ * "connectionTimeout":30,
+ * "sslJksPath":"",
+ * "autoReconnect":true,
+ * "keepAlive":60,
+ * "subDevices":[
+ * {
+ * "productKey":"subProduct",
+ * "deviceKey":"subdevice",
+ * "deviceSecret":"xxx",
+ * "product":"secret"
+ * },
+ * {
+ * "productKey":"subProduct",
+ * "deviceKey":"subdevice",
+ * "deviceSecret":"xxx",
+ * "product":"secret"
+ * }
+ * ]
+ * }
  *
- {
- //store properties by mqtt sdk
- //Thu Jan 10 14:53:58 CST 2019
- //serverUrl=tcp://alpha-k8s-cn4.eniot.io:11883
- //"assetId":"FgEWZ6Fz"
- "serverUrl":"ssl://10.27.21.6:18883",
- "productKey":"fKInRgVP",
- "productSecret":"c3PW03srd6c,
- "deviceKey":"zscai_test_activate",
- "deviceSecret":"DrihKncQARUwVXUvRH6k",
- "operationTimeout":60,
- "sslPassword":"",
- "maxInFlight":"10000",
- "sslAlgorithm":"SunX509",
- "connectionTimeout":30,
- "sslJksPath":"",
- "autoReconnect":true,
- "keepAlive":60,
- "subDevices":[
- {
- "productKey":"subProduct",
- "deviceKey":"subdevice",
- "deviceSecret":"xxx",
- "product":"secret"
- },
- {
- "productKey":"subProduct",
- "deviceKey":"subdevice",
- "deviceSecret":"xxx",
- "product":"secret"
- }
- ]
- }
  * @author zhensheng.cai
  * @date 2019/1/14.
  */
@@ -71,6 +73,7 @@ public class Config {
     private String sslAlgorithm = "SunX509";
     private String sslJksPath = "";
     private boolean isEccConnect = false;
+    private boolean hostnameVerifyEnabled = false;
 
     // Use String for easy serialization/de-serialization
     private String signMethodName = SignUtil.DEFAULT_SIGN_METHOD.getName();
@@ -236,13 +239,22 @@ public class Config {
         return this;
     }
 
-    public Config setEccConnect(boolean isEccConnect){
+    public Config setEccConnect(boolean isEccConnect) {
         this.isEccConnect = isEccConnect;
         return this;
     }
 
-    public Boolean isEccConnect(){
+    public Boolean isEccConnect() {
         return this.isEccConnect;
+    }
+
+    public Boolean isHostnameVerifyEnabled() {
+        return this.hostnameVerifyEnabled;
+    }
+
+    public Config setHostnameVerifyEnabled(boolean hostnameVerifyEnabled) {
+        this.hostnameVerifyEnabled = hostnameVerifyEnabled;
+        return this;
     }
 
     public void store(String path, String comments) throws IOException {

@@ -1,8 +1,9 @@
 package mqtt;
 
-import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
+import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultProfile;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author qiwei.tan
@@ -12,6 +13,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultProfile;
  * @Description device ssl connect example
  * @date 2020/2/11 10:21
  */
+@Slf4j
 public class BiDirectionalAuthenticate {
     /**
      * Gateway credentials, which can be obtained from Device Details page in EnOS Console
@@ -40,28 +42,31 @@ public class BiDirectionalAuthenticate {
                 productKey,
                 deviceKey,
                 deviceSecret);
-        defaultProfile.setConnectionTimeout(60).setKeepAlive(180).setAutoReconnect(false).setSSLSecured(true)
+        defaultProfile
+                .setConnectionTimeout(60)
+                .setKeepAlive(180)
+                .setAutoReconnect(false)
+                .setSSLSecured(true)
                 .setSSLJksPath(jksPath, jksPassword);
         
         // if use ECC certificate 
         // defaultProfile.setEccConnect(true);
 
-        MqttClient mqttClient = new MqttClient(defaultProfile);
-        mqttClient.connect(new IConnectCallback() {
-
+        final MqttClient mqttClient = new MqttClient(defaultProfile);
+        mqttClient.connect(new ConnCallback() {
             @Override
-            public void onConnectSuccess() {
-                System.out.println("connect success");
+            public void connectComplete(boolean reconnect) {
+                log.info("connectComplete");
             }
 
             @Override
-            public void onConnectLost() {
-                System.out.println("onConnectLost!");
+            public void connectLost(Throwable cause) {
+                log.error("connectLost", cause);
             }
 
             @Override
-            public void onConnectFailed(int i) {
-                System.out.println("onConnectFailed : " + i);
+            public void connectFailed(Throwable cause) {
+                log.error("connectFailed", cause);
             }
         });
     }
