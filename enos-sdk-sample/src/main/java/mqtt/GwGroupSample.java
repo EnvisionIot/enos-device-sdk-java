@@ -81,7 +81,7 @@ public class GwGroupSample {
             assertFalse(logoutSubDevice(gw01Client));
 
             assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw02Client));
-            assertTrue(logoutSubDevice(gw01Client));
+            assertTrue(logoutSubDevice(gw02Client));
         } finally {
             gw01Client.close();
             gw02Client.close();
