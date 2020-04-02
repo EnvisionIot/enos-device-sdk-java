@@ -9,6 +9,9 @@
 
 *Java SE 8* is required to use the SDK and run the samples.
 
+如果需要使用ECC证书连接Enos平台，需要使用Java SE 8u161以后版本，或安装Java Cryptography Extension。
+Java Cryptography Extension的下载地址为：https://www.oracle.com/java/technologies/javase-jce-all-downloads.html[Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files]
+
 ==== Optional: Installing Maven
 
 The Java SDK for MQTT is maven-based. If you use Maven 3, you just need
@@ -152,22 +155,31 @@ client.disconnect();
 
 == Sample Code
 
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Establishing
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Establishing
 Connection with EnOS Cloud]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
+* link:/enos-sdk-sample/src/main/java/mqtt/BiDirectionalAuthenticate.java[Establishing Bi-directional Authenticated Connection with EnOS Cloud]
+
+在使用双向认证安全连接时，SDK默认不开启对于服务器证书的域名校验。用户可以根据需要决定是否开启对于服务器证书的域名校验。
+需要注意的是，当SDK运行于Java SE 8u51至8u60版本时，如果开启了服务器证书的域名校验，会由于如下异常而无法连接EnOS IoT Hub。
+----
+java.security.cert.CertificateException: No subject alternative names matching IP address x.x.x.x found
+----
+针对这个问题，可以通过JVM参数-Djdk.tls.trustNameService=true解决。
+
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
 Tags]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
 Attributes]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Reporting
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Reporting
 Measurement Points]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Reporting
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Reporting
 Events]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Receiving
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Receiving
 Commands from Cloud]
-* link:enos-sdk-sample/src/main/java/mqtt/PassingThroughInformation.java[Passing
+* link:/enos-sdk-sample/src/main/java/mqtt/PassingThroughInformation.java[Passing
 Through Device Information or Receiving Passed-through Information from
 Cloud]
-* link:enos-sdk-sample/src/main/java/mqtt/ManageSubDevices.java[Managing
+* link:/enos-sdk-sample/src/main/java/mqtt/ManageSubDevices.java[Managing
 Sub-devices]
 
 == Related Information

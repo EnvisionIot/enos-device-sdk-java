@@ -22,6 +22,10 @@ public class BiDirectionalAuthenticate {
     private static String deviceKey = "deviceKey";
     private static String deviceSecret = "deviceSecret";
 
+    // The JKS needs to store the device private key, the device certificate 
+    // applied from the EnOS platform, and the EnOS platform CA certificate
+    // To learn how to acquire these certificates, see 
+    // https://support-cn5.envisioniot.com/docs/device-connection/en/latest/learn/deviceconnection_authentication.html#certificate-based-authentication
     private static String jksPath = "jskPath";
     private static String jksPassword = "jskPassword";
 
