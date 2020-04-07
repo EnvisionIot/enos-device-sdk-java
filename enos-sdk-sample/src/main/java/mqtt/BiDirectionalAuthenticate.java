@@ -52,9 +52,15 @@ public class BiDirectionalAuthenticate {
                 .setAutoReconnect(false)
                 .setSSLSecured(true)
                 .setSSLJksPath(jksPath, jksPassword);
-        
+
         // if use ECC certificate 
         // defaultProfile.setEccConnect(true);
+
+        /*
+         * If bi-directional authentication is enabled, the domain name of the server certificate is not verified by default.
+         * You can manually enable the verification as required.
+         */
+        // defaultProfile.setHostnameVerifyEnabled(true);
 
         final MqttClient mqttClient = new MqttClient(defaultProfile);
         mqttClient.connect(new ConnCallback() {
