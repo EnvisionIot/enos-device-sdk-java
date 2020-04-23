@@ -21,10 +21,12 @@ https://maven.apache.org/install.html[here].
 
 === Installing EnOS Device SDK for Java (HTTP)
 
-Select one of the following ways to install the Java SDK for HTTP: * If
-your project is maven-based, add the dependency on the Java SDK to the
-main _pom.xml_ of your project. * Download the source code and build on
-your machine.
+Select one of the following ways to install the Java SDK for HTTP: 
+
+- If your project is maven-based, add the dependency on the Java SDK to the
+main _pom.xml_ of your project. 
+
+- Download the source code and build on your machine.
 
 === Adding the Maven Dependency to Your Project
 
