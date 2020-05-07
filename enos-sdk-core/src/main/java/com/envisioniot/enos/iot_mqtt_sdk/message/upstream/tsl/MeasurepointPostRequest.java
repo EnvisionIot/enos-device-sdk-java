@@ -180,7 +180,7 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
         @SuppressWarnings("unchecked")
         public MeasurepointPostRequest build() {
             Map<String, Object> measurepoints = (Map<String, Object>) params.get("measurepoints");
-            // 统一测点文件的处理，替换为local://xxx
+            // Unified processing of measuring point files, replace with local: // xxx
             fileCheck(measurepoints);
             MeasurepointPostRequest request = super.build();
             request.setFiles(this.files);
