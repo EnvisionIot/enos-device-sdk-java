@@ -1,5 +1,6 @@
 package mqtt.old;
 
+import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMessageHandler;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.device.SubDeviceDeleteCommand;
@@ -19,6 +20,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogout
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogoutResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostResponse;
+import lombok.extern.slf4j.Slf4j;
 import mqtt.old.helper.Helper;
 
 import java.io.BufferedReader;
@@ -33,6 +35,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author jian.zhang4
  */
+@Slf4j
 public class EmulatingDeviceSample {
 
     private static final String DEFAULT_SERVER_URL = Helper.SERVER_URL;
@@ -86,8 +89,23 @@ public class EmulatingDeviceSample {
 //                                    .setSSLSecured(true)
 //                                    .setSSLJksPath("C:\\Users\\jian.zhang4\\device-auth\\beta\\mqtt-sample-dev01\\mqtt-sample-dev01.jks", "123456")
                             ;
-                            client.connect();
-                            System.out.println("successfully connected to broker");
+                            client.connect(new ConnCallback() {
+
+                                @Override
+                                public void connectComplete(boolean reconnect) {
+                                    log.info("connectComplete: reconnect=" + reconnect);
+                                }
+
+                                @Override
+                                public void connectLost(Throwable cause) {
+                                    log.info("connectComplete: connectLost, " + cause.getMessage());
+                                }
+
+                                @Override
+                                public void connectFailed(Throwable cause) {
+                                    log.info("connectComplete: connectFailed");
+                                }
+                            });
                         } catch (Exception e) {
                             client.close();
                             client = null;

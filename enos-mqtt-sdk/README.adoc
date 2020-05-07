@@ -9,6 +9,18 @@
 
 *Java SE 8* is required to use the SDK and run the samples.
 
+If you are using an ECC certificate to connect to EnOS, one of the following is required:
+
+- Java SE 8u161 or later versions.
+- Java Cryptography Extension. To download, go to https://www.oracle.com/java/technologies/javase-jce-all-downloads.html[Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files]
+
+*Note*:
+For the SDK running on any Java SE version between Java SE 8u51 or 8u60 (both ends inclusive), if you enable the verification of the domain name of the server certificate, the device will not be able to connect to EnOS due to the following exception:
+----
+java.security.cert.CertificateException: No subject alternative names matching IP address x.x.x.x found
+----
+To resolve this exceptioin, set -Djdk.tls.trustNameService=true.
+
 ==== Optional: Installing Maven
 
 The Java SDK for MQTT is maven-based. If you use Maven 3, you just need
@@ -152,22 +164,23 @@ client.disconnect();
 
 == Sample Code
 
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Establishing
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Establishing
 Connection with EnOS Cloud]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
+* link:/enos-sdk-sample/src/main/java/mqtt/BiDirectionalAuthenticate.java[Establishing Bi-directional Authenticated Connection with EnOS Cloud]
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
 Tags]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
 Attributes]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Reporting
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Reporting
 Measurement Points]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Reporting
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Reporting
 Events]
-* link:enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Receiving
+* link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Receiving
 Commands from Cloud]
-* link:enos-sdk-sample/src/main/java/mqtt/PassingThroughInformation.java[Passing
+* link:/enos-sdk-sample/src/main/java/mqtt/PassingThroughInformation.java[Passing
 Through Device Information or Receiving Passed-through Information from
 Cloud]
-* link:enos-sdk-sample/src/main/java/mqtt/ManageSubDevices.java[Managing
+* link:/enos-sdk-sample/src/main/java/mqtt/ManageSubDevices.java[Managing
 Sub-devices]
 
 == Related Information

@@ -22,6 +22,10 @@ public class BiDirectionalAuthenticate {
     private static String deviceKey = "deviceKey";
     private static String deviceSecret = "deviceSecret";
 
+    // The JKS needs to store the device private key, the device certificate 
+    // applied from the EnOS platform, and the EnOS platform CA certificate
+    // To learn how to acquire these certificates, see 
+    // https://support-cn5.envisioniot.com/docs/device-connection/en/latest/learn/deviceconnection_authentication.html#certificate-based-authentication
     private static String jksPath = "jskPath";
     private static String jksPassword = "jskPassword";
 
@@ -48,9 +52,15 @@ public class BiDirectionalAuthenticate {
                 .setAutoReconnect(false)
                 .setSSLSecured(true)
                 .setSSLJksPath(jksPath, jksPassword);
-        
+
         // if use ECC certificate 
         // defaultProfile.setEccConnect(true);
+
+        /*
+         * If bi-directional authentication is enabled, the domain name of the server certificate is not verified by default.
+         * You can manually enable the verification as required.
+         */
+        // defaultProfile.setHostnameVerifyEnabled(true);
 
         final MqttClient mqttClient = new MqttClient(defaultProfile);
         mqttClient.connect(new ConnCallback() {

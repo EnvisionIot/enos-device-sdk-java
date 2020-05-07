@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>enos-http</artifactId>
-    <version>0.1.3-SNAPSHOT</version>
+    <version>0.1.4-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
@@ -21,6 +21,7 @@
     <description>
         0.1.1 Initial Release
         0.1.3 Refactored to share common codes with HTTP integration
+        0.1.4 support to download or delete file
     </description>
 
     <properties>
@@ -42,7 +43,7 @@
         <dependency>
             <groupId>com.envisioniot</groupId>
             <artifactId>enos-core</artifactId>
-            <version>0.1.3-SNAPSHOT</version>
+            <version>0.1.4-SNAPSHOT</version>
         </dependency>
 
         <dependency>
