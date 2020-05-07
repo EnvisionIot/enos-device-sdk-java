@@ -1,9 +1,6 @@
 package mqtt.old;
 
-import java.util.List;
-import java.util.Random;
-
-import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
+import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMessageHandler;
@@ -23,8 +20,10 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.topo.*;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.*;
 import com.envisioniot.enos.iot_mqtt_sdk.util.Pair;
 import com.envisioniot.enos.iot_mqtt_sdk.util.StringI18n;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+
+import java.util.List;
+import java.util.Random;
 
 /**
  * @author zhensheng.cai
@@ -133,23 +132,21 @@ public class SimpleSendReceive {
 
 //            client = new MqttClient(local, parserProductKey, parserDevicekey, parserDeviceSecret); // raw data device
         client.getProfile().setConnectionTimeout(60).setAutoReconnect(false);
-        client.connect(new IConnectCallback() {
+        client.connect(new ConnCallback() {
             @Override
-            public void onConnectSuccess() {
-//                subDeviceLogin();
+            public void connectComplete(boolean reconnect) {
                 System.out.println("connect success");
             }
 
             @Override
-            public void onConnectLost() {
-                System.out.println("onConnectLost");
+            public void connectLost(Throwable cause) {
+                System.out.println("connectLost: " + cause);
             }
 
             @Override
-            public void onConnectFailed(int reasonCode) {
-                System.out.println("onConnectFailed : " + reasonCode);
+            public void connectFailed(Throwable cause) {
+                System.out.println("connectFailed: " + cause);
             }
-
         });
         System.out.println("connect result :" + client.isConnected());
     }
@@ -158,22 +155,21 @@ public class SimpleSendReceive {
         System.out.println("start connect with callback ... ");
         client = new MqttClient(betaSSL, productKey, deviceKey, deviceSecret);
         client.getProfile().setConnectionTimeout(10).setSSLSecured(true);
-        client.connect(new IConnectCallback() {
+        client.connect(new ConnCallback() {
             @Override
-            public void onConnectSuccess() {
+            public void connectComplete(boolean reconnect) {
                 System.out.println("connect success");
             }
 
             @Override
-            public void onConnectLost() {
-                System.out.println("onConnectLost");
+            public void connectLost(Throwable cause) {
+                System.out.println("connectLost: " + cause);
             }
 
             @Override
-            public void onConnectFailed(int reasonCode) {
-                System.out.println("onConnectFailed : " + reasonCode);
+            public void connectFailed(Throwable cause) {
+                System.out.println("connectFailed: " + cause);
             }
-
         });
         System.out.println("connect result :" + client.isConnected());
     }

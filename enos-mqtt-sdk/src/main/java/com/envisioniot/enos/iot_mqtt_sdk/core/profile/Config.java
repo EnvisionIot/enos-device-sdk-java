@@ -72,6 +72,7 @@ public class Config {
     private String sslPassword = "";
     private String sslAlgorithm = "SunX509";
     private String sslJksPath = "";
+    private boolean isEccConnect = false;
     private boolean hostnameVerifyEnabled = false;
 
     // Use String for easy serialization/de-serialization
@@ -236,6 +237,15 @@ public class Config {
     public Config setSignMethod(SignMethod signMethod) {
         this.signMethodName = signMethod.getName();
         return this;
+    }
+
+    public Config setEccConnect(boolean isEccConnect) {
+        this.isEccConnect = isEccConnect;
+        return this;
+    }
+
+    public Boolean isEccConnect() {
+        return this.isEccConnect;
     }
 
     public Boolean isHostnameVerifyEnabled() {

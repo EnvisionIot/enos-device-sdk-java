@@ -2,6 +2,10 @@ package com.envisioniot.enos.iot_http_sdk;
 
 import com.envisioniot.enos.iot_http_sdk.auth.AuthRequestBody;
 import com.envisioniot.enos.iot_http_sdk.auth.AuthResponseBody;
+import com.envisioniot.enos.iot_http_sdk.file.FileCategory;
+import com.envisioniot.enos.iot_http_sdk.file.FileDeleteResponse;
+import com.envisioniot.enos.iot_http_sdk.file.FileFormData;
+import com.envisioniot.enos.iot_http_sdk.file.IFileCallback;
 import com.envisioniot.enos.iot_http_sdk.progress.IProgressListener;
 import com.envisioniot.enos.iot_http_sdk.progress.ProgressRequestWrapper;
 import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
@@ -13,6 +17,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.ModelUpRawRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.UploadFileInfo;
+import com.envisioniot.enos.iot_mqtt_sdk.util.GsonUtil;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -26,8 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.SocketException;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,6 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.CLIENT_ERROR;
 import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.SOCKET_ERROR;
 import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.UNSUCCESSFUL_AUTH;
+import static com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.FormDataConstants.ENOS_MESSAGE;
 import static com.google.common.net.MediaType.JSON_UTF_8;
 import static com.google.common.net.MediaType.OCTET_STREAM;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -52,10 +58,16 @@ public class HttpConnection
 {
     public static final String VERSION = "1.1";
 
+    public static final String DOWNLOAD_PATH_FORMAT = "/sys/%s/%s/file/download";
+    public static final String DELETE_PATH_FORMAT = "/sys/%s/%s/file/delete";
+
+    public static final String MEDIA_TYPE_JSON_UTF_8 = JSON_UTF_8.toString();
+    public static final String MEDIA_TYPE_OCTET_STREAM = OCTET_STREAM.toString();
+
     /**
      * Builder for http connection. A customized OkHttpClient can be provided, to
      * define specific connection pool, proxy etc. Find more at
-     * {@link #OkHttpClient}
+     * {@link #okHttpClient}
      * 
      * @author shenjieyuan
      */
@@ -107,7 +119,7 @@ public class HttpConnection
                     instance.auth();
                 } catch (EnvisionException e)
                 {
-                    // do nothing, already handled
+                     // do nothing, already handled
                 }
             });
 
@@ -164,8 +176,6 @@ public class HttpConnection
                 SignMethod.SHA256);
     }
 
-    static final String MEDIA_TYPE_JSON_UTF_8 = JSON_UTF_8.toString();
-    static final String MEDIA_TYPE_OCTET_STREAM = OCTET_STREAM.toString();
 
     /**
      * Perform device login request
@@ -260,6 +270,7 @@ public class HttpConnection
      */
     private void fillRequest(BaseMqttRequest<?> request)
     {
+        // generate a message id is not generated yet
         if (Strings.isNullOrEmpty(request.getMessageId()))
         {
             request.setMessageId(String.valueOf(requestId.incrementAndGet()));
@@ -268,10 +279,21 @@ public class HttpConnection
         // Also populate request version for IMqttRequest
         request.setVersion(VERSION);
 
+        // use credential pk / dk as request pk / dk
         if (Strings.isNullOrEmpty(request.getProductKey()) && Strings.isNullOrEmpty(request.getDeviceKey()))
         {
             request.setProductKey(((StaticDeviceCredential) credential).getProductKey());
             request.setDeviceKey(((StaticDeviceCredential) credential).getDeviceKey());
+        }
+        
+        // fill pk / dk in upload files
+        if (request.getFiles() != null)
+        {
+            request.getFiles().stream()
+            .forEach(fileInfo -> {
+                fileInfo.setProductKey(((StaticDeviceCredential) credential).getProductKey());
+                fileInfo.setDeviceKey(((StaticDeviceCredential) credential).getDeviceKey());
+            });
         }
     }
 
@@ -395,8 +417,8 @@ public class HttpConnection
     }
     
     
-    private <T extends BaseMqttResponse> Call generateMultipartPublishCall(BaseMqttRequest<T> request,
-            List<UploadFileInfo> files, IProgressListener progressListener)
+    private <T extends BaseMqttResponse> Call generateMultipartPublishCall(
+            BaseMqttRequest<T> request, IProgressListener progressListener)
     throws EnvisionException, IOException
     {
         checkAuth();
@@ -407,9 +429,9 @@ public class HttpConnection
         // Prepare a Multipart request message
         MultipartBody.Builder builder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("enos-message", new String(request.encode(), UTF_8));
+                .addFormDataPart(ENOS_MESSAGE, new String(request.encode(), UTF_8));
         
-        for (UploadFileInfo uploadFile: files)
+        for (UploadFileInfo uploadFile: request.getFiles())
         {
             builder.addPart(FileFormData.createFormData(uploadFile));
         }
@@ -429,8 +451,7 @@ public class HttpConnection
                 .post(body)
                 .build();
 
-        Call call = okHttpClient.newCall(httpRequest);
-        return call;
+        return okHttpClient.newCall(httpRequest);
     }
     
     /**
@@ -447,13 +468,188 @@ public class HttpConnection
         if (request.getFiles() != null && !request.getFiles().isEmpty())
         {
             //Request including file points
-            return generateMultipartPublishCall(request, request.getFiles(), progressListener);
+            return generateMultipartPublishCall(request, progressListener);
         }
         else
         {
             //Request without file points
             return generatePlainPublishCall(request);
         }
+    }
+
+    /**
+     * download file of specific fileUri and category
+     * @param fileUri
+     * @param category specify feature or ota file
+     * @return
+     * @throws EnvisionException
+     */
+    public InputStream downloadFile(String fileUri, FileCategory category) throws EnvisionException {
+        Call call = generateDownloadCall(fileUri, category);
+
+        Response httpResponse;
+        try {
+            httpResponse = call.execute();
+
+            if (!httpResponse.isSuccessful()) {
+                throw new EnvisionException(httpResponse.code(), httpResponse.message());
+            }
+
+            try {
+                Preconditions.checkNotNull(httpResponse);
+                Preconditions.checkNotNull(httpResponse.body());
+
+                return httpResponse.body().byteStream();
+            } catch (Exception e) {
+                log.info("failed to get response: " + httpResponse, e);
+                throw new EnvisionException(CLIENT_ERROR);
+            }
+        } catch (SocketException e)
+        {
+            log.info("failed to execute request due to socket error {}", e.getMessage());
+            throw new EnvisionException(SOCKET_ERROR, e.getMessage());
+        } catch (EnvisionException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("failed to execute request", e);
+            throw new EnvisionException(CLIENT_ERROR);
+        }
+    }
+
+    public void downloadFileAsync(String fileUri, FileCategory category, IFileCallback callback) throws EnvisionException {
+        Call call = generateDownloadCall(fileUri, category);
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onFailure(e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    callback.onFailure(new EnvisionException(response.code(), response.message()));
+                }
+
+                try {
+                    Preconditions.checkNotNull(response);
+                    Preconditions.checkNotNull(response.body());
+                    callback.onResponse(response.body().byteStream());
+                } catch (Exception e) {
+                    log.info("failed to get response: " + response, e);
+                    callback.onFailure(new EnvisionException(CLIENT_ERROR));
+                }
+            }
+        });
+    }
+
+    /**
+     * delete file of specific fileUri
+     * @param fileUri
+     * @return FileDeleteResponse
+     * @throws EnvisionException
+     */
+    public FileDeleteResponse deleteFile(String fileUri) throws EnvisionException {
+        Call call = generateDeleteCall(fileUri);
+
+        Response httpResponse;
+        try {
+            httpResponse = call.execute();
+            if (!httpResponse.isSuccessful()) {
+                throw new EnvisionException(httpResponse.code(), httpResponse.message());
+            }
+
+            try {
+                Preconditions.checkNotNull(httpResponse);
+                Preconditions.checkNotNull(httpResponse.body());
+                byte[] payload = httpResponse.body().bytes();
+                String msg = new String(payload, UTF_8);
+                return GsonUtil.fromJson(msg, FileDeleteResponse.class);
+            } catch (Exception e) {
+                log.info("failed to decode response: " + httpResponse, e);
+                throw new EnvisionException(CLIENT_ERROR);
+            }
+        } catch (SocketException e) {
+            log.info("failed to execute request due to socket error {}", e.getMessage());
+            throw new EnvisionException(SOCKET_ERROR, e.getMessage());
+        } catch (EnvisionException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("failed to execute request", e);
+            throw new EnvisionException(CLIENT_ERROR);
+        }
+    }
+
+    public void deleteFileAsync(String fileUri, IResponseCallback<FileDeleteResponse> callback) throws EnvisionException {
+        Call call = generateDeleteCall(fileUri);
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onFailure(e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                if (!response.isSuccessful()) {
+                    callback.onFailure(new EnvisionException(response.code(), response.message()));
+                }
+                try
+                {
+                    Preconditions.checkNotNull(response);
+                    Preconditions.checkNotNull(response.body());
+                    byte[] payload = response.body().bytes();
+                    String msg = new String(payload, UTF_8);
+                    callback.onResponse(GsonUtil.fromJson(msg, FileDeleteResponse.class));
+                } catch (Exception e)
+                {
+                    log.info("failed to decode response: " + response, e);
+                    callback.onFailure(new EnvisionException(CLIENT_ERROR));
+                }
+            }
+        });
+
+    }
+
+    private Call generateDownloadCall(String fileUri, FileCategory category) throws EnvisionException {
+        checkAuth();
+
+        StaticDeviceCredential staticDeviceCredential = (StaticDeviceCredential) credential;
+
+        StringBuilder uriBuilder = new StringBuilder()
+                .append(brokerUrl)
+                .append("/multipart")
+                .append(String.format(DOWNLOAD_PATH_FORMAT, staticDeviceCredential.getProductKey(),staticDeviceCredential.getDeviceKey()))
+                .append("?sessionId=").append(sessionId)
+                .append("&fileUri=").append(fileUri)
+                .append("&category=").append(category.getName());
+
+        Request httpRequest = new Request.Builder()
+                .url(uriBuilder.toString())
+                .get()
+                .build();
+
+        return okHttpClient.newCall(httpRequest);
+    }
+
+    private Call generateDeleteCall(String fileUri) throws EnvisionException {
+        checkAuth();
+
+        StaticDeviceCredential staticDeviceCredential = (StaticDeviceCredential) credential;
+
+        StringBuilder uriBuilder = new StringBuilder()
+                .append(brokerUrl)
+                .append("/multipart")
+                .append(String.format(DELETE_PATH_FORMAT, staticDeviceCredential.getProductKey(), staticDeviceCredential.getDeviceKey()))
+                .append("?sessionId=").append(sessionId)
+                .append("&fileUri=").append(fileUri);
+
+        Request httpRequest = new Request.Builder()
+                .url(uriBuilder.toString())
+                .post(RequestBody.create(null, ""))
+                .build();
+
+        return okHttpClient.newCall(httpRequest);
     }
 
     /**
