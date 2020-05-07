@@ -18,7 +18,10 @@
     <inceptionYear>2018</inceptionYear>
     <url>https://github.com/EnvisionIot/enos-device-sdk-java</url>
 
-    <description>
+    <description>EnOS Device SDK For Java (MQTT)</description>
+    
+    <!-- Version History -->
+    <!-- 
         0.0.3 remove command DeleteDeviceCommand DisableDeviceCommand
         use these command instead: SubDeviceDelete, SubDeviceDisable SubDeviceEnable commands
         remove RrpcCommand, the ServiceInvocationCommand handle the sync service as well
@@ -40,7 +43,7 @@
         2.2.3 solve decoder initialization defect in SpringBoot application, solve the problem of checking sans by default due to paho upgrade
         2.2.5 add ecc support to connect mqtt-broker
         2.2.6 refine connection state management and avoid duplicate re-connections in extreme case
-    </description>
+    -->
 
     <properties>
         <!-- Build args -->
@@ -61,7 +64,7 @@
         <dependency>
             <groupId>com.envisioniot</groupId>
             <artifactId>enos-core</artifactId>
-            <version>0.1.2</version>
+            <version>0.1.4</version>
         </dependency>
 
         <dependency>

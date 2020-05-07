@@ -3,16 +3,10 @@ package http;
 import com.envisioniot.enos.iot_http_sdk.HttpConnection;
 import com.envisioniot.enos.iot_http_sdk.SessionConfiguration;
 import com.envisioniot.enos.iot_http_sdk.StaticDeviceCredential;
-import com.envisioniot.enos.iot_http_sdk.file.FileCategory;
 import com.envisioniot.enos.iot_http_sdk.file.FileDeleteResponse;
-import com.envisioniot.enos.iot_http_sdk.file.IFileCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.google.gson.GsonBuilder;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * @author :charlescai
