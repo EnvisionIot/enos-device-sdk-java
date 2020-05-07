@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>enos-http</artifactId>
-    <version>0.1.2</version>
+    <version>0.1.4</version>
 
     <packaging>jar</packaging>
 
@@ -18,9 +18,13 @@
     <inceptionYear>2018</inceptionYear>
     <url>https://github.com/EnvisionIot/enos-device-sdk-java</url>
 
-    <description>
+    <description>EnOS Device SDK For Java (HTTP)</description>
+    <!-- Version History -->
+    <!-- 
         0.1.1 Initial Release
-    </description>
+        0.1.3 Refactored to share common codes with HTTP integration
+        0.1.4 support to download or delete file
+    -->
 
     <properties>
         <!-- Build args -->
@@ -41,7 +45,7 @@
         <dependency>
             <groupId>com.envisioniot</groupId>
             <artifactId>enos-core</artifactId>
-            <version>0.1.2</version>
+            <version>0.1.4</version>
         </dependency>
 
         <dependency>

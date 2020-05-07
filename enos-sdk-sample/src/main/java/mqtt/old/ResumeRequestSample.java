@@ -12,6 +12,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.resume.MeasurepointRes
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginResponse;
 import com.google.common.collect.ImmutableMap;
+import mqtt.old.helper.Helper;
 
 import java.util.Random;
 
@@ -44,9 +45,9 @@ public class ResumeRequestSample {
         final Random rand = new Random();
 
         MeasurepointResumeBatchRequest request = MeasurepointResumeBatchRequest.builder()
-                .addRequest(buildRequest(subDev, "INV.GenActivePW"))
+                .addRequest(buildRequest(subDev, "value"))
                 .addRequest(buildRequest(subDev, "dont.exist.name"))
-                .addRequest(buildRequest(subDev, "INV.GenActivePW"))
+                .addRequest(buildRequest(subDev, "value"))
                 .setSkipInvalidMeasurepoints(true)
                 .build();
 
@@ -63,16 +64,14 @@ public class ResumeRequestSample {
     }
 
     public static void main(String[] args) throws Exception {
-        String betaUrl = "tcp://beta-iot-as-mqtt-cn4.eniot.io:11883";
-
-        MqttClient client = new MqttClient(new DefaultProfile(
-                new NormalDeviceLoginInput(betaUrl, "eFndiuC6", "qr5Z3FLTja", "QTlLCYiL3hYHZlzrEV1D")
+        MqttClient client = new MqttClient(new DefaultProfile(new NormalDeviceLoginInput(
+                Helper.SERVER_URL, Helper.GW_PRODUCT_KEY, Helper.GW_DEV_KEY, Helper.GW_DEV_SECRET)
         ));
         client.getProfile().setAutoReconnect(false);
         client.connect();
 
         try {
-            DeviceCredential subDev = new DeviceCredential("qym91PSQ", null, "8Hxe27VUma", "T6sPKpZEBFRlok7ADAqy");
+            DeviceCredential subDev = new DeviceCredential(Helper.DEV_PRODUCT_KEY, null, Helper.SUB_DEV01_KEY, Helper.SUB_DEV01_SECRET);
 
             SubDeviceLoginRequest request = SubDeviceLoginRequest.builder().setSubDeviceInfo(subDev).build();
             SubDeviceLoginResponse response = client.publish(request);

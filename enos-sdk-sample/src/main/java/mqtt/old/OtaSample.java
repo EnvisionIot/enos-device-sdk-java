@@ -1,8 +1,6 @@
 package mqtt.old;
 
-import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
-import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMessageHandler;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttDeliveryMessage;
 import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultProfile;
@@ -116,25 +114,9 @@ public class OtaSample {
         return response.getFirmwareList();
     }
 
-    private static void initWithCallback(MqttClient client) {
+    private static void initWithCallback(MqttClient client) throws Exception {
         System.out.println("start connect with callback ... ");
-        client.connect(new IConnectCallback() {
-            @Override
-            public void onConnectSuccess() {
-                System.out.println("connect success");
-            }
-
-            @Override
-            public void onConnectLost() {
-                System.out.println("onConnectLost");
-            }
-
-            @Override
-            public void onConnectFailed(int reasonCode) {
-                System.out.println("onConnectFailed : " + reasonCode);
-            }
-
-        });
+        client.connect();
     }
 }
 

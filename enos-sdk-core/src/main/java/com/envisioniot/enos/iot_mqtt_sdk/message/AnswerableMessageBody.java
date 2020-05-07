@@ -28,7 +28,6 @@ public class AnswerableMessageBody extends BaseMessageBody implements Serializab
     private String version;
     private ExactValue params;
 
-
     public byte[] encode() {
         return GsonUtil.toJson(getJsonPayload()).getBytes();
     }

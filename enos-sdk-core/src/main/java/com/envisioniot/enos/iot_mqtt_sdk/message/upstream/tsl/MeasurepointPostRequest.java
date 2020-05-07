@@ -6,18 +6,20 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.MethodConstant
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.util.FileUtil;
 import com.google.common.collect.Maps;
-
-
-import static com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.FeatureType.MEASUREPOINT;
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
+import com.google.common.io.Files;
+import org.apache.commons.beanutils.BeanMap;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.beanutils.BeanMap;
+import static com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.FeatureType.MEASUREPOINT;
 
 /**
  * { "id": "123", "version": "1.0", "params": { "Power": { "value": "on",
@@ -42,35 +44,19 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
     {
         private Map<String, Object> params = new HashMap<>();
         private List<UploadFileInfo> files;
+        final String LOCAL_FILE_SCHEMA = "local://";
 
         public Builder()
         {
             params.put("measurepoints", new HashMap<>());
             params.put("time", System.currentTimeMillis());
         }
-        
-        private String storeFile(String measurepointId, File file)
-        {
-            UploadFileInfo fileInfo = new UploadFileInfo();
-            String filename = FileUtil.generateFileName(file);
-            fileInfo.setFilename(filename);
-            fileInfo.setFile(file);
-            fileInfo.setFeatureType(MEASUREPOINT);
-            fileInfo.setFeatureId(measurepointId);
-            
-            if (files == null)
-            {
-                files = new ArrayList<>();
-            }
-            files.add(fileInfo);
-            return filename;
-        }
-        
-        
+
+
         /**
          * Provide a structure measuring point value through the bean, and support file fields
          * @param key
-         * @param value
+         * @param bean
          * @return
          * @throws EnvisionException 
          */
@@ -98,26 +84,17 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
             values.put(key, value);
             return this;
         }
-        
+
         /**
          * Provide a structure measurement point value through Map and support file fields
+         *
          * @param key
          * @param value
          * @return
          */
-        public Builder addStructMeasurePoint(String key, Map<String,Object> value)
-        {
-            for (Entry<String,Object> subEntry: ((Map<String,Object>) value).entrySet())
-            {
-                if (subEntry.getValue() instanceof File)
-                {
-                    // store sub-value as file
-                    String filename = storeFile(key, ((File) subEntry.getValue()));
-                    ((Map<String,Object>) value).put(subEntry.getKey(), "local://" + filename);
-                }
-            }
+        @SuppressWarnings("unchecked")
+        public Builder addStructMeasurePoint(String key, Map<String, Object> value) {
 
-            @SuppressWarnings("unchecked")
             Map<String, Object> values = (Map<String, Object>) params.get("measurepoints");
             values.put(key, value);
             return this;
@@ -130,16 +107,9 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
          * @param value
          * @return
          */
+        @SuppressWarnings("unchecked")
         public Builder addMeasurePoint(String key, Object value)
         {
-            // TODO: A separate file object is currently generated for each file; you can consider optimizing and merging the same files later
-            if (value instanceof File)
-            {
-                // store value as file
-                value = "local://" + storeFile(key, (File) value);
-            }
-            
-            @SuppressWarnings("unchecked")
             Map<String, Object> values = (Map<String, Object>) params.get("measurepoints");
             values.put(key, value);
             return this;
@@ -207,11 +177,62 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public MeasurepointPostRequest build() {
+            Map<String, Object> measurepoints = (Map<String, Object>) params.get("measurepoints");
+            // Unified processing of measuring point files, replace with local: // xxx
+            fileCheck(measurepoints);
             MeasurepointPostRequest request = super.build();
             request.setFiles(this.files);
             return request;
         }
+
+        private String storeFile(String measurepointId, File file)
+        {
+            UploadFileInfo fileInfo = new UploadFileInfo();
+            String filename = FileUtil.generateFileName(file);
+            fileInfo.setFilename(filename);
+            fileInfo.setFile(file);
+            fileInfo.setFeatureType(MEASUREPOINT);
+            fileInfo.setFeatureId(measurepointId);
+
+            if (files == null)
+            {
+                files = new ArrayList<>();
+            }
+            files.add(fileInfo);
+            return filename;
+        }
+
+        @SuppressWarnings("unchecked")
+        private void fileCheck( Map<String, Object> measurepointMap) {
+            for (Map.Entry<String, Object> entry : measurepointMap.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                if (value instanceof File)
+                {
+                    // store value as file
+                    String fileUri = LOCAL_FILE_SCHEMA + storeFile(key, (File) value);
+                    measurepointMap.put(key, fileUri);
+                }
+                else if (value instanceof Map)
+                {
+                    HashMap<String, Object> replicaMap = Maps.newHashMap();
+                    for (Map.Entry<String,Object> subEntry: ((Map<String,Object>) value).entrySet())
+                    {
+                        if (subEntry.getValue() instanceof File) {
+                            // store sub-value as file
+                            String fileUri = LOCAL_FILE_SCHEMA + storeFile(key, ((File) subEntry.getValue()));
+                            replicaMap.put(subEntry.getKey(), fileUri);
+                        } else {
+                            replicaMap.put(subEntry.getKey(), subEntry.getValue());
+                        }
+                    }
+                    measurepointMap.put(key, replicaMap);
+                }
+            }
+        }
+
     }
 
     private MeasurepointPostRequest()
@@ -228,6 +249,31 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
     protected String _getPK_DK_FormatTopic()
     {
         return DeliveryTopicFormat.MEASUREPOINT_POST;
+    }
+
+    @Override
+    protected Map<String, Object> getJsonPayload() {
+        Map<String, Object> payload = super.getJsonPayload();
+        payload.put("files", CreateFilePayload());
+        return payload;
+    }
+
+    private Map<String, Object> CreateFilePayload() {
+        Map<String, Object> disposition = Maps.newHashMap();
+        for (UploadFileInfo fileInfo : this.getFiles()) {
+            Map<String, String> map = Maps.newHashMap();
+            map.put("featureId", fileInfo.getFeatureId());
+
+            try {
+                HashCode md5 = Files.hash(fileInfo.getFile(), Hashing.md5());
+                map.put("md5", md5.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            disposition.put(fileInfo.getFilename(), map);
+        }
+        return disposition;
     }
 
 }

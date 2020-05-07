@@ -1,13 +1,12 @@
 package mqtt.old;
 
-import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
+import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
 import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultProfile;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostResponse;
-
 import mqtt.old.helper.Helper;
 
 /**
@@ -42,19 +41,19 @@ public class DemoSdkWorkflowSample {
         }
 
         try {
-            client.connect(new IConnectCallback() {
+            client.connect(new ConnCallback() {
                 @Override
-                public void onConnectSuccess() {
+                public void connectComplete(boolean reconnect) {
                     throw new RuntimeException("[BUG]: connect(callback) not allowed after " + behavior);
                 }
 
                 @Override
-                public void onConnectLost() {
+                public void connectLost(Throwable cause) {
 
                 }
 
                 @Override
-                public void onConnectFailed(int reasonCode) {
+                public void connectFailed(Throwable cause) {
 
                 }
             });
@@ -158,7 +157,7 @@ public class DemoSdkWorkflowSample {
 
             checkInvalidOpAfterClose(client);
         } finally {
-            Helper.cleanConnection(client);
+            client.close();
         }
         System.out.println("-----------------------------------------\n");
     }
@@ -210,7 +209,7 @@ public class DemoSdkWorkflowSample {
             client.close();
             System.out.println("[flex] closed");
         } finally {
-            Helper.cleanConnection(client);
+            client.close();
         }
 
         System.out.println("-----------------------------------------\n");

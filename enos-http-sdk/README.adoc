@@ -132,18 +132,14 @@ try
 
 == Sample Code
 
-* link:/enos-sdk-sample/src/main/java/http/MeasurepointPostSample.java[Establishing
-Connection with EnOS Cloud]
-* link:/enos-sdk-sample/src/main/java/http/MeasurepointPostSample.java[Reporting
-Measurement Points]
-* link:/enos-sdk-sample/src/main/java/http/PostFileSample.java[Reporting
-a File as Measurement Points]
+* link:/enos-sdk-sample/src/main/java/http/MeasurepointPostSample.java[Establishing Connection with EnOS Cloud]
+* link:/enos-sdk-sample/src/main/java/http/MeasurepointPostSample.java[Reporting Measurement Points]
+* link:/enos-sdk-sample/src/main/java/http/PostFileSample.java[Reporting a File as Measurement Points]
 
 == Related Information
 
 * To learn more about EnOS IoT Hub, see
-https://support.envisioniot.com/docs/device-connection/en/latest/device_management_overview.html[EnOS
-IoT Hub Documentation].
+https://support.envisioniot.com/docs/device-connection/en/latest/device_management_overview.html[EnOS IoT Hub Documentation].
 * To learn more about how to develop your device for EnOS IoT Hub, see
 link:[EnOS Device Development Guide (Java)].
 
@@ -153,5 +149,5 @@ Under development
 
 == Release Notes
 
-* 2020/01/15 (Initial Release): Reporting measurement points (including
-file-type points)
+* 2020/01/15 (Initial Release): Reporting measurement points (including file-type points)
+* 2020/05/07 (0.1.4): Support deleting and downloading files

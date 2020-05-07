@@ -9,6 +9,18 @@
 
 *Java SE 8* is required to use the SDK and run the samples.
 
+If you are using an ECC certificate to connect to EnOS, one of the following is required:
+
+- Java SE 8u161 or later versions.
+- Java Cryptography Extension. To download, go to https://www.oracle.com/java/technologies/javase-jce-all-downloads.html[Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files]
+
+*Note*:
+For the SDK running on any Java SE version between Java SE 8u51 or 8u60 (both ends inclusive), if you enable the verification of the domain name of the server certificate, the device will not be able to connect to EnOS due to the following exception:
+----
+java.security.cert.CertificateException: No subject alternative names matching IP address x.x.x.x found
+----
+To resolve this exceptioin, set -Djdk.tls.trustNameService=true.
+
 ==== Optional: Installing Maven
 
 The Java SDK for MQTT is maven-based. If you use Maven 3, you just need
@@ -21,10 +33,11 @@ https://maven.apache.org/install.html[here].
 
 === Installing EnOS Device SDK for Java (MQTT)
 
-Select one of the following ways to install the Java SDK for MQTT: * If
-your project is maven-based, add the dependency on the Java SDK to the
-main _pom.xml_ of your project. * Download the source code and build on
-your machine.
+Select one of the following ways to install the Java SDK for MQTT:
+
+- If your project is maven-based, add the dependency on the Java SDK to the
+main _pom.xml_ of your project. 
+- Download the source code and build on your machine.
 
 === Adding the Maven Dependency to Your Project
 
@@ -153,6 +166,7 @@ client.disconnect();
 
 * link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Establishing
 Connection with EnOS Cloud]
+* link:/enos-sdk-sample/src/main/java/mqtt/BiDirectionalAuthenticate.java[Establishing Bi-directional Authenticated Connection with EnOS Cloud]
 * link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
 Tags]
 * link:/enos-sdk-sample/src/main/java/mqtt/SimpleSendReceive.java[Device
@@ -184,3 +198,5 @@ Under development
 == Release Notes
 
 * 2020/01/15 (2.2.2): Support reporting offline measurement points.
+* 2020/03/08 (2.2.3): Solve decoder loading trouble in all-in-one JAR application.
+* 2020/05/07 (2.2.6): Support ECC certificate.

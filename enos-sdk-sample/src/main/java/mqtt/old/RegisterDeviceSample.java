@@ -37,9 +37,9 @@ public class RegisterDeviceSample {
 
             DeviceRegisterRequest req = DeviceRegisterRequest
                     .builder()
-                    .addRegisterInfo(Helper.PRODUCT_KEY, deviceName1.getDefaultValue(), deviceName1, "dev desc", "+08:00")
-                    .addRegisterInfo(Helper.PRODUCT_KEY, deviceName2.getDefaultValue(), deviceName2, "dev desc", "+09:00")
-                    .addRegisterInfo(Helper.PRODUCT_KEY, deviceName3.getDefaultValue(), deviceName3, "dev desc", "+10:00")
+                    .addRegisterInfo(Helper.DEV_PRODUCT_KEY, deviceName1.getDefaultValue(), deviceName1, "dev desc", "+08:00")
+                    .addRegisterInfo(Helper.DEV_PRODUCT_KEY, deviceName2.getDefaultValue(), deviceName2, "dev desc", "+09:00")
+                    .addRegisterInfo(Helper.DEV_PRODUCT_KEY, deviceName3.getDefaultValue(), deviceName3, "dev desc", "+10:00")
                     .build();
             DeviceRegisterResponse rsp = client.publish(req);
             if (rsp.isSuccess()) {

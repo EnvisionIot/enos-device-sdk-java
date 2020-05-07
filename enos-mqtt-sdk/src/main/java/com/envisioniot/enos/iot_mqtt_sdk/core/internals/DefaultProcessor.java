@@ -1,5 +1,6 @@
 package com.envisioniot.enos.iot_mqtt_sdk.core.internals;
 
+import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMessageHandler;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttArrivedMessage;
@@ -26,8 +27,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author zhensheng.cai
  * @date 2018/7/5.
  */
+@SuppressWarnings("deprecation")
 public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
     private static Logger logger = LoggerFactory.getLogger(DefaultProcessor.class);
+    private static final int RECONN_INIT_DELAY_MILLIS = 8000;
 
     private final MqttConnection connection;
 
@@ -40,14 +43,17 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
     /**
      * User defined connect callback
      */
-    private volatile IConnectCallback connectCallback = null;
+    private volatile IConnectCallback legacyCallback = null;
+    private volatile ConnCallback connCallback = null;
+
+    private volatile boolean onceConnected = false;
 
     // Indicates if we should manage the auto connect ourselves rather than
     // use auto reconnect feature in paho library.
-    private boolean manageAutoConnect = false;
+    private volatile boolean manageAutoConnect = false;
 
-    private Timer reconnectTimer; // Automatic reconnect timer
-    private int reconnectDelay = 8000; // Reconnect delay, starts at 8s
+    private volatile Timer reconnectTimer; // Automatic reconnect timer
+    private volatile int reconnectDelay = RECONN_INIT_DELAY_MILLIS; // Reconnect delay, starts at 8s
 
     public DefaultProcessor(MqttConnection connection) {
         this.connection = connection;
@@ -57,13 +63,33 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
         this.manageAutoConnect = manageAutoConnect;
     }
 
-    public void onConnectFailed(int reasonCode) {
-        if (reasonCode == MqttException.REASON_CODE_NOT_AUTHORIZED) {
-            logger.error("Not authorized mqtt connect request, please refer to EnOS portal connective service log ");
+    public void onConnectFailed(Throwable error) {
+        final int reasonCode = (error instanceof MqttException)
+                ? ((MqttException) error).getReasonCode()
+                : -1;
+
+        if (connCallback == null) {
+            logger.error("Client <{}> connect failed", this.connection.getClientId(), error);
+        } else {
+            /**
+             * If user has defined the callback that takes the exception, we don't
+             * log out the exception stack here.
+             */
+            logger.error("Client <{}> connect failed, error: {}",
+                    connection.getClientId(), Utils.getRootMessage(error));
         }
-        if (connectCallback != null) {
+
+        // We call legacy callback on each conn failure
+        if (legacyCallback != null) {
             connection.getExecutorFactory().getCallbackExecutor().execute(() -> {
-                connectCallback.onConnectFailed(reasonCode);
+                legacyCallback.onConnectFailed(reasonCode);
+            });
+        }
+
+        // We call new callback only on initial conn failure
+        if (!onceConnected && connCallback != null) {
+            connection.getExecutorFactory().getCallbackExecutor().execute(() -> {
+                connCallback.connectFailed(error);
             });
         }
     }
@@ -99,11 +125,16 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
 
             // 2. handle the msg
             if (msg instanceof IMqttResponse) {
-
                 IMqttResponse mqttRsp = (IMqttResponse) msg;
                 MqttResponseToken<IMqttResponse> token = deregisterResponseToken(topic + "_" + mqttRsp.getMessageId());
                 if (token == null) {
-                    logger.error("no request answer the response, topic {} , msg {}", topic, msg);
+                    if (connection.isTopicSubscribed(topic)) {
+                        logger.error("no request answers the response (it could be caused by too long delay), topic {}, msg {}", topic, msg);
+                    } else {
+                        logger.error("we don't subscribe topic {}, but received its response {}", topic, msg);
+                        // do the un-subscribe as we don't do the subscription at all
+                        connection.unsubscribe(topic);
+                    }
                     return;
                 }
                 token.markSuccess(mqttRsp);
@@ -201,12 +232,18 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
         arrivedMsgHandlerMap.put(arrivedMsgCls, handler);
     }
 
+    @Deprecated
     public void setConnectCallback(IConnectCallback callback) {
-        connectCallback = callback;
+        legacyCallback = callback;
     }
 
+    @Deprecated
     public IConnectCallback getConnectCallback() {
-        return connectCallback;
+        return legacyCallback;
+    }
+
+    public void setConnCallback(ConnCallback callback) {
+        this.connCallback = callback;
     }
 
     @SuppressWarnings("unlikely-arg-type")
@@ -214,17 +251,48 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
         arrivedMsgHandlerMap.remove(topic);
     }
 
+
+
     @Override
     public void connectionLost(Throwable throwable) {
-        logger.error("Client <{}> Connection Lost", this.connection.getClientId(), throwable);
-
-        logger.info("clear the subscriptions");
-        //Clear the cache anyway
+        // We always clean the cache for this event
         this.connection.cleanSubscribeTopicCache();
 
-        if (connectCallback != null) {
+        if (connection.getState() != MqttConnection.State.CONNECTED ) {
+            // This lost MUST come from close, disconnect or reconnect operation
+            // from the user. Since user himself choose to break the connection,
+            // there is no need to feed the connect lost event to them.
+            logger.info("ignored connection lost for state {}", connection.getState());
+            return;
+        }
+
+        if (reconnectTimer != null) {
+            // If we are still in progress of handling previous lost connection, there is
+            // no need to handle the new one.
+            logger.info("ignored connection lost as re-connection is in progress");
+            return;
+        }
+
+        if (connCallback == null) {
+            logger.error("Client <{}> Connection Lost", this.connection.getClientId(), throwable);
+        } else {
+            /**
+             * If user has defined the callback that takes the exception, we don't
+             * log out the exception stack here.
+             */
+            logger.error("Client <{}> Connection Lost, error: {}",
+                    connection.getClientId(), Utils.getRootMessage(throwable));
+        }
+
+        if (legacyCallback != null) {
             connection.getExecutorFactory().getCallbackExecutor().execute(() -> {
-                connectCallback.onConnectLost();
+                legacyCallback.onConnectLost();
+            });
+        }
+
+        if (connCallback != null) {
+            connection.getExecutorFactory().getCallbackExecutor().execute(() -> {
+                connCallback.connectLost(throwable);
             });
         }
 
@@ -240,22 +308,44 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
         }
     }
 
+    boolean isOnceConnected() {
+        return onceConnected;
+    }
+
+    /**
+     * As we manage the auto reconnect ourselves, we can't reply on the first argument.
+     */
     @Override
-    public void connectComplete(boolean reconnect, String serverURI) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("connect complete , reconnect {} , serverUri {} ", reconnect, serverURI);
+    public void connectComplete(boolean ignored /* don't rely on this */, String serverURI) {
+        final boolean reconnect = onceConnected;
+
+        if (!onceConnected) {
+            onceConnected = true;
         }
 
         this.connection.notifyConnectSuccess();
-        if (connectCallback != null) {
+        if (legacyCallback != null) {
             connection.getExecutorFactory().getCallbackExecutor().execute(() -> {
-                connectCallback.onConnectSuccess();
+                legacyCallback.onConnectSuccess();
             });
         }
 
+        if (connCallback != null) {
+            connection.getExecutorFactory().getCallbackExecutor().execute(() -> {
+                connCallback.connectComplete(reconnect);
+            });
+        }
     }
 
-    private void startReconnectTimer() {
+    /**
+     * Here we have to ensure that we only start one timer that
+     * does the schedule of reconnection。
+     */
+    private synchronized void startReconnectTimer() {
+        if (reconnectTimer != null) {
+            // re-connection is in progress
+            return;
+        }
         logger.info("start reconnect timer in {}ms", reconnectDelay);
         reconnectTimer = new Timer("MQTT Reconnect: " + connection.getClientId());
         reconnectTimer.schedule(new ReconnectTask(), reconnectDelay);
@@ -274,11 +364,12 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
 
     private void stopReconnectTimer() {
         logger.info("stop reconnect timer now");
+        reconnectDelay = RECONN_INIT_DELAY_MILLIS;
+
         if (reconnectTimer != null) {
             reconnectTimer.cancel();
-            reconnectTimer = null;
         }
-        reconnectDelay = 1000;
+        reconnectTimer = null;
     }
 
     private class ReconnectTask extends TimerTask {
@@ -297,9 +388,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
             if (connection.isConnected()) {
                 logger.info("successfully reconnected to broker");
                 stopReconnectTimer();
-            }
-
-            if (!connection.isConnected()) {
+            } else {
                 rescheduleReconnectTimer();
             }
         }

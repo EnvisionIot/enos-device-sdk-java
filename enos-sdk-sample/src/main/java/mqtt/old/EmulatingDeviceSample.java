@@ -1,7 +1,12 @@
 package mqtt.old;
 
+import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMessageHandler;
+import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.device.SubDeviceDeleteCommand;
+import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.device.SubDeviceDeleteReply;
+import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.device.SubDeviceDisableCommand;
+import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.device.SubDeviceDisableReply;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.ota.OtaUpgradeCommand;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.ota.OtaUpgradeReply;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.tsl.MeasurepointSetCommand;
@@ -15,7 +20,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogout
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogoutResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostResponse;
-
+import lombok.extern.slf4j.Slf4j;
 import mqtt.old.helper.Helper;
 
 import java.io.BufferedReader;
@@ -30,6 +35,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author jian.zhang4
  */
+@Slf4j
 public class EmulatingDeviceSample {
 
     private static final String DEFAULT_SERVER_URL = Helper.SERVER_URL;
@@ -83,8 +89,23 @@ public class EmulatingDeviceSample {
 //                                    .setSSLSecured(true)
 //                                    .setSSLJksPath("C:\\Users\\jian.zhang4\\device-auth\\beta\\mqtt-sample-dev01\\mqtt-sample-dev01.jks", "123456")
                             ;
-                            client.connect();
-                            System.out.println("successfully connected to broker");
+                            client.connect(new ConnCallback() {
+
+                                @Override
+                                public void connectComplete(boolean reconnect) {
+                                    log.info("connectComplete: reconnect=" + reconnect);
+                                }
+
+                                @Override
+                                public void connectLost(Throwable cause) {
+                                    log.info("connectComplete: connectLost, " + cause.getMessage());
+                                }
+
+                                @Override
+                                public void connectFailed(Throwable cause) {
+                                    log.info("connectComplete: connectFailed");
+                                }
+                            });
                         } catch (Exception e) {
                             client.close();
                             client = null;
@@ -142,6 +163,20 @@ public class EmulatingDeviceSample {
                     if (validate(args, 1, false, client, false)) {
                         client.setArrivedMsgHandler(ServiceInvocationCommand.class, createServiceCommandHandler());
                         client.setArrivedMsgHandler(MeasurepointSetCommand.class, createMeasurepointSetHandler(client));
+                        client.setArrivedMsgHandler(SubDeviceDisableCommand.class, new IMessageHandler<SubDeviceDisableCommand, SubDeviceDisableReply>() {
+                            @Override
+                            public SubDeviceDisableReply onMessage(SubDeviceDisableCommand arrivedMessage, List<String> argList) throws Exception {
+                                System.out.println("argList: " + argList + ", topic: " + arrivedMessage.getMessageTopic());
+                                return null;
+                            }
+                        });
+                        client.setArrivedMsgHandler(SubDeviceDeleteCommand.class, new IMessageHandler<SubDeviceDeleteCommand, SubDeviceDeleteReply>() {
+                            @Override
+                            public SubDeviceDeleteReply onMessage(SubDeviceDeleteCommand arrivedMessage, List<String> argList) throws Exception {
+                                System.out.println("argList: " + argList + ", topic: " + arrivedMessage.getMessageTopic());
+                                return null;
+                            }
+                        });
                     }
                     break;
                 case "loginSubDevice":
