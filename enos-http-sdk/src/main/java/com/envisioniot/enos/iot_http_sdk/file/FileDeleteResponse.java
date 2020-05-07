@@ -2,12 +2,6 @@ package com.envisioniot.enos.iot_http_sdk.file;
 
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttResponse;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**

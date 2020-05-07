@@ -5,7 +5,6 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.util.ExactValue;
 import com.envisioniot.enos.iot_mqtt_sdk.util.GsonUtil;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;

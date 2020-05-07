@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 
+@SuppressWarnings("deprecation")
 @Slf4j
 public class MqttConnection {
 
@@ -387,6 +388,7 @@ public class MqttConnection {
 
         // If we use fast publish, it means that we don't want the reply
         if (request instanceof IAnswerable) {
+            @SuppressWarnings("rawtypes")
             String topic = ((IAnswerable) request).getAnswerTopic();
             if (subTopicCache.exists(topic)) {
                 unsubscribe(topic);

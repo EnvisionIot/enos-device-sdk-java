@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author zhensheng.cai
  * @date 2018/7/5.
  */
+@SuppressWarnings("deprecation")
 public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
     private static Logger logger = LoggerFactory.getLogger(DefaultProcessor.class);
     private static final int RECONN_INIT_DELAY_MILLIS = 8000;

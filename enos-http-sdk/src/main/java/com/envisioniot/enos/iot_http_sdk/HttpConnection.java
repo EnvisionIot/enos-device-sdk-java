@@ -13,7 +13,6 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignUtil;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttArrivedMessage.DecodeResult;
-import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.ModelUpRawRequest;
