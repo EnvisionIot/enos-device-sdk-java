@@ -254,7 +254,9 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
     @Override
     protected Map<String, Object> getJsonPayload() {
         Map<String, Object> payload = super.getJsonPayload();
-        payload.put("files", CreateFilePayload());
+        if (this.getFiles() != null) {
+            payload.put("files", CreateFilePayload());
+        }
         return payload;
     }
 
