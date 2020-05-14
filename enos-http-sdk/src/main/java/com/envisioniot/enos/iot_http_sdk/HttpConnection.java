@@ -206,7 +206,12 @@ public class HttpConnection
                 {
                     lastAuthResponse = new Gson().fromJson(response.body().charStream(), AuthResponseBody.class);
                     // update sessionId
+                    if (!lastAuthResponse.isSuccess()) {
+                        throw new EnvisionException(lastAuthResponse.getCode(), lastAuthResponse.getMessage());
+                    }
+
                     sessionId = lastAuthResponse.getData().getSessionId();
+
                     // save lastPostTimestamp
                     lastPublishTimestamp = System.currentTimeMillis();
 
