@@ -151,3 +151,4 @@ Under development
 
 * 2020/01/15 (Initial Release): Reporting measurement points (including file-type points)
 * 2020/05/07 (0.1.4): Support deleting and downloading files
+* 2020/05/14 (0.1.5): Fix NPE while uploading measurepoints
