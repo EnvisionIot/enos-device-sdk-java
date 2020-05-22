@@ -197,8 +197,11 @@ public class MqttConnection {
             }
 
             doConnect();
-            // Mark the state as CONNECTED if no exception is thrown
-            state = State.CONNECTED;
+
+            if (state == State.CONNECTING) {
+                // Mark the state as CONNECTED if no exception is thrown
+                state = State.CONNECTED;
+            }
         } catch (EnvisionException error) {
             state = failedState;
             throw error;
@@ -214,7 +217,25 @@ public class MqttConnection {
         if (callback == null) {
             throw new IllegalArgumentException("callback should not be null");
         }
-        doAsyncConnect(() -> mqttProcessor.setConnectCallback(callback), State.NOT_CONNECTED);
+        doAsyncConnect(() -> mqttProcessor.setConnectCallback(new IConnectCallback() {
+
+            @Override
+            public void onConnectSuccess() {
+                // Make sure that the state is CONNECTED before invoking the callback
+                state = State.CONNECTED;
+                callback.onConnectSuccess();
+            }
+
+            @Override
+            public void onConnectLost() {
+                callback.onConnectLost();
+            }
+
+            @Override
+            public void onConnectFailed(int reasonCode) {
+                callback.onConnectFailed(reasonCode);
+            }
+        }), State.NOT_CONNECTED);
     }
 
     public synchronized void connect(ConnCallback callback) {
@@ -225,7 +246,24 @@ public class MqttConnection {
         if (callback == null) {
             throw new IllegalArgumentException("callback should not be null");
         }
-        doAsyncConnect(() -> mqttProcessor.setConnCallback(callback), State.NOT_CONNECTED);
+        doAsyncConnect(() -> mqttProcessor.setConnCallback(new ConnCallback() {
+            @Override
+            public void connectComplete(boolean reconnect) {
+                // Make sure that the state is CONNECTED before invoking the callback
+                state = State.CONNECTED;
+                callback.connectComplete(reconnect);
+            }
+
+            @Override
+            public void connectLost(Throwable cause) {
+                callback.connectLost(cause);
+            }
+
+            @Override
+            public void connectFailed(Throwable cause) {
+                callback.connectFailed(cause);
+            }
+        }), State.NOT_CONNECTED);
     }
 
     private void doAsyncConnect(Runnable callbackSetter, State failedState) {
