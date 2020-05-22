@@ -147,6 +147,10 @@ public class MqttClient {
         this.connection.disconnect();
     }
 
+    public String getDebugInfo() {
+        return this.connection.getDebugInfo();
+    }
+
     /**
      * Close this MqttClient and release all underlying resources. After this operation,
      * you should not invoke any method any more. Otherwise, exception would be thrown.

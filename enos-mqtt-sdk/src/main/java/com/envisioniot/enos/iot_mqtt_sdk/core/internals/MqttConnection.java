@@ -506,6 +506,10 @@ public class MqttConnection {
         return false;
     }
 
+    public String getDebugInfo() {
+        return "state: " + state + ", underlying transport connected: " + (transport != null && transport.isConnected());
+    }
+
     void cleanSubscribeTopicCache() {
         this.subTopicCache.clean();
     }
