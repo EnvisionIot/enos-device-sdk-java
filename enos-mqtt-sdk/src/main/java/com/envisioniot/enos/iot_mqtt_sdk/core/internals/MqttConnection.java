@@ -296,8 +296,14 @@ public class MqttConnection {
                 mqttProcessor.setManageAutoConnect(false);
             }
 
-            // This method blocks since it waits for the connect completion
-            this.transport.connect(connectOptions);
+            /**
+             * Looks paho has bugs for concurrent mqtt client initialization as it throws when
+             * multiple threads create the client at the same time.
+             */
+            synchronized (MqttConnection.this) {
+                // This method blocks since it waits for the connect completion
+                this.transport.connect(connectOptions);
+            }
 
             registerDeviceActivateInfoCommand();
         } catch (Throwable e) {
@@ -372,9 +378,15 @@ public class MqttConnection {
                 log.error("[BUG] underlying transport is already initialized.");
             }
 
-            transport = new MqttClient(profile.getServerUrl(), getClientId(), new MemoryPersistence());
-            transport.setCallback(mqttProcessor);
-            transport.setTimeToWait(profile.getTimeToWait() * 1000);
+            /**
+             * Looks paho has bugs for concurrent mqtt client initialization as it throws when
+             * multiple threads create the client at the same time.
+             */
+            synchronized (MqttConnection.class) {
+                transport = new MqttClient(profile.getServerUrl(), getClientId(), new MemoryPersistence());
+                transport.setCallback(mqttProcessor);
+                transport.setTimeToWait(profile.getTimeToWait() * 1000);
+            }
         } catch (MqttException e) {
             log.error("failed to create MqttClient", e);
             throw new EnvisionException(e, EnvisionError.INIT_MQTT_CLIENT_FAILED);
