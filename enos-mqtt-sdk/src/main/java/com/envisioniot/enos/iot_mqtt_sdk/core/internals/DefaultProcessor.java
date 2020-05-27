@@ -375,7 +375,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
             try {
                 connection.reconnect();
             } catch (Exception e) {
-                logger.error("failed to reconnect to broker now, error: {}. Would retry later.", e.getMessage());
+                logger.warn("failed to reconnect to broker now, error: {}. Would retry later.", e.getMessage());
             }
 
             if (connection.isConnected()) {
