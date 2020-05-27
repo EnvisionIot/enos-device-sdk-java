@@ -454,7 +454,7 @@ public class MqttConnection {
             subTopicCache.remove(topic);
         } catch (Exception e) {
             // normally this should not happen
-            log.error("failed to unsubscribe topic {}", topic, e);
+            log.warn("failed to unsubscribe topic {}", topic, e);
         }
     }
 
