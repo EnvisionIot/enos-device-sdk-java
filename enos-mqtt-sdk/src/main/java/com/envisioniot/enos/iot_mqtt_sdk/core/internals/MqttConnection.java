@@ -1,9 +1,6 @@
 package com.envisioniot.enos.iot_mqtt_sdk.core.internals;
 
-import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
-import com.envisioniot.enos.iot_mqtt_sdk.core.ExecutorFactory;
-import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
-import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
+import com.envisioniot.enos.iot_mqtt_sdk.core.*;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionError;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.*;
@@ -354,8 +351,10 @@ public class MqttConnection {
 
         closeUnderlyingTransport();
 
-        // Shutdown the underlying thread pools
-        executorFactory.shutdownExecutorServices();
+        // shutdown the underlying thread pools if it's not shared by multiple connections
+        if (!executorFactory.getClass().isAnnotationPresent(Sharable.class)) {
+            executorFactory.shutdownExecutorServices();
+        }
 
         state = State.CLOSED;
     }
