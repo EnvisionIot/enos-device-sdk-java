@@ -1,9 +1,6 @@
 package com.envisioniot.enos.iot_mqtt_sdk.core.internals;
 
-import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
-import com.envisioniot.enos.iot_mqtt_sdk.core.ExecutorFactory;
-import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
-import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
+import com.envisioniot.enos.iot_mqtt_sdk.core.*;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionError;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.*;
@@ -82,7 +79,7 @@ public class MqttConnection {
 
     private final BaseProfile profile;
     private final MessageBuffer buffer;
-    private final ExecutorFactory executorFactory;
+    private final IExecutorFactory executorFactory;
 
     private final DefaultProcessor mqttProcessor;
 
@@ -93,11 +90,11 @@ public class MqttConnection {
 
     private final Set<DeviceCredential> loginedSubDevices = Sets.newConcurrentHashSet();
 
-    public MqttConnection(BaseProfile profile, ExecutorFactory executorFactory) {
+    public MqttConnection(BaseProfile profile, IExecutorFactory executorFactory) {
         this(profile, new MessageBuffer(), executorFactory);
     }
 
-    private MqttConnection(BaseProfile profile, MessageBuffer buffer, ExecutorFactory executorFactory) {
+    private MqttConnection(BaseProfile profile, MessageBuffer buffer, IExecutorFactory executorFactory) {
             this.profile = profile;
             this.buffer = buffer;
             this.executorFactory = executorFactory;
@@ -113,7 +110,7 @@ public class MqttConnection {
         return this.profile;
     }
 
-    public ExecutorFactory getExecutorFactory() {
+    public IExecutorFactory getExecutorFactory() {
         return this.executorFactory;
     }
 
@@ -354,8 +351,10 @@ public class MqttConnection {
 
         closeUnderlyingTransport();
 
-        // Shutdown the underlying thread pools
-        executorFactory.shutdownExecutorServices();
+        // shutdown the underlying thread pools if it's not shared by multiple connections
+        if (!executorFactory.getClass().isAnnotationPresent(Sharable.class)) {
+            executorFactory.shutdownExecutorServices();
+        }
 
         state = State.CLOSED;
     }
