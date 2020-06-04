@@ -13,7 +13,7 @@ import java.util.concurrent.*;
  * @author zhensheng.cai
  * @author jian.zhang4
  */
-public class ExecutorFactory {
+public class ExecutorFactory implements IExecutorFactory {
 
     /**
      * Thread pools that handles mqtt publish action in async way.
