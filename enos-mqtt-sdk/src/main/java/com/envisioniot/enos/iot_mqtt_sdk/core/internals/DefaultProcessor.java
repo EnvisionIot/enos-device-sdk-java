@@ -275,13 +275,6 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
 
         if (connCallback == null) {
             logger.error("Client <{}> Connection Lost", this.connection.getClientId(), throwable);
-        } else {
-            /**
-             * If user has defined the callback that takes the exception, we don't
-             * log out the exception stack here.
-             */
-            logger.error("Client <{}> Connection Lost, error: {}",
-                    connection.getClientId(), Utils.getRootMessage(throwable));
         }
 
         if (legacyCallback != null) {
@@ -382,7 +375,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
             try {
                 connection.reconnect();
             } catch (Exception e) {
-                logger.error("failed to reconnect to broker now, error: {}. Would retry later.", e.getMessage());
+                logger.warn("failed to reconnect to broker now, error: {}. Would retry later.", e.getMessage());
             }
 
             if (connection.isConnected()) {

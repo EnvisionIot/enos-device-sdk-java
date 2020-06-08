@@ -45,7 +45,7 @@ public class MqttClient {
      * @param profile         client config profile
      * @param executorFactory customized executor factory (thread-pool factory)
      */
-    public MqttClient(BaseProfile profile, ExecutorFactory executorFactory) {
+    public MqttClient(BaseProfile profile, IExecutorFactory executorFactory) {
         connection = new MqttConnection(profile, executorFactory);
     }
 
