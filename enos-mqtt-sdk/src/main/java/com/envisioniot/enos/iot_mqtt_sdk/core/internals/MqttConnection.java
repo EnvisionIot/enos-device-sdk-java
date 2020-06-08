@@ -79,7 +79,7 @@ public class MqttConnection {
 
     private final BaseProfile profile;
     private final MessageBuffer buffer;
-    private final ExecutorFactory executorFactory;
+    private final IExecutorFactory executorFactory;
 
     private final DefaultProcessor mqttProcessor;
 
@@ -90,11 +90,11 @@ public class MqttConnection {
 
     private final Set<DeviceCredential> loginedSubDevices = Sets.newConcurrentHashSet();
 
-    public MqttConnection(BaseProfile profile, ExecutorFactory executorFactory) {
+    public MqttConnection(BaseProfile profile, IExecutorFactory executorFactory) {
         this(profile, new MessageBuffer(), executorFactory);
     }
 
-    private MqttConnection(BaseProfile profile, MessageBuffer buffer, ExecutorFactory executorFactory) {
+    private MqttConnection(BaseProfile profile, MessageBuffer buffer, IExecutorFactory executorFactory) {
             this.profile = profile;
             this.buffer = buffer;
             this.executorFactory = executorFactory;
@@ -110,7 +110,7 @@ public class MqttConnection {
         return this.profile;
     }
 
-    public ExecutorFactory getExecutorFactory() {
+    public IExecutorFactory getExecutorFactory() {
         return this.executorFactory;
     }
 
