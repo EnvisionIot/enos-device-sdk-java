@@ -170,7 +170,6 @@ public abstract class BaseProfile {
                 + ",timestamp=" + timestamp + "|";
     }
 
-
     public BaseProfile setMaxInFlight(int maxInFlight) {
         this.config.setMaxInFlight(maxInFlight);
         return this;
