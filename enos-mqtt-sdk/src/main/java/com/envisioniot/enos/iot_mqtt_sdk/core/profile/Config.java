@@ -56,6 +56,7 @@ public class Config {
     private static final int DEFAULT_OPERATION_TIMEOUT = 60;
     private static final int DEFAULT_MAX_INFLIGHT = 10000;
 
+
     private String serverUrl;
     private String productKey;
     private String deviceKey;
@@ -264,4 +265,5 @@ public class Config {
         builder.append(GsonUtil.toPrettyJson(this));
         Files.write(builder.toString(), new File(path), Charsets.UTF_8);
     }
+
 }
