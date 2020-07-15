@@ -32,7 +32,10 @@ import okhttp3.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -176,10 +179,20 @@ public class HttpConnection
                 SignMethod.SHA256);
     }
 
+    private ClientInfo clientInfo() throws IOException {
+
+        final Properties properties = new Properties();
+        properties.load(this.getClass().getClassLoader().getResourceAsStream("application.properties"));
+
+        String sdkVersion = properties.getProperty("version");
+        InetAddress ip4 = Inet4Address.getLocalHost();
+        String loginIpAddress = ip4.getHostAddress();
+        return new ClientInfo(loginIpAddress, sdkVersion);
+    }
 
     /**
      * Perform device login request
-     * 
+     *
      * @return auth response
      * @throws EnvisionException
      */
@@ -195,7 +208,8 @@ public class HttpConnection
                 sessionId = null;
 
                 RequestBody body = RequestBody.create(MediaType.parse(MEDIA_TYPE_JSON_UTF_8), new Gson().toJson(
-                        new AuthRequestBody(SignMethod.SHA256.getName(), sessionConfiguration.getLifetime(), sign())));
+                        new AuthRequestBody(SignMethod.SHA256.getName(), sessionConfiguration.getLifetime(),
+                                sign(), clientInfo())));
 
                 Request request = new Request.Builder().url(brokerUrl + credential.getAuthPath()).post(body).build();
 

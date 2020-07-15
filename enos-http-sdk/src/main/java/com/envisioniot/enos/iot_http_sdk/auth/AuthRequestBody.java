@@ -1,5 +1,6 @@
 package com.envisioniot.enos.iot_http_sdk.auth;
 
+import com.envisioniot.enos.iot_http_sdk.ClientInfo;
 import lombok.Value;
 
 /**
@@ -9,9 +10,11 @@ import lombok.Value;
 @Value
 public class AuthRequestBody
 {
-    private final String signMethod;
+    String signMethod;
 
-    private final long lifetime;
+    long lifetime;
     
-    private final String sign;
+    String sign;
+
+    ClientInfo clientInfo;
 }
