@@ -1,9 +1,6 @@
 package com.envisioniot.enos.iot_mqtt_sdk.core.internals;
 
-import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
-import com.envisioniot.enos.iot_mqtt_sdk.core.ExecutorFactory;
-import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
-import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
+import com.envisioniot.enos.iot_mqtt_sdk.core.*;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionError;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.*;
@@ -82,7 +79,7 @@ public class MqttConnection {
 
     private final BaseProfile profile;
     private final MessageBuffer buffer;
-    private final ExecutorFactory executorFactory;
+    private final IExecutorFactory executorFactory;
 
     private final DefaultProcessor mqttProcessor;
 
@@ -93,11 +90,11 @@ public class MqttConnection {
 
     private final Set<DeviceCredential> loginedSubDevices = Sets.newConcurrentHashSet();
 
-    public MqttConnection(BaseProfile profile, ExecutorFactory executorFactory) {
+    public MqttConnection(BaseProfile profile, IExecutorFactory executorFactory) {
         this(profile, new MessageBuffer(), executorFactory);
     }
 
-    private MqttConnection(BaseProfile profile, MessageBuffer buffer, ExecutorFactory executorFactory) {
+    private MqttConnection(BaseProfile profile, MessageBuffer buffer, IExecutorFactory executorFactory) {
             this.profile = profile;
             this.buffer = buffer;
             this.executorFactory = executorFactory;
@@ -113,7 +110,7 @@ public class MqttConnection {
         return this.profile;
     }
 
-    public ExecutorFactory getExecutorFactory() {
+    public IExecutorFactory getExecutorFactory() {
         return this.executorFactory;
     }
 
@@ -197,8 +194,11 @@ public class MqttConnection {
             }
 
             doConnect();
-            // Mark the state as CONNECTED if no exception is thrown
-            state = State.CONNECTED;
+
+            if (state == State.CONNECTING) {
+                // Mark the state as CONNECTED if no exception is thrown
+                state = State.CONNECTED;
+            }
         } catch (EnvisionException error) {
             state = failedState;
             throw error;
@@ -214,7 +214,25 @@ public class MqttConnection {
         if (callback == null) {
             throw new IllegalArgumentException("callback should not be null");
         }
-        doAsyncConnect(() -> mqttProcessor.setConnectCallback(callback), State.NOT_CONNECTED);
+        doAsyncConnect(() -> mqttProcessor.setConnectCallback(new IConnectCallback() {
+
+            @Override
+            public void onConnectSuccess() {
+                // Make sure that the state is CONNECTED before invoking the callback
+                state = State.CONNECTED;
+                callback.onConnectSuccess();
+            }
+
+            @Override
+            public void onConnectLost() {
+                callback.onConnectLost();
+            }
+
+            @Override
+            public void onConnectFailed(int reasonCode) {
+                callback.onConnectFailed(reasonCode);
+            }
+        }), State.NOT_CONNECTED);
     }
 
     public synchronized void connect(ConnCallback callback) {
@@ -225,7 +243,24 @@ public class MqttConnection {
         if (callback == null) {
             throw new IllegalArgumentException("callback should not be null");
         }
-        doAsyncConnect(() -> mqttProcessor.setConnCallback(callback), State.NOT_CONNECTED);
+        doAsyncConnect(() -> mqttProcessor.setConnCallback(new ConnCallback() {
+            @Override
+            public void connectComplete(boolean reconnect) {
+                // Make sure that the state is CONNECTED before invoking the callback
+                state = State.CONNECTED;
+                callback.connectComplete(reconnect);
+            }
+
+            @Override
+            public void connectLost(Throwable cause) {
+                callback.connectLost(cause);
+            }
+
+            @Override
+            public void connectFailed(Throwable cause) {
+                callback.connectFailed(cause);
+            }
+        }), State.NOT_CONNECTED);
     }
 
     private void doAsyncConnect(Runnable callbackSetter, State failedState) {
@@ -258,8 +293,14 @@ public class MqttConnection {
                 mqttProcessor.setManageAutoConnect(false);
             }
 
-            // This method blocks since it waits for the connect completion
-            this.transport.connect(connectOptions);
+            /**
+             * Looks paho has bugs for concurrent mqtt client initialization as it throws when
+             * multiple threads create the client at the same time.
+             */
+            synchronized (MqttConnection.this) {
+                // This method blocks since it waits for the connect completion
+                this.transport.connect(connectOptions);
+            }
 
             registerDeviceActivateInfoCommand();
         } catch (Throwable e) {
@@ -310,8 +351,10 @@ public class MqttConnection {
 
         closeUnderlyingTransport();
 
-        // Shutdown the underlying thread pools
-        executorFactory.shutdownExecutorServices();
+        // shutdown the underlying thread pools if it's not shared by multiple connections
+        if (!executorFactory.getClass().isAnnotationPresent(Sharable.class)) {
+            executorFactory.shutdownExecutorServices();
+        }
 
         state = State.CLOSED;
     }
@@ -334,9 +377,15 @@ public class MqttConnection {
                 log.error("[BUG] underlying transport is already initialized.");
             }
 
-            transport = new MqttClient(profile.getServerUrl(), getClientId(), new MemoryPersistence());
-            transport.setCallback(mqttProcessor);
-            transport.setTimeToWait(profile.getTimeToWait() * 1000);
+            /**
+             * Looks paho has bugs for concurrent mqtt client initialization as it throws when
+             * multiple threads create the client at the same time.
+             */
+            synchronized (MqttConnection.class) {
+                transport = new MqttClient(profile.getServerUrl(), getClientId(), new MemoryPersistence());
+                transport.setCallback(mqttProcessor);
+                transport.setTimeToWait(profile.getTimeToWait() * 1000);
+            }
         } catch (MqttException e) {
             log.error("failed to create MqttClient", e);
             throw new EnvisionException(e, EnvisionError.INIT_MQTT_CLIENT_FAILED);
@@ -404,7 +453,7 @@ public class MqttConnection {
             subTopicCache.remove(topic);
         } catch (Exception e) {
             // normally this should not happen
-            log.error("failed to unsubscribe topic {}", topic, e);
+            log.warn("failed to unsubscribe topic {}", topic, e);
         }
     }
 

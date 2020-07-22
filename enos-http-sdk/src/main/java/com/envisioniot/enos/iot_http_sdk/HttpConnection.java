@@ -323,10 +323,8 @@ public class HttpConnection
      */
     private <T extends BaseMqttResponse> T publishCall(Call call, BaseMqttRequest<T> request) throws EnvisionException
     {
-        try
+        try(Response httpResponse = call.execute())
         {
-            Response httpResponse = call.execute();
-
             T response = request.getAnswerType().newInstance();
             try
             {
