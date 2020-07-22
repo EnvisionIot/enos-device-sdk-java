@@ -201,3 +201,4 @@ Under development
 * 2020/03/08 (2.2.3): Solve decoder loading trouble in all-in-one JAR application.
 * 2020/05/07 (2.2.6): Support ECC certificate.
 * 2020/05/14 (2.2.7): Fix NPE while uploading measurepoints.
+* 2020/07/22 (2.2.9): Fix security vulnerabilities.
