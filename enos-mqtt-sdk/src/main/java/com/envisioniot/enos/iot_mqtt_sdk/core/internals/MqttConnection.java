@@ -4,10 +4,8 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.*;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionError;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.*;
-import com.envisioniot.enos.iot_mqtt_sdk.core.profile.BaseProfile;
-import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultActivateResponseHandler;
-import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DeviceCredential;
-import com.envisioniot.enos.iot_mqtt_sdk.core.profile.FileProfile;
+import com.envisioniot.enos.iot_mqtt_sdk.core.profile.*;
+import com.envisioniot.enos.iot_mqtt_sdk.core.codec.ICompressor;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.activate.DeviceActivateInfoCommand;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginRequest;
@@ -22,6 +20,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
@@ -608,15 +607,18 @@ public class MqttConnection {
         protected void doFastPublish() throws EnvisionException {
             try {
                 if (transport.isConnected()) {
+                    ICompressor compressor = profile.getCompressType().getCompressor();
+                    byte[] compressedPayload = compressor.compress(delivered.encode());
+
                     if (delivered.getQos() == 1) {
-                        transport.publish(delivered.getMessageTopic(), delivered.encode(), delivered.getQos(), false);
+                        transport.publish(delivered.getMessageTopic(), compressedPayload, delivered.getQos(), false);
                     }
                     /**
                      * issue: https://github.com/eclipse/paho.mqtt.java/issues/421
                      */
                     else if (delivered.getQos() == 0) {
                         synchronized (transport) {
-                            transport.publish(delivered.getMessageTopic(), delivered.encode(), delivered.getQos(), false);
+                            transport.publish(delivered.getMessageTopic(), compressedPayload, delivered.getQos(), false);
                         }
                     } else {
                         throw new EnvisionException(EnvisionError.QOS_2_NOT_ALLOWED);
@@ -625,6 +627,8 @@ public class MqttConnection {
                     buffer.putDisconnectedMessage(delivered);
                 }
 
+            } catch (IOException e) {
+                throw new EnvisionException(e.getMessage(), e, EnvisionError.COMPRESS_FAILED);
             } catch (MqttException e) {
                 log.error("publish message failed messageRequestId {} ", delivered.getMessageTopic());
                 throw new EnvisionException(e.getMessage(), e, EnvisionError.MQTT_CLIENT_PUBLISH_FAILED);

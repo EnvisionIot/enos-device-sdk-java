@@ -2,6 +2,7 @@ package com.envisioniot.enos.iot_mqtt_sdk.core.profile;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignUtil;
+import com.envisioniot.enos.iot_mqtt_sdk.core.codec.CompressType;
 import com.envisioniot.enos.iot_mqtt_sdk.util.GsonUtil;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -73,6 +74,7 @@ public class Config {
     private String sslPassword = "";
     private String sslAlgorithm = "SunX509";
     private String sslJksPath = "";
+    private CompressType compressType = CompressType.DEFAULT;
     private boolean isEccConnect = false;
     private boolean hostnameVerifyEnabled = false;
 
@@ -238,6 +240,14 @@ public class Config {
     public Config setSignMethod(SignMethod signMethod) {
         this.signMethodName = signMethod.getName();
         return this;
+    }
+
+    public CompressType getCompressType() {
+        return compressType;
+    }
+
+    public void setCompressType(CompressType compressType) {
+        this.compressType = compressType;
     }
 
     public Config setEccConnect(boolean isEccConnect) {
