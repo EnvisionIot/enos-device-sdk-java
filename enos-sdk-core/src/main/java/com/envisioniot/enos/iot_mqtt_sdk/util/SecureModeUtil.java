@@ -18,25 +18,16 @@ public class SecureModeUtil {
     public final static String INTEGRATION_DK = "%channel%";
 
     public static SecureMode getSecureMode(String productKey, String productSecret, final String deviceKey, String deviceSecret) {
-        String ip = getClientIp();
-        String version = getClientVersion("version");
-        String deviceClientId = deviceKey;
-        String productClientId = productKey;
-        if(!StringUtil.isEmpty(ip) && !StringUtil.isEmpty(version)){
-            String clientIdSuffix = "{ip=" + ip + ",version=" + version + "}";
-            deviceClientId = deviceClientId + clientIdSuffix;
-            productClientId = productClientId + clientIdSuffix;
-        }
 
         if (StringUtil.isNotEmpty(deviceSecret)) {
-            return new SecureMode(VIA_DEVICE_SECRET, deviceClientId, deviceSecret);
+            return new SecureMode(VIA_DEVICE_SECRET, deviceKey, deviceSecret);
         }
 
         if (StringUtil.isNotEmpty(productSecret)) {
             if (INTEGRATION_DK.equals(deviceKey)) {
-                return new SecureMode(VIA_PRODUCT_SECRET_FOR_INTEGRATION, productClientId, productSecret);
+                return new SecureMode(VIA_PRODUCT_SECRET_FOR_INTEGRATION, productKey, productSecret);
             }
-            return new SecureMode(VIA_PRODUCT_SECRET, deviceClientId, productSecret);
+            return new SecureMode(VIA_PRODUCT_SECRET, deviceKey, productSecret);
         }
 
         throw new IllegalArgumentException("deviceSecret or productSecret should be provided");

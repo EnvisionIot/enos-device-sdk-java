@@ -1,10 +1,13 @@
 package com.envisioniot.enos.iot_mqtt_sdk.core.profile;
 
+import com.envisioniot.enos.iot_mqtt_sdk.core.ClientInfoUtil;
 import com.envisioniot.enos.iot_mqtt_sdk.core.compositejks.SslContextBuilder;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignUtil;
+import com.envisioniot.enos.iot_mqtt_sdk.core.codec.CompressType;
 import com.envisioniot.enos.iot_mqtt_sdk.util.SecureMode;
 import com.envisioniot.enos.iot_mqtt_sdk.util.SecureModeUtil;
+import com.envisioniot.enos.iot_mqtt_sdk.util.StringUtil;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
 import javax.net.ssl.SSLContext;
@@ -88,7 +91,7 @@ public abstract class BaseProfile {
         Map<String, String> params = new HashMap<String, String>();
         params.put("productKey", getProductKey());
         params.put("deviceKey", getDeviceKey());
-        params.put("clientId", secureMode.getClientId());
+        params.put("clientId", secureMode.getClientId() + extraInfo());
         params.put("timestamp", timestamp + "");
 
         String mqttPassword = SignUtil.sign(secureMode.getSecret(), params, getSignMethod());
@@ -164,7 +167,7 @@ public abstract class BaseProfile {
     }
 
     public String getClientId() {
-        return getSecureMode().getClientId()
+        return getSecureMode().getClientId() + extraInfo()
                 + "|securemode=" + getSecureMode().getModeId()
                 + ",signmethod=" + getSignMethod().getName()
                 + ",timestamp=" + timestamp + "|";
@@ -182,6 +185,15 @@ public abstract class BaseProfile {
 
     public boolean isAutoReconnect() {
         return this.config.getAutoReconnect();
+    }
+
+    public BaseProfile setCompressType(CompressType compressType) {
+        this.config.setCompressType(compressType);
+        return this;
+    }
+
+    public CompressType getCompressType() {
+        return this.config.getCompressType();
     }
 
     public BaseProfile setAutoLoginSubDevice(boolean autoLoginSubDevice) {
@@ -242,6 +254,30 @@ public abstract class BaseProfile {
     public BaseProfile setHostnameVerifyEnabled(boolean hostnameVerifyEnabled) {
         this.config.setHostnameVerifyEnabled(hostnameVerifyEnabled);
         return this;
+    }
+
+    private String extraInfo() {
+        String extraInfo = "";
+        StringBuilder sb = new StringBuilder();
+
+        String ip = ClientInfoUtil.getClientIp();
+        String version = ClientInfoUtil.getClientVersion();
+
+        if (StringUtil.isNotEmpty(ip)) {
+            sb.append(String.format(",ip=%s", ip));
+        }
+        if (StringUtil.isNotEmpty(version)) {
+            sb.append(String.format(",version=%s", version));
+        }
+        if (config.getCompressType() != null) {
+            sb.append(String.format(",compress=%s", config.getCompressType()));
+        }
+
+        if (sb.toString().startsWith(",")) {
+            extraInfo = String.format("{%s}", sb.substring(1));
+        }
+
+        return extraInfo;
     }
 
     private static SSLContext createContext(String keyPath, String pwd, String algorithm) throws Exception {
