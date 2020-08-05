@@ -2,6 +2,7 @@ package com.envisioniot.enos.iot_mqtt_sdk.core.internals;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
+import com.envisioniot.enos.iot_mqtt_sdk.core.codec.ICompressor;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMessageHandler;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttArrivedMessage;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttArrivedMessage.DecodeResult;
@@ -15,6 +16,7 @@ import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -103,8 +105,11 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
 
             DecodeResult result = null;
             List<IMqttArrivedMessage> decoderList = DecoderRegistry.getDecoderList();
+            ICompressor compressor = connection.getProfile().getCompressType().getCompressor();
+            byte[] decompressedPayload = compressor.decompress(mqttMessage.getPayload());
+
             for (IMqttArrivedMessage decoder : decoderList) {
-                result = decoder.decode(topic, mqttMessage.getPayload());
+                result = decoder.decode(topic, decompressedPayload);
                 if (result != null) {
                     break;
                 }
@@ -164,6 +169,9 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
             } else if (msg instanceof BaseMqttCommand) {
                 handleCommandWithNoHandler((BaseMqttCommand<?>) msg, pathList);
             }
+        } catch (IOException e) {
+            logger.error("decompress message failed, topic {}  uncaught exception : ",
+                    topic, e);
         } catch (Exception e) {
             logger.error("UGLY INTERNAL ERR!! , processing the arrived  msg err , topic {}  uncaught exception : ",
                     topic, e);

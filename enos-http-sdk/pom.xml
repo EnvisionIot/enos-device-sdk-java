@@ -26,6 +26,15 @@
         0.1.4 support to download or delete file
     -->
 
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
     <properties>
         <!-- Build args -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
