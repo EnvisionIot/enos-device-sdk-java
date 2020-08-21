@@ -2,19 +2,18 @@ package com.envisioniot.enos.iot_http_sdk;
 
 import com.envisioniot.enos.iot_http_sdk.auth.AuthRequestBody;
 import com.envisioniot.enos.iot_http_sdk.auth.AuthResponseBody;
-import com.envisioniot.enos.iot_http_sdk.file.FileCategory;
-import com.envisioniot.enos.iot_http_sdk.file.FileDeleteResponse;
-import com.envisioniot.enos.iot_http_sdk.file.FileFormData;
-import com.envisioniot.enos.iot_http_sdk.file.IFileCallback;
+import com.envisioniot.enos.iot_http_sdk.file.*;
 import com.envisioniot.enos.iot_http_sdk.progress.IProgressListener;
 import com.envisioniot.enos.iot_http_sdk.progress.ProgressRequestWrapper;
 import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignUtil;
+import com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.FileScheme;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttArrivedMessage.DecodeResult;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttResponse;
+import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.ModelUpRawRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.UploadFileInfo;
 import com.envisioniot.enos.iot_mqtt_sdk.util.GsonUtil;
@@ -30,19 +29,21 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.CLIENT_ERROR;
-import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.SOCKET_ERROR;
-import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.UNSUCCESSFUL_AUTH;
+import static com.envisioniot.enos.iot_http_sdk.HttpConnectionError.*;
 import static com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.FormDataConstants.ENOS_MESSAGE;
 import static com.google.common.net.MediaType.JSON_UTF_8;
 import static com.google.common.net.MediaType.OCTET_STREAM;
@@ -62,6 +63,7 @@ public class HttpConnection
     public static final String VERSION = "1.1";
 
     public static final String DOWNLOAD_PATH_FORMAT = "/sys/%s/%s/file/download";
+    public static final String GET_DOWNLOAD_URL_PATH_FORMAT = "/sys/%s/%s/file/download/url";
     public static final String DELETE_PATH_FORMAT = "/sys/%s/%s/file/delete";
 
     public static final String MEDIA_TYPE_JSON_UTF_8 = JSON_UTF_8.toString();
@@ -86,6 +88,10 @@ public class HttpConnection
         private SessionConfiguration sessionConfiguration;
 
         private OkHttpClient okHttpClient;
+
+        private boolean useLark = false;
+
+        private boolean autoUpload = true;
 
         public HttpConnection build()
         {
@@ -126,6 +132,9 @@ public class HttpConnection
                 }
             });
 
+            instance.setUseLark(this.useLark);
+            instance.setAutoUpload(this.autoUpload);
+
             return instance;
         }
         
@@ -139,6 +148,16 @@ public class HttpConnection
             this.sessionConfiguration = configuration;
             return this;
         }
+
+        public Builder setUseLark(boolean useLark) {
+            this.useLark = useLark;
+            return this;
+        }
+
+        public Builder setAutoUpload(boolean autoUpload) {
+            this.autoUpload = autoUpload;
+            return this;
+        }
     }
 
     private String brokerUrl;
@@ -146,6 +165,12 @@ public class HttpConnection
     private ICredential credential;
 
     private SessionConfiguration sessionConfiguration;
+
+    @Getter @Setter
+    private boolean autoUpload = true;
+
+    @Getter @Setter
+    private boolean useLark = false;
 
     @Getter
     private OkHttpClient okHttpClient = null;
@@ -342,8 +367,13 @@ public class HttpConnection
             T response = request.getAnswerType().newInstance();
             try
             {
-                DecodeResult result = response.decode(request.getAnswerTopic(), httpResponse.body().bytes());
-                return result.getArrivedMsg();
+                DecodeResult result = response.decode(request.getAnswerTopic(),
+                        httpResponse.body() == null ? null : httpResponse.body().bytes());
+                T rsp = result.getArrivedMsg();
+                if (request.getFiles() != null && this.autoUpload && this.isUseLark()) {
+                        uploadFileByUrl(request, rsp);
+                }
+                return rsp;
             } catch (Exception e)
             {
                 log.info("failed to decode response: " + response, e);
@@ -399,6 +429,23 @@ public class HttpConnection
                     return;
                 }
                 callback.onResponse(response);
+            }
+        });
+    }
+
+    private <T extends BaseMqttResponse> void uploadFileByUrl(BaseMqttRequest<T> request, T response) {
+        List<Map> uriInfos = response.getData();
+        List<UploadFileInfo> fileInfos = request.getFiles();
+
+        Map<String, File> featureIdAndFileMap = new HashMap<>();
+        fileInfos.forEach(fileInfo -> featureIdAndFileMap.put(fileInfo.getFeatureId(), fileInfo.getFile()));
+        uriInfos.forEach(uriInfoMap -> {
+            try {
+                UriInfo uriInfo = GsonUtil.fromJson(GsonUtil.toJson(uriInfoMap), UriInfo.class);
+                String featureId = uriInfo.getFeatureId();
+                FileUtil.uploadFile(uriInfo.getUploadUrl(), featureIdAndFileMap.get(featureId), uriInfo.getHeaders());
+            } catch (Exception e) {
+                log.error("Fail to upload file, uri info: {}", uriInfoMap);
             }
         });
     }
@@ -464,11 +511,15 @@ public class HttpConnection
         }
         
         Request httpRequest = new Request.Builder()
-                .url(brokerUrl + "/multipart" + request.getMessageTopic() + "?sessionId=" + sessionId)
+                .url(brokerUrl + "/multipart" + request.getMessageTopic() + "?sessionId=" + sessionId + useLarkPart())
                 .post(body)
                 .build();
 
         return okHttpClient.newCall(httpRequest);
+    }
+
+    private String useLarkPart() {
+        return this.isUseLark()? "&useLark=" + true : "";
     }
     
     /**
@@ -501,7 +552,18 @@ public class HttpConnection
      * @return
      * @throws EnvisionException
      */
-    public InputStream downloadFile(String fileUri, FileCategory category) throws EnvisionException {
+    public InputStream downloadFile(String fileUri, FileCategory category) throws EnvisionException, IOException {
+
+        if (fileUri.startsWith(FileScheme.ENOS_LARK_URI_SCHEME)) {
+            String downloadUrl = getDownloadUrl(fileUri, category);
+            Response response =  FileUtil.downloadFile(downloadUrl);
+            if (response.isSuccessful() && response.body() != null) {
+                return response.body().byteStream();
+            } else {
+                throw new EnvisionException("file not exist");
+            }
+        }
+
         Call call = generateDownloadCall(fileUri, category);
 
         Response httpResponse;
@@ -534,7 +596,12 @@ public class HttpConnection
     }
 
     public void downloadFileAsync(String fileUri, FileCategory category, IFileCallback callback) throws EnvisionException {
-        Call call = generateDownloadCall(fileUri, category);
+        Call call;
+        if (fileUri.startsWith(FileScheme.ENOS_LARK_URI_SCHEME)) {
+            call = generateGetDownloadUrlCall(fileUri, category);
+        } else {
+            call = generateDownloadCall(fileUri, category);
+        }
 
         call.enqueue(new Callback() {
             @Override
@@ -551,13 +618,52 @@ public class HttpConnection
                 try {
                     Preconditions.checkNotNull(response);
                     Preconditions.checkNotNull(response.body());
-                    callback.onResponse(response.body().byteStream());
+                    if (response.isSuccessful() && fileUri.startsWith(FileScheme.ENOS_LARK_URI_SCHEME)) {
+                        FileDownloadResponse fileDownloadResponse = GsonUtil.fromJson(
+                                response.body().string(), FileDownloadResponse.class);
+                        String fileDownloadUrl = fileDownloadResponse.getData();
+                        response = FileUtil.downloadFile(fileDownloadUrl);
+                    }
+                    if (response.isSuccessful() && response.body() != null) {
+                        callback.onResponse(response.body().byteStream());
+                    }
                 } catch (Exception e) {
                     log.info("failed to get response: " + response, e);
                     callback.onFailure(new EnvisionException(CLIENT_ERROR));
                 }
             }
         });
+    }
+
+    public String getDownloadUrl(String fileUri, FileCategory category) throws EnvisionException {
+        Call call = generateGetDownloadUrlCall(fileUri, category);
+
+        try {
+            Response httpResponse = call.execute();
+
+            if (!httpResponse.isSuccessful()) {
+                throw new EnvisionException(httpResponse.code(), httpResponse.message());
+            }
+
+            try {
+                Preconditions.checkNotNull(httpResponse);
+                Preconditions.checkNotNull(httpResponse.body());
+
+                FileDownloadResponse response = GsonUtil.fromJson(httpResponse.body().string(), FileDownloadResponse.class);
+                return response.getData();
+            } catch (Exception e) {
+                log.info("failed to get response: " + httpResponse, e);
+                throw new EnvisionException(CLIENT_ERROR);
+            }
+        } catch (SocketException e) {
+            log.info("failed to execute request due to socket error {}", e.getMessage());
+            throw new EnvisionException(SOCKET_ERROR, e.getMessage());
+        } catch (EnvisionException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("failed to execute request", e);
+            throw new EnvisionException(CLIENT_ERROR);
+        }
     }
 
     /**
@@ -626,6 +732,29 @@ public class HttpConnection
             }
         });
 
+    }
+
+    private Call generateGetDownloadUrlCall(String fileUri, FileCategory category) throws EnvisionException {
+        checkAuth();
+
+        StaticDeviceCredential staticDeviceCredential = (StaticDeviceCredential) credential;
+
+        StringBuilder uriBuilder = new StringBuilder()
+                .append(brokerUrl)
+                .append("/multipart")
+                .append(String.format(GET_DOWNLOAD_URL_PATH_FORMAT,
+                        staticDeviceCredential.getProductKey(),
+                        staticDeviceCredential.getDeviceKey()))
+                .append("?sessionId=").append(sessionId)
+                .append("&fileUri=").append(fileUri)
+                .append("&category=").append(category.getName());
+
+        Request httpRequest = new Request.Builder()
+                .url(uriBuilder.toString())
+                .get()
+                .build();
+
+        return okHttpClient.newCall(httpRequest);
     }
 
     private Call generateDownloadCall(String fileUri, FileCategory category) throws EnvisionException {
