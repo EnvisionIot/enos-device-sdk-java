@@ -371,7 +371,7 @@ public class HttpConnection
                         httpResponse.body() == null ? null : httpResponse.body().bytes());
                 T rsp = result.getArrivedMsg();
                 if (request.getFiles() != null && this.autoUpload && this.isUseLark()) {
-                        uploadFileByUrl(request, rsp);
+                    uploadFileByUrl(request, rsp);
                 }
                 return rsp;
             } catch (Exception e)
@@ -494,10 +494,11 @@ public class HttpConnection
         MultipartBody.Builder builder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart(ENOS_MESSAGE, new String(request.encode(), UTF_8));
-        
-        for (UploadFileInfo uploadFile: request.getFiles())
-        {
-            builder.addPart(FileFormData.createFormData(uploadFile));
+
+        if (!isUseLark()) {
+            for (UploadFileInfo uploadFile : request.getFiles()) {
+                builder.addPart(FileFormData.createFormData(uploadFile));
+            }
         }
         
         RequestBody body;
