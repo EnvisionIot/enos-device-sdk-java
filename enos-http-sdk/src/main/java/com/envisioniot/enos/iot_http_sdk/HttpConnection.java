@@ -381,7 +381,10 @@ public class HttpConnection
                             String filename = uriInfo.getFilename();
                             uriInfoMap.put("filename", featureIdAndFileMap.get(filename).getName());
                             if (this.isAutoUpload()) {
-                                FileUtil.uploadFile(uriInfo.getUploadUrl(), featureIdAndFileMap.get(filename), uriInfo.getHeaders());
+                                Response uploadFileRsp = FileUtil.uploadFile(uriInfo.getUploadUrl(), featureIdAndFileMap.get(filename), uriInfo.getHeaders());
+                                if (!uploadFileRsp.isSuccessful()) {
+                                    log.warn("Fail to autoUpload file, filename: {}, uploadUrl: {}", featureIdAndFileMap.get(filename).getName(), uriInfo.getUploadUrl());
+                                }
                             }
                         } catch (Exception e) {
                             log.error("Fail to upload file, uri info: {}", uriInfoMap);
