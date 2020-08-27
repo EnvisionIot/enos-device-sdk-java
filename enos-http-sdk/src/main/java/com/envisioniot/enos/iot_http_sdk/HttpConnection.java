@@ -13,7 +13,6 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.FileScheme;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttArrivedMessage.DecodeResult;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttResponse;
-import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.ModelUpRawRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.UploadFileInfo;
 import com.envisioniot.enos.iot_mqtt_sdk.util.GsonUtil;
@@ -370,8 +369,28 @@ public class HttpConnection
                 DecodeResult result = response.decode(request.getAnswerTopic(),
                         httpResponse.body() == null ? null : httpResponse.body().bytes());
                 T rsp = result.getArrivedMsg();
-                if (request.getFiles() != null && this.autoUpload && this.isUseLark()) {
-                        uploadFileByUrl(request, rsp);
+                if (request.getFiles() != null && this.isUseLark()) {
+                    List<Map> uriInfos = rsp.getData();
+                    List<UploadFileInfo> fileInfos = request.getFiles();
+
+                    Map<String, File> featureIdAndFileMap = new HashMap<>();
+                    fileInfos.forEach(fileInfo -> featureIdAndFileMap.put(fileInfo.getFilename(), fileInfo.getFile()));
+                    uriInfos.forEach(uriInfoMap -> {
+                        try {
+                            UriInfo uriInfo = GsonUtil.fromJson(GsonUtil.toJson(uriInfoMap), UriInfo.class);
+                            String filename = uriInfo.getFilename();
+                            uriInfoMap.put("filename", featureIdAndFileMap.get(filename).getName());
+                            if (this.isAutoUpload()) {
+                                Response uploadFileRsp = FileUtil.uploadFile(uriInfo.getUploadUrl(), featureIdAndFileMap.get(filename), uriInfo.getHeaders());
+                                if (!uploadFileRsp.isSuccessful()) {
+                                    log.warn("Fail to autoUpload file, filename: {}, uploadUrl: {}", featureIdAndFileMap.get(filename).getName(), uriInfo.getUploadUrl());
+                                }
+                            }
+                        } catch (Exception e) {
+                            log.error("Fail to upload file, uri info: {}", uriInfoMap);
+                        }
+                    });
+                    rsp.setData(uriInfos);
                 }
                 return rsp;
             } catch (Exception e)
@@ -433,22 +452,6 @@ public class HttpConnection
         });
     }
 
-    private <T extends BaseMqttResponse> void uploadFileByUrl(BaseMqttRequest<T> request, T response) {
-        List<Map> uriInfos = response.getData();
-        List<UploadFileInfo> fileInfos = request.getFiles();
-
-        Map<String, File> featureIdAndFileMap = new HashMap<>();
-        fileInfos.forEach(fileInfo -> featureIdAndFileMap.put(fileInfo.getFeatureId(), fileInfo.getFile()));
-        uriInfos.forEach(uriInfoMap -> {
-            try {
-                UriInfo uriInfo = GsonUtil.fromJson(GsonUtil.toJson(uriInfoMap), UriInfo.class);
-                String featureId = uriInfo.getFeatureId();
-                FileUtil.uploadFile(uriInfo.getUploadUrl(), featureIdAndFileMap.get(featureId), uriInfo.getHeaders());
-            } catch (Exception e) {
-                log.error("Fail to upload file, uri info: {}", uriInfoMap);
-            }
-        });
-    }
 
     /**
      * Generate a request message for okHttp
@@ -494,10 +497,11 @@ public class HttpConnection
         MultipartBody.Builder builder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart(ENOS_MESSAGE, new String(request.encode(), UTF_8));
-        
-        for (UploadFileInfo uploadFile: request.getFiles())
-        {
-            builder.addPart(FileFormData.createFormData(uploadFile));
+
+        if (!isUseLark()) {
+            for (UploadFileInfo uploadFile : request.getFiles()) {
+                builder.addPart(FileFormData.createFormData(uploadFile));
+            }
         }
         
         RequestBody body;

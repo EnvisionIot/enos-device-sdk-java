@@ -1,6 +1,7 @@
 package com.envisioniot.enos.iot_http_sdk.file;
 
 import okhttp3.*;
+import org.apache.commons.collections.MapUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +17,7 @@ public class FileUtil {
         MediaType mediaType = MediaType.parse("application/octet-stream");
         RequestBody body = RequestBody.create(mediaType, file);
         Request.Builder builder = new Request.Builder();
-        if (!headers.isEmpty()) {
+        if (MapUtils.isNotEmpty(headers)) {
             headers.forEach(builder::addHeader);
         }
         Request request = builder

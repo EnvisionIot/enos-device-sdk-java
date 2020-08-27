@@ -14,6 +14,6 @@ import java.util.Map;
 public class UriInfo implements Serializable {
     String fileUri;
     String uploadUrl;
-    String featureId;
+    String filename;
     Map<String, String> headers;
 }
