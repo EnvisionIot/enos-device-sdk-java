@@ -645,20 +645,14 @@ public class HttpConnection
         try {
             Response httpResponse = call.execute();
 
-            if (!httpResponse.isSuccessful()) {
-                throw new EnvisionException(httpResponse.code(), httpResponse.message());
-            }
+            Preconditions.checkNotNull(httpResponse);
+            Preconditions.checkNotNull(httpResponse.body());
 
-            try {
-                Preconditions.checkNotNull(httpResponse);
-                Preconditions.checkNotNull(httpResponse.body());
-
-                FileDownloadResponse response = GsonUtil.fromJson(httpResponse.body().string(), FileDownloadResponse.class);
-                return response.getData();
-            } catch (Exception e) {
-                log.info("failed to get response: " + httpResponse, e);
-                throw new EnvisionException(CLIENT_ERROR);
+            FileDownloadResponse response = GsonUtil.fromJson(httpResponse.body().string(), FileDownloadResponse.class);
+            if (!response.isSuccess()) {
+                throw new EnvisionException(response.getCode(), response.getMessage());
             }
+            return response.getData();
         } catch (SocketException e) {
             log.info("failed to execute request due to socket error {}", e.getMessage());
             throw new EnvisionException(SOCKET_ERROR, e.getMessage());
