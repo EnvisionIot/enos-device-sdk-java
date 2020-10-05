@@ -1,8 +1,8 @@
 package com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl;
 
-import java.io.File;
-
 import lombok.Data;
+
+import java.io.File;
 
 /**
  * This class defines files to be uploaded 

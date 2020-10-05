@@ -1,6 +1,7 @@
-package mqtt.old;
+package mqtt;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
+import com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.OTAUpdateFailureCause;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMessageHandler;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttDeliveryMessage;
 import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultProfile;
@@ -15,27 +16,31 @@ import java.util.concurrent.TimeUnit;
  */
 public class OtaSample {
 
-    //please use your productKey  deviceKey and deviceSecret
-    static String productKey = "1lHVt6Cb";
-    static String deviceKey = "yzDevice";
-    static String deviceSecret = "cybTY9oOptWwmwx0AHzw";
+    // EnOS HTTP Broker URL, which can be obtained from Environment Information page in EnOS Console
+    static final String BROKER_URL = "tcp://broker_url:11883";
 
-    //use actual mqtt-broker url
-    static String brokerUrl = "tcp://10.27.21.6:11883";
+    // Gateway credentials, which can be obtained from Device Details page in EnOS Console
+    static final String GW_PRODUCT_KEY = "productKey";
+    static final String GW_DEVICE_KEY = "deviceKey";
+    static final String GW_DEVICE_SECRET = "deviceSecret";
 
     static MqttClient client;
 
     public static void main(String[] args) throws Exception {
-        client = new MqttClient(new DefaultProfile(brokerUrl, productKey, deviceKey, deviceSecret));
-        initWithCallback(client);
+        client = new MqttClient(new DefaultProfile(BROKER_URL, GW_PRODUCT_KEY, GW_DEVICE_KEY, GW_DEVICE_SECRET));
 
+        // register arrived msg handler to handle cloud-publish firmware upgrade
+        upgradeFirmwareByCloudPush();
+        
+        // or otherwise, in arrived msg handler, you may reject the upgrade
+        //reportUpgradeFailureCause();
+        
+        initWithCallback(client);
+        
         //report firmware version firstly
         reportVersion("initVersion");
 
-        //        upgradeFirmwareByCloudPush();
-
-
-        //        upgradeFirmwareByDeviceReq();
+        upgradeFirmwareByDeviceReq();
     }
 
     public static void upgradeFirmwareByCloudPush() {
@@ -44,6 +49,7 @@ public class OtaSample {
             public IMqttDeliveryMessage onMessage(OtaUpgradeCommand otaUpgradeCommand, List<String> list) throws Exception {
                 System.out.println("receive command: " + otaUpgradeCommand);
 
+                @SuppressWarnings("unused")
                 Firmware firmware = otaUpgradeCommand.getFirmwareInfo();
 
                 //TODO: download firmware from firmware.fileUrl
@@ -66,6 +72,17 @@ public class OtaSample {
         });
     }
 
+    public static void reportUpgradeFailureCause() throws Exception {
+        client.setArrivedMsgHandler(OtaUpgradeCommand.class, new IMessageHandler<OtaUpgradeCommand, IMqttDeliveryMessage>() {
+            @Override
+            public IMqttDeliveryMessage onMessage(OtaUpgradeCommand otaUpgradeCommand, List<String> list) throws Exception {
+                // device ignore upgrade
+                reportUpgradeProgress(OTAUpdateFailureCause.DEVICE_IGNORED_THIS_UPGRADE_CODE, "");
+                return null;
+            }
+        });
+    }
+
     public static void upgradeFirmwareByDeviceReq() throws Exception {
         List<Firmware> firmwareList = getFirmwaresFromCloud();
         String version = null;
@@ -82,6 +99,7 @@ public class OtaSample {
             System.out.println(sb.toString());
         }
         if (version != null) {
+            // start firmware upgrade, download firmware
             reportUpgradeProgress("20", "20");
             TimeUnit.SECONDS.sleep(10);
             reportUpgradeProgress("80", "80");
@@ -92,7 +110,8 @@ public class OtaSample {
 
     public static void reportVersion(String version) throws Exception {
         OtaVersionReportRequest.Builder builder = new OtaVersionReportRequest.Builder();
-        builder.setProductKey(productKey).setDeviceKey(deviceKey).setVersion(version);
+        builder.setProductKey(GW_PRODUCT_KEY).setDeviceKey(GW_DEVICE_KEY)
+               .setVersion(version);
         OtaVersionReportRequest request = builder.build();
         System.out.println("send =>" + request.toString());
         client.fastPublish(builder.build());
@@ -106,7 +125,7 @@ public class OtaSample {
 
     private static List<Firmware> getFirmwaresFromCloud() throws Exception {
         OtaGetVersionRequest.Builder builder = new OtaGetVersionRequest.Builder();
-        builder.setProductKey(productKey).setDeviceKey(deviceKey);
+        builder.setProductKey(GW_PRODUCT_KEY).setDeviceKey(GW_DEVICE_KEY);
         OtaGetVersionRequest request = builder.build();
         OtaGetVersionResponse response = client.publish(request);
         System.out.println("send getversion request =>" + request.toString());

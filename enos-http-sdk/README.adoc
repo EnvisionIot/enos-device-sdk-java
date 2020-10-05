@@ -135,6 +135,8 @@ try
 * link:/enos-sdk-sample/src/main/java/http/MeasurepointPostSample.java[Establishing Connection with EnOS Cloud]
 * link:/enos-sdk-sample/src/main/java/http/MeasurepointPostSample.java[Reporting Measurement Points]
 * link:/enos-sdk-sample/src/main/java/http/PostFileSample.java[Reporting a File as Measurement Points]
+* link:/enos-sdk-sample/src/main/java/http/PostFileByLarkSample.java[Reporting a File as Measurement Points By Lark]
+* link:/enos-sdk-sample/src/main/java/http/DownloadFileByLarkSample.java[Download a File By Lark]
 
 == Related Information
 
@@ -153,3 +155,4 @@ Under development
 * 2020/05/07 (0.1.4): Support deleting and downloading files
 * 2020/05/14 (0.1.5): Fix NPE while uploading measurepoints
 * 2020/07/22 (0.1.6): Fix security vulnerabilities.
+* 2020/08/17 (0.1.7-SNAPSHOT): Adding uniform file service.

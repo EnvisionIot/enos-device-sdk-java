@@ -5,6 +5,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.DeliveryTopicF
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.MethodConstants;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.util.FileUtil;
+import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
@@ -265,6 +266,9 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
         for (UploadFileInfo fileInfo : this.getFiles()) {
             Map<String, String> map = Maps.newHashMap();
             map.put("featureId", fileInfo.getFeatureId());
+            map.put("fileName", fileInfo.getFilename());
+            map.put("fileLength", String.valueOf(fileInfo.getFile().length()));
+            map.put("fileExt", getFileExt(fileInfo.getFilename()).get());
 
             try {
                 HashCode md5 = Files.hash(fileInfo.getFile(), Hashing.md5());
@@ -278,4 +282,17 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
         return disposition;
     }
 
+    private static Optional<String> getFileExt(String filename) {
+        return FileUtil.getExtensionByStringHandling(filename)
+                .transform(ext -> {
+                    if (!ext.isEmpty())
+                    {
+                        return "." + ext;
+                    }
+                    else
+                    {
+                        return "";
+                    }
+                });
+    }
 }
