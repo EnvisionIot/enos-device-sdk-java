@@ -30,20 +30,24 @@ public class OtaSample {
         client = new MqttClient(new DefaultProfile(BROKER_URL, GW_PRODUCT_KEY, GW_DEVICE_KEY, GW_DEVICE_SECRET));
 
         // register arrived msg handler to handle cloud-publish firmware upgrade
-        upgradeFirmwareByCloudPush();
-        
-        // or otherwise, in arrived msg handler, you may reject the upgrade
-        //reportUpgradeFailureCause();
-        
-        initWithCallback(client);
-        
+        setOtaUpgradeMessageHandler();
+
+        System.out.println("start connect with callback ... ");
+        client.connect();
+
         //report firmware version firstly
         reportVersion("initVersion");
 
-        upgradeFirmwareByDeviceReq();
+        // or otherwise, in arrived msg handler, you may reject the upgrade
+        //reportUpgradeFailureCause();
+
+//        upgradeFirmwareByDeviceReq();
+        while (true) {
+            TimeUnit.SECONDS.sleep(5);
+        }
     }
 
-    public static void upgradeFirmwareByCloudPush() {
+    public static void setOtaUpgradeMessageHandler() {
         client.setArrivedMsgHandler(OtaUpgradeCommand.class, new IMessageHandler<OtaUpgradeCommand, IMqttDeliveryMessage>() {
             @Override
             public IMqttDeliveryMessage onMessage(OtaUpgradeCommand otaUpgradeCommand, List<String> list) throws Exception {
@@ -56,13 +60,13 @@ public class OtaSample {
 
                 //mock reporting progress
                 reportUpgradeProgress("20", "20");
-                TimeUnit.SECONDS.sleep(2);
+                TimeUnit.SECONDS.sleep(3);
 
                 reportUpgradeProgress("25", "25");
-                TimeUnit.SECONDS.sleep(20);
+                TimeUnit.SECONDS.sleep(5);
 
                 reportUpgradeProgress("80", "80");
-                TimeUnit.SECONDS.sleep(20);
+                TimeUnit.SECONDS.sleep(10);
 
                 //firmware upgrade success, report new version
                 reportVersion(otaUpgradeCommand.getFirmwareInfo().version);
@@ -101,9 +105,9 @@ public class OtaSample {
         if (version != null) {
             // start firmware upgrade, download firmware
             reportUpgradeProgress("20", "20");
-            TimeUnit.SECONDS.sleep(10);
+            TimeUnit.SECONDS.sleep(3);
             reportUpgradeProgress("80", "80");
-            TimeUnit.SECONDS.sleep(20);
+            TimeUnit.SECONDS.sleep(3);
             reportVersion(version);
         }
     }
@@ -114,13 +118,15 @@ public class OtaSample {
                .setVersion(version);
         OtaVersionReportRequest request = builder.build();
         System.out.println("send =>" + request.toString());
-        client.fastPublish(builder.build());
+        OtaVersionReportResponse otaVersionReportResponse = client.publish(builder.build());
+        System.out.println(otaVersionReportResponse);
     }
 
-    private static void reportUpgradeProgress(String progress, String desc) throws Exception {
+    private static void reportUpgradeProgress(String progress, String desc) throws Exception  {
         OtaProgressReportRequest.Builder builder = new OtaProgressReportRequest.Builder();
         builder.setStep(progress).setDesc(desc);
-        client.fastPublish(builder.build());
+        OtaProgressReportResponse otaProgressReportResponse = client.publish(builder.build());
+        System.out.println(otaProgressReportResponse);
     }
 
     private static List<Firmware> getFirmwaresFromCloud() throws Exception {
@@ -131,11 +137,6 @@ public class OtaSample {
         System.out.println("send getversion request =>" + request.toString());
         System.out.println("receive getversion response =>" + response.toString());
         return response.getFirmwareList();
-    }
-
-    private static void initWithCallback(MqttClient client) throws Exception {
-        System.out.println("start connect with callback ... ");
-        client.connect();
     }
 }
 

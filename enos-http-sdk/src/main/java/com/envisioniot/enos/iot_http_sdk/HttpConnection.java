@@ -10,7 +10,11 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignUtil;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.FileScheme;
+import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMessageHandler;
+import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttArrivedMessage;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttArrivedMessage.DecodeResult;
+import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttDeliveryMessage;
+import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.BaseMqttCommand;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.ModelUpRawRequest;
@@ -39,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -188,6 +193,41 @@ public class HttpConnection
     @Getter @Setter
     private AtomicInteger requestId = new AtomicInteger(0);
 
+    private Map<Class<? extends IMqttArrivedMessage>, IMessageHandler<?, ?>> arrivedMsgHandlerMap = new ConcurrentHashMap<>();
+
+    public void setArrivedMsgHandler(Class<? extends IMqttArrivedMessage> arrivedMsgCls, IMessageHandler<?, ?> handler) {
+        arrivedMsgHandlerMap.put(arrivedMsgCls, handler);
+    }
+
+    public void removeArrivedMsgHandler(Class<? extends IMqttArrivedMessage> arrivedMsgCls) {
+        arrivedMsgHandlerMap.remove(arrivedMsgCls);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void handleAdditionalMsg(Headers headers){
+        final String CMD_PAYLOAD =  "command-payload";
+
+        if(headers == null){
+            return;
+        }
+
+        BaseMqttCommand<?> command = MethodClassMap.convertFromJson(headers.get(CMD_PAYLOAD));
+        if(command == null){
+            return;
+        }
+
+        final IMessageHandler<BaseMqttCommand<?>, IMqttDeliveryMessage> handler =
+                (IMessageHandler<BaseMqttCommand<?>, IMqttDeliveryMessage>) arrivedMsgHandlerMap.get(command.getClass());
+        if(handler == null){
+            return;
+        }
+        try {
+            handler.onMessage(command, null);
+        } catch (Exception e) {
+            log.warn("Failed to run : " + headers.get(CMD_PAYLOAD), e);
+        }
+    }
+
     /**
      * Generate sign for auth request, only use SHA-256 method
      * 
@@ -255,6 +295,8 @@ public class HttpConnection
 
                     log.info("auth success, store sessionId = " + sessionId);
 
+                    authMonitor.leave();
+                    handleAdditionalMsg(response.headers());
                     return lastAuthResponse;
                 } else
                 {
@@ -274,7 +316,9 @@ public class HttpConnection
                 throw new EnvisionException(e, CLIENT_ERROR);
             } finally
             {
-                authMonitor.leave();
+                if(authMonitor.isOccupied()) {
+                    authMonitor.leave();
+                }
             }
         } else if (authMonitor.enter(10L, TimeUnit.SECONDS))
         {
@@ -366,6 +410,7 @@ public class HttpConnection
             T response = request.getAnswerType().newInstance();
             try
             {
+                handleAdditionalMsg(httpResponse.headers());
                 DecodeResult result = response.decode(request.getAnswerTopic(),
                         httpResponse.body() == null ? null : httpResponse.body().bytes());
                 T rsp = result.getArrivedMsg();
@@ -440,6 +485,7 @@ public class HttpConnection
                 }
                 try
                 {
+                    handleAdditionalMsg(httpResponse.headers());
                     DecodeResult result = response.decode(request.getAnswerTopic(), httpResponse.body().bytes());
                     response = result.getArrivedMsg();
                 } catch (Exception e)
