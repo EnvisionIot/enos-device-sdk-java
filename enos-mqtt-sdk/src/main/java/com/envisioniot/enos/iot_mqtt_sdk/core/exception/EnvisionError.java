@@ -49,6 +49,8 @@ public class EnvisionError implements IEnvisionError
     public static final EnvisionError FUTURE_TASK_TIME_OUT = new EnvisionError(-125, "sync request timeout");
     public static final EnvisionError THREAD_INTERRUPTED = new EnvisionError(-126, "thread interrupted");
     public static final EnvisionError QOS_2_NOT_ALLOWED = new EnvisionError(-127, "qos 2 not allowed");
+    public static final EnvisionError COMPRESS_FAILED = new EnvisionError(-128, "compress failed");
+    public static final EnvisionError DECOMPRESS_FAILED = new EnvisionError(-129, "decompress failed");
 
     private final int errorCode;
     private final String errorMessage;

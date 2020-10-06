@@ -61,7 +61,7 @@ public class MeasurepointPostSample
         
         // Wait for more than life time, the connection shall automatically re-auth
         System.out.println("current sessionId: " + connection.getSessionId());
-        TimeUnit.MINUTES.sleep(2L);
+//        TimeUnit.MINUTES.sleep(2L);
         
         request = buildMeasurepointPostRequest();
         try

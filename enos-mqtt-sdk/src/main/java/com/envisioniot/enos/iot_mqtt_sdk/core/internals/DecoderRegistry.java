@@ -61,7 +61,8 @@ public class DecoderRegistry {
                     "com.envisioniot.enos.iot_mqtt_sdk.message.upstream.ota.OtaVersionReportResponse",
                     "com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tag.TagDeleteResponse",
                     "com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tag.TagUpdateResponse",
-                    "com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tag.TagQueryResponse"
+                    "com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tag.TagQueryResponse",
+                    "com.envisioniot.enos.iot_mqtt_sdk.message.upstream.log.LogPostResponse"
             };
             Arrays.stream(classNames).forEach(n -> {
                 IMqttArrivedMessage decoder;
