@@ -6,11 +6,11 @@
         <groupId>com.envisioniot</groupId>
         <artifactId>enos-iot-sdk-parent</artifactId>
         <version>0.1.1</version>
-        <relativePath>..</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>enos-core</artifactId>
-    <version>0.1.7-SNAPSHOT</version>
+    <version>0.1.7</version>
 
     <packaging>jar</packaging>
 
@@ -70,7 +70,7 @@
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
-            <version>1.9.3</version>
+            <version>1.9.4</version>
         </dependency>
 
         <dependency>
