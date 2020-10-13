@@ -426,13 +426,17 @@ public class HttpConnection
                             String filename = uriInfo.getFilename();
                             uriInfoMap.put("filename", featureIdAndFileMap.get(filename).getName());
                             if (this.isAutoUpload()) {
-                                Response uploadFileRsp = FileUtil.uploadFile(uriInfo.getUploadUrl(), featureIdAndFileMap.get(filename), uriInfo.getHeaders());
+                                Response uploadFileRsp = FileUtil.uploadFile(uriInfo.getUploadUrl(),
+                                        featureIdAndFileMap.get(filename), uriInfo.getHeaders());
                                 if (!uploadFileRsp.isSuccessful()) {
-                                    log.warn("Fail to autoUpload file, filename: {}, uploadUrl: {}", featureIdAndFileMap.get(filename).getName(), uriInfo.getUploadUrl());
+                                    log.error("Fail to upload file automatically, filename: {}, uploadUrl: {}, msg: {}",
+                                            featureIdAndFileMap.get(filename).getName(),
+                                            uriInfo.getUploadUrl(),
+                                            uploadFileRsp.message());
                                 }
                             }
                         } catch (Exception e) {
-                            log.error("Fail to upload file, uri info: {}", uriInfoMap);
+                            log.error("Fail to upload file, uri info: {}, exception: {}", uriInfoMap, e);
                         }
                     });
                     rsp.setData(uriInfos);
@@ -607,11 +611,12 @@ public class HttpConnection
         if (fileUri.startsWith(FileScheme.ENOS_LARK_URI_SCHEME)) {
             String downloadUrl = getDownloadUrl(fileUri, category);
             Response response =  FileUtil.downloadFile(downloadUrl);
-            if (response.isSuccessful() && response.body() != null) {
-                return response.body().byteStream();
-            } else {
-                throw new EnvisionException("file not exist");
-            }
+            Preconditions.checkArgument(response.isSuccessful(),
+                    "fail to download file, downloadUrl: %s, msg: %s",
+                    downloadUrl, response.message());
+            Preconditions.checkNotNull(response.body(),
+                    "response body is null, downloadUrl: %s", downloadUrl);
+            return response.body().byteStream();
         }
 
         Call call = generateDownloadCall(fileUri, category);
