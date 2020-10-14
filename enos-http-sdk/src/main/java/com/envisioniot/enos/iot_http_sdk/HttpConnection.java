@@ -73,6 +73,8 @@ public class HttpConnection
     public static final String MEDIA_TYPE_JSON_UTF_8 = JSON_UTF_8.toString();
     public static final String MEDIA_TYPE_OCTET_STREAM = OCTET_STREAM.toString();
 
+    private static final String CMD_PAYLOAD =  "command-payload";
+
     /**
      * Builder for http connection. A customized OkHttpClient can be provided, to
      * define specific connection pool, proxy etc. Find more at
@@ -205,13 +207,14 @@ public class HttpConnection
 
     @SuppressWarnings("unchecked")
     public void handleAdditionalMsg(Headers headers){
-        final String CMD_PAYLOAD =  "command-payload";
-
         if(headers == null){
             return;
         }
-
-        BaseMqttCommand<?> command = MethodClassMap.convertFromJson(headers.get(CMD_PAYLOAD));
+        String msg = headers.get(CMD_PAYLOAD);
+        if(msg == null){
+            return;
+        }
+        BaseMqttCommand<?> command = MethodClassMap.convertFromJson(msg);
         if(command == null){
             return;
         }
