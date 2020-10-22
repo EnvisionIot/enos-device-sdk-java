@@ -66,4 +66,6 @@ public class MethodConstants {
     public static final String MEASUREPOINT_RESUME_BATCH = "thing.measurepoint.resume.batch";
 
     public static final String LOG_POST = "thing.log.post";
+
+    public static final String NETWORK_STATUS_REPORT = "network.status.report";
 }
