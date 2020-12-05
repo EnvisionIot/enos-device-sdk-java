@@ -83,4 +83,5 @@ public class ArrivedTopicPattern {
     public static final String MEASUREPOINT_RESUME_BATCH_REPLY = "/sys/(.*)/(.*)/thing/measurepoint/resume/batch_reply";
 
     public static final String LOG_POST_REPLY = "/sys/(.*)/(.*)/thing/log/post_reply";
+    public static final String NETWORK_STATUS_REPLY = "/sys/(.*)/(.*)/network/status/report_reply";
 }

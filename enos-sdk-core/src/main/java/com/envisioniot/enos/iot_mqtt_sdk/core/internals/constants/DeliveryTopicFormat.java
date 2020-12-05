@@ -73,4 +73,5 @@ public class DeliveryTopicFormat {
     public static final String MEASUREPOINT_RESUME_BATCH = "/sys/%s/%s/thing/measurepoint/resume/batch";
 
     public static final String LOG_POST = "/sys/%s/%s/thing/log/post";
+    public static final String NETWORK_STATUS_REPORT = "/sys/%s/%s/network/status/report";
 }
