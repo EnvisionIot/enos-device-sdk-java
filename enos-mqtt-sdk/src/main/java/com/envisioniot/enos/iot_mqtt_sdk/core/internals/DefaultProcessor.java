@@ -1,7 +1,6 @@
 package com.envisioniot.enos.iot_mqtt_sdk.core.internals;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
-import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.codec.ICompressor;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMessageHandler;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttArrivedMessage;
@@ -42,10 +41,6 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
     private Map<String, MqttResponseToken<? extends IMqttResponse>> rspTokenMap = new ConcurrentHashMap<>();
     private Map<Class<? extends IMqttArrivedMessage>, IMessageHandler<?, ?>> arrivedMsgHandlerMap = new ConcurrentHashMap<>();
 
-    /**
-     * User defined connect callback
-     */
-    private volatile IConnectCallback legacyCallback = null;
     private volatile ConnCallback connCallback = null;
 
     private volatile boolean onceConnected = false;
@@ -79,13 +74,6 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
              */
             logger.error("Client <{}> connect failed, error: {}",
                     connection.getClientId(), Utils.getRootMessage(error));
-        }
-
-        // We call legacy callback on each conn failure
-        if (legacyCallback != null) {
-            connection.getExecutorFactory().getCallbackExecutor().execute(() -> {
-                legacyCallback.onConnectFailed(reasonCode);
-            });
         }
 
         // We call new callback only on initial conn failure
@@ -240,16 +228,6 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
         arrivedMsgHandlerMap.put(arrivedMsgCls, handler);
     }
 
-    @Deprecated
-    public void setConnectCallback(IConnectCallback callback) {
-        legacyCallback = callback;
-    }
-
-    @Deprecated
-    public IConnectCallback getConnectCallback() {
-        return legacyCallback;
-    }
-
     public void setConnCallback(ConnCallback callback) {
         this.connCallback = callback;
     }
@@ -258,8 +236,6 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
     public void removeArrivedMsgHandler(String topic) {
         arrivedMsgHandlerMap.remove(topic);
     }
-
-
 
     @Override
     public void connectionLost(Throwable throwable) {
@@ -283,15 +259,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
 
         if (connCallback == null) {
             logger.error("Client <{}> Connection Lost", this.connection.getClientId(), throwable);
-        }
-
-        if (legacyCallback != null) {
-            connection.getExecutorFactory().getCallbackExecutor().execute(() -> {
-                legacyCallback.onConnectLost();
-            });
-        }
-
-        if (connCallback != null) {
+        } else {
             connection.getExecutorFactory().getCallbackExecutor().execute(() -> {
                 connCallback.connectLost(throwable);
             });
@@ -325,11 +293,6 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
         }
 
         this.connection.notifyConnectSuccess();
-        if (legacyCallback != null) {
-            connection.getExecutorFactory().getCallbackExecutor().execute(() -> {
-                legacyCallback.onConnectSuccess();
-            });
-        }
 
         if (connCallback != null) {
             connection.getExecutorFactory().getCallbackExecutor().execute(() -> {

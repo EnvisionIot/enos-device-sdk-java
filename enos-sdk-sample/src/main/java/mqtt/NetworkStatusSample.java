@@ -1,6 +1,6 @@
 package mqtt;
 
-import com.envisioniot.enos.iot_mqtt_sdk.core.IConnectCallback;
+import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.network.NetworkStatusReportRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.network.NetworkStatusReportResponse;
@@ -33,22 +33,23 @@ public class NetworkStatusSample {
     private static synchronized void initClient() {
         client = new MqttClient(BROKER_URL, PRODUCT_KEY, DEVICE_KEY, DEVICE_SECRET);
         System.out.println("connect to: " + BROKER_URL);
-        client.connect(new IConnectCallback() {
+        client.connect(new ConnCallback() {
             @Override
-            public void onConnectSuccess() {
+            public void connectComplete(boolean reconnect) {
                 System.out.println("connect alpha success");
             }
+
             @Override
-            public void onConnectLost() {
+            public void connectLost(Throwable cause) {
                 System.out.println("connect lost");
             }
+
             @Override
-            public void onConnectFailed(int reasonCode) {
+            public void connectFailed(Throwable cause) {
                 System.out.println("connect failed");
             }
         });
     }
-
 
     public static void main(String[] args) throws Exception {
         try {
