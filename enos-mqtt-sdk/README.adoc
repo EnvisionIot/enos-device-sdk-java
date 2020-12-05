@@ -57,7 +57,7 @@ desired version by inserting the following code snippet:
     <dependency>
         <groupId>com.envisioniot</groupId>
         <artifactId>enos-mqtt</artifactId>
-        <version>2.2.1</version>
+        <version>2.2.12</version>
         <!--This is latest current version number when this document is being written. Yours may vary.-->
     </dependency>
 ----
