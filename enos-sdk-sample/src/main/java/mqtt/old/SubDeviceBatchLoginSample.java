@@ -14,6 +14,7 @@ import mqtt.old.helper.BaseConnectCallback;
 import mqtt.old.helper.Helper;
 
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class SubDeviceBatchLoginSample {
@@ -37,8 +38,8 @@ public class SubDeviceBatchLoginSample {
     }
 
     private static void performTest(MqttClient client) throws Exception {
-        int batchCount = 1;
-        int mpn = 1;
+        int batchCount = 100000;
+        int mpn = 10;
 
         SubDeviceLoginBatchRequest request = SubDeviceLoginBatchRequest.builder()
                 .addSubDeviceInfo("K9HMijjG", "mqtt_sample_gwgroup_dev01", "sGCCwSIcD1AJ5wa8OcPW")
@@ -73,20 +74,27 @@ public class SubDeviceBatchLoginSample {
                                 .addMeasurePoints(ImmutableMap.of(
                                         "temp", new Random().nextDouble(),
                                         "timestamp", System.currentTimeMillis(),
-                                        "value", new Random().nextInt(10000)
+                                        "value", new Random().nextInt(10000),
+                                        "invalidMp", 200
                                 ))
+                                .setQos(0)
                                 .build();
 
                         builder.addRequest(req);
                     }
                 }
 
-                MeasurepointPostBatchResponse rsp = client.publish(builder.build());
-                if (rsp.isSuccess()) {
-                    log.info("sent measurepoint batch request");
-                } else {
-                    log.info("failed to measure point to sub-device: " + rsp.getMessage());
-                }
+                client.fastPublish(builder.setSkipInvalidMeasurepoints(true).setQos(0).build());
+                log.info("sent measurepoint batch request");
+
+//                MeasurepointPostBatchResponse rsp = client.publish(builder.setSkipInvalidMeasurepoints(true).setQos(0).build());
+//                if (rsp.isSuccess()) {
+//                    log.info("sent measurepoint batch request");
+//                } else {
+//                    log.info("failed to measure point to sub-device: " + rsp.getMessage());
+//                }
+
+//                TimeUnit.SECONDS.sleep(1);
             }
         }
     }

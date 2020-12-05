@@ -20,9 +20,6 @@ public abstract class BaseMqttRequest<T extends BaseMqttResponse> extends BaseAn
         implements IMqttRequest<T> {
     private static final long serialVersionUID = -1782194368038165072L;
 
-    /**
-     * issue: https://github.com/eclipse/paho.mqtt.java/issues/421
-     */
     private int qos = 1;
 
     private String productKey;

@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>enos-mqtt</artifactId>
-    <version>2.2.10</version>
+    <version>2.2.11-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
@@ -44,6 +44,7 @@
         2.2.5 add ecc support to connect mqtt-broker
         2.2.6 refine connection state management and avoid duplicate re-connections in extreme case
         2.2.10 support message compression
+        2.2.10 upgrade to paho mqtt 1.2.2 and remove synchronize lock for qos 0
     -->
 
     <properties>
@@ -71,7 +72,7 @@
         <dependency>
             <groupId>org.eclipse.paho</groupId>
             <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-            <version>1.2.1</version>
+            <version>1.2.2</version>
         </dependency>
 
         <dependency>

@@ -612,14 +612,8 @@ public class MqttConnection {
 
                     if (delivered.getQos() == 1) {
                         transport.publish(delivered.getMessageTopic(), compressedPayload, delivered.getQos(), false);
-                    }
-                    /**
-                     * issue: https://github.com/eclipse/paho.mqtt.java/issues/421
-                     */
-                    else if (delivered.getQos() == 0) {
-                        synchronized (transport) {
-                            transport.publish(delivered.getMessageTopic(), compressedPayload, delivered.getQos(), false);
-                        }
+                    } else if (delivered.getQos() == 0) {
+                        transport.publish(delivered.getMessageTopic(), compressedPayload, delivered.getQos(), false);
                     } else {
                         throw new EnvisionException(EnvisionError.QOS_2_NOT_ALLOWED);
                     }
