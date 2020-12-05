@@ -22,14 +22,9 @@
     
     <!-- Version History -->
     <!-- 
-        0.0.3 remove command DeleteDeviceCommand DisableDeviceCommand
-        use these command instead: SubDeviceDelete, SubDeviceDisable SubDeviceEnable commands
-        remove RrpcCommand, the ServiceInvocationCommand handle the sync service as well
-        add requests including : QueryDeviceTag,AttributeQuery,AttributeUpdate
         0.0.4 rename some requests
         2.1.0 release
         2.1.1 support dynamic activate(login by productSecret)
-        support init by config file
         2.1.2 support ota feature
         2.1.3 message integration
         2.1.4 internal logic refactor, fix thread pool resource leak
@@ -44,7 +39,7 @@
         2.2.5 add ecc support to connect mqtt-broker
         2.2.6 refine connection state management and avoid duplicate re-connections in extreme case
         2.2.10 support message compression
-        2.2.10 upgrade to paho mqtt 1.2.2 and remove synchronize lock for qos 0
+        2.2.11 upgrade to paho mqtt 1.2.2 and remove synchronize lock for qos 0
     -->
 
     <properties>
