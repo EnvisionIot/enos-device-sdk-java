@@ -18,9 +18,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 /**
  * stateless processor of mqtt messages
@@ -30,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @SuppressWarnings("deprecation")
 public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
-    private static Logger logger = LoggerFactory.getLogger(DefaultProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultProcessor.class);
     private static final int RECONN_INIT_DELAY_MILLIS = 8000;
 
     private final MqttConnection connection;
@@ -38,8 +37,8 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
     /**
      * move the states to the independent modules
      */
-    private Map<String, MqttResponseToken<? extends IMqttResponse>> rspTokenMap = new ConcurrentHashMap<>();
-    private Map<Class<? extends IMqttArrivedMessage>, IMessageHandler<?, ?>> arrivedMsgHandlerMap = new ConcurrentHashMap<>();
+    private final Map<String, MqttResponseToken<? extends IMqttResponse>> rspTokenMap = new ConcurrentHashMap<>();
+    private final Map<Class<? extends IMqttArrivedMessage>, IMessageHandler<?, ?>> arrivedMsgHandlerMap = new ConcurrentHashMap<>();
 
     private volatile ConnCallback connCallback = null;
 
@@ -49,8 +48,10 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
     // use auto reconnect feature in paho library.
     private volatile boolean manageAutoConnect = false;
 
-    private volatile Timer reconnectTimer; // Automatic reconnect timer
-    private volatile int reconnectDelay = RECONN_INIT_DELAY_MILLIS; // Reconnect delay, starts at 8s
+    private volatile ScheduledFuture<?> scheduledFuture;
+
+    // Reconnect delay, starts at 8s
+    private volatile int reconnectDelay = RECONN_INIT_DELAY_MILLIS;
 
     public DefaultProcessor(MqttConnection connection) {
         this.connection = connection;
@@ -78,14 +79,12 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
 
         // We call new callback only on initial conn failure
         if (!onceConnected && connCallback != null) {
-            connection.getExecutorFactory().getCallbackExecutor().execute(() -> {
-                connCallback.connectFailed(error);
-            });
+            connection.getExecutorFactory().getCallbackExecutor().execute(() -> connCallback.connectFailed(error));
         }
     }
 
     @Override
-    public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
+    public void messageArrived(String topic, MqttMessage mqttMessage) {
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("{} , {}", topic, mqttMessage);
@@ -250,7 +249,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
             return;
         }
 
-        if (reconnectTimer != null) {
+        if (scheduledFuture != null) {
             // If we are still in progress of handling previous lost connection, there is
             // no need to handle the new one.
             logger.info("ignored connection lost as re-connection is in progress");
@@ -266,7 +265,7 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
         }
 
         if (manageAutoConnect && connection.isReconnectAllowed()) {
-            startReconnectTimer();
+            startReconnectTask();
         }
     }
 
@@ -295,51 +294,50 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
         this.connection.notifyConnectSuccess();
 
         if (connCallback != null) {
-            connection.getExecutorFactory().getCallbackExecutor().execute(() -> {
-                connCallback.connectComplete(reconnect);
-            });
+            connection.getExecutorFactory().getCallbackExecutor().execute(() -> connCallback.connectComplete(reconnect));
         }
     }
 
     /**
-     * Here we have to ensure that we only start one timer that
+     * Here we have to ensure that we only start one task that
      * does the schedule of reconnection。
      */
-    private synchronized void startReconnectTimer() {
-        if (reconnectTimer != null) {
+    private synchronized void startReconnectTask() {
+
+        if (scheduledFuture != null) {
             // re-connection is in progress
             return;
         }
-        logger.info("start reconnect timer in {}ms", reconnectDelay);
-        reconnectTimer = new Timer("MQTT Reconnect: " + connection.getClientId());
-        reconnectTimer.schedule(new ReconnectTask(), reconnectDelay);
+        logger.info("start reconnect task in {}ms", reconnectDelay);
+
+        scheduledFuture = connection.getExecutorFactory().getTimeoutScheduler().schedule(new ReconnectTask(), reconnectDelay, TimeUnit.MILLISECONDS);
     }
 
-    private void rescheduleReconnectTimer() {
-        Preconditions.checkNotNull(reconnectTimer, "[bug] reconnect timer not initialized");
-
+    private synchronized void rescheduleReconnectTask() {
+        Preconditions.checkNotNull(scheduledFuture, "[bug] reconnectTask not initialized");
         if (reconnectDelay < 128000) {
             reconnectDelay = reconnectDelay * 2;
         }
 
-        logger.info("reschedule reconnect timer in {}ms", reconnectDelay);
-        reconnectTimer.schedule(new ReconnectTask(), reconnectDelay);
+        logger.info("reschedule reconnect task in {}ms", reconnectDelay);
+        scheduledFuture = connection.getExecutorFactory().getTimeoutScheduler().schedule(new ReconnectTask(), reconnectDelay, TimeUnit.MILLISECONDS);
     }
 
-    private void stopReconnectTimer() {
-        logger.info("stop reconnect timer now");
+    private synchronized void stopReconnectTask() {
+        logger.info("stop reconnect task now");
         reconnectDelay = RECONN_INIT_DELAY_MILLIS;
 
-        if (reconnectTimer != null) {
-            reconnectTimer.cancel();
+        if (scheduledFuture != null && !scheduledFuture.isCancelled()) {
+            scheduledFuture.cancel(true);
         }
-        reconnectTimer = null;
+        scheduledFuture = null;
     }
 
     private class ReconnectTask extends TimerTask {
+        @Override
         public void run() {
             if (connection.isConnected()) {
-                stopReconnectTimer();
+                stopReconnectTask();
                 return;
             }
 
@@ -351,9 +349,9 @@ public class DefaultProcessor implements MqttCallback, MqttCallbackExtended {
 
             if (connection.isConnected()) {
                 logger.info("successfully reconnected to broker");
-                stopReconnectTimer();
+                stopReconnectTask();
             } else {
-                rescheduleReconnectTimer();
+                rescheduleReconnectTask();
             }
         }
     }
