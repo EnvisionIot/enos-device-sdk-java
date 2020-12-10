@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -48,7 +49,7 @@ public class EnosByteArrayOutputStream extends OutputStream {
         buf = CACHED_BYTES.poll();
 
         if (buf == null) {
-            buf = new BytesInfo(new byte[4024], false);
+            buf = new BytesInfo(new byte[4096], false);
         }
         count = 0;
     }
@@ -60,13 +61,14 @@ public class EnosByteArrayOutputStream extends OutputStream {
      *
      * @param minCapacity the desired minimum capacity
      * @throws OutOfMemoryError if {@code minCapacity < 0}.  This is
-     * interpreted as a request for the unsatisfiably large capacity
-     * {@code (long) Integer.MAX_VALUE + (minCapacity - Integer.MAX_VALUE)}.
+     *                          interpreted as a request for the unsatisfiably large capacity
+     *                          {@code (long) Integer.MAX_VALUE + (minCapacity - Integer.MAX_VALUE)}.
      */
     private void ensureCapacity(int minCapacity) {
         // overflow-conscious code
-        if (minCapacity - buf.bytes.length > 0)
+        if (minCapacity - buf.bytes.length > 0) {
             grow(minCapacity);
+        }
     }
 
     /**
@@ -87,10 +89,12 @@ public class EnosByteArrayOutputStream extends OutputStream {
         // overflow-conscious code
         int oldCapacity = buf.bytes.length;
         int newCapacity = oldCapacity << 1;
-        if (newCapacity - minCapacity < 0)
+        if (newCapacity - minCapacity < 0) {
             newCapacity = minCapacity;
-        if (newCapacity - MAX_ARRAY_SIZE > 0)
+        }
+        if (newCapacity - MAX_ARRAY_SIZE > 0) {
             newCapacity = hugeCapacity(minCapacity);
+        }
         byte[] tmpBuf = Arrays.copyOf(buf.bytes, newCapacity);
 
         if (buf.fromCache) {
@@ -102,8 +106,9 @@ public class EnosByteArrayOutputStream extends OutputStream {
     }
 
     private static int hugeCapacity(int minCapacity) {
-        if (minCapacity < 0) // overflow
+        if (minCapacity < 0) {
             throw new OutOfMemoryError();
+        }
         return (minCapacity > MAX_ARRAY_SIZE) ?
                 Integer.MAX_VALUE :
                 MAX_ARRAY_SIZE;
@@ -112,8 +117,9 @@ public class EnosByteArrayOutputStream extends OutputStream {
     /**
      * Writes the specified byte to this byte array output stream.
      *
-     * @param   b   the byte to be written.
+     * @param b the byte to be written.
      */
+    @Override
     public void write(int b) {
         ensureCapacity(count + 1);
         buf.bytes[count] = (byte) b;
@@ -124,10 +130,11 @@ public class EnosByteArrayOutputStream extends OutputStream {
      * Writes <code>len</code> bytes from the specified byte array
      * starting at offset <code>off</code> to this byte array output stream.
      *
-     * @param   b     the data.
-     * @param   off   the start offset in the data.
-     * @param   len   the number of bytes to write.
+     * @param b   the data.
+     * @param off the start offset in the data.
+     * @param len the number of bytes to write.
      */
+    @Override
     public void write(byte b[], int off, int len) {
         if ((off < 0) || (off > b.length) || (len < 0) ||
                 ((off + len) - b.length > 0)) {
@@ -143,8 +150,8 @@ public class EnosByteArrayOutputStream extends OutputStream {
      * the specified output stream argument, as if by calling the output
      * stream's write method using <code>out.write(buf, 0, count)</code>.
      *
-     * @param      out   the output stream to which to write the data.
-     * @exception IOException  if an I/O error occurs.
+     * @param out the output stream to which to write the data.
+     * @throws IOException if an I/O error occurs.
      */
     public void writeTo(OutputStream out) throws IOException {
         out.write(buf.bytes, 0, count);
@@ -155,8 +162,6 @@ public class EnosByteArrayOutputStream extends OutputStream {
      * stream to zero, so that all currently accumulated output in the
      * output stream is discarded. The output stream can be used again,
      * reusing the already allocated buffer space.
-     *
-     * @see     java.io.ByteArrayInputStream#count
      */
     public void reset() {
         count = 0;
@@ -167,14 +172,13 @@ public class EnosByteArrayOutputStream extends OutputStream {
      * size of this output stream and the valid contents of the buffer
      * have been copied into it.
      *
-     * @return  the current contents of this output stream, as a byte array.
-     * @see     java.io.ByteArrayOutputStream#size()
+     * @return the current contents of this output stream, as a byte array.
+     * @see java.io.ByteArrayOutputStream#size()
      */
     public byte[] toByteArray() {
         if (buf != null) {
-            return Arrays.copyOf(buf.bytes, count);
+            initData();
         }
-
         Preconditions.checkArgument(data != null, "BUG");
         return data;
     }
@@ -182,9 +186,8 @@ public class EnosByteArrayOutputStream extends OutputStream {
     /**
      * Returns the current size of the buffer.
      *
-     * @return  the value of the <code>count</code> field, which is the number
-     *          of valid bytes in this output stream.
-     * @see     java.io.ByteArrayOutputStream#count
+     * @return the value of the <code>count</code> field, which is the number
+     * of valid bytes in this output stream.
      */
     public int size() {
         return count;
@@ -203,11 +206,11 @@ public class EnosByteArrayOutputStream extends OutputStream {
      * required.
      *
      * @return String decoded from the buffer's contents.
-     * @since  JDK1.1
+     * @since JDK1.1
      */
     @Override
     public String toString() {
-        return new String(buf.bytes, 0, count);
+        return new String(buf.bytes, 0, count, StandardCharsets.UTF_8);
     }
 
     /**
@@ -221,12 +224,11 @@ public class EnosByteArrayOutputStream extends OutputStream {
      * java.nio.charset.CharsetDecoder} class should be used when more control
      * over the decoding process is required.
      *
-     * @param      charsetName  the name of a supported
-     *             {@link java.nio.charset.Charset charset}
-     * @return     String decoded from the buffer's contents.
-     * @exception UnsupportedEncodingException
-     *             If the named charset is not supported
-     * @since      JDK1.1
+     * @param charsetName the name of a supported
+     *                    {@link java.nio.charset.Charset charset}
+     * @return String decoded from the buffer's contents.
+     * @throws UnsupportedEncodingException If the named charset is not supported
+     * @since JDK1.1
      */
     public String toString(String charsetName)
             throws UnsupportedEncodingException {
@@ -242,13 +244,21 @@ public class EnosByteArrayOutputStream extends OutputStream {
     public void close() throws IOException {
         if (!closed.getAndSet(true)) {
             Preconditions.checkArgument(buf != null, "BUG");
-            data = Arrays.copyOf(buf.bytes, count);
+            initData();
 
             if (buf.fromCache) {
+                // return the buffer to the pool
                 CACHED_BYTES.add(buf);
                 Preconditions.checkArgument(CACHED_BYTES.size() <= CACHE_BYTES_NUM, "BUG");
-                buf = null;
             }
+
+            buf = null;
+        }
+    }
+
+    private void initData() {
+        if (buf != null && (data == null || data.length != count)) {
+            data = Arrays.copyOf(buf.bytes, count);
         }
     }
 
