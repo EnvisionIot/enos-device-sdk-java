@@ -204,36 +204,6 @@ public class MqttConnection {
         }
     }
 
-    @Deprecated
-    public synchronized void connect(IConnectCallback callback) {
-        if (state != State.NOT_CONNECTED) {
-            // We can't use EnvisionException here as we don't want to mark this method throwing exception
-            throw new IllegalStateException("connect is not allowed at state: " + state);
-        }
-        if (callback == null) {
-            throw new IllegalArgumentException("callback should not be null");
-        }
-        doAsyncConnect(() -> mqttProcessor.setConnectCallback(new IConnectCallback() {
-
-            @Override
-            public void onConnectSuccess() {
-                // Make sure that the state is CONNECTED before invoking the callback
-                state = State.CONNECTED;
-                callback.onConnectSuccess();
-            }
-
-            @Override
-            public void onConnectLost() {
-                callback.onConnectLost();
-            }
-
-            @Override
-            public void onConnectFailed(int reasonCode) {
-                callback.onConnectFailed(reasonCode);
-            }
-        }), State.NOT_CONNECTED);
-    }
-
     public synchronized void connect(ConnCallback callback) {
         if (state != State.NOT_CONNECTED) {
             // We can't use EnvisionException here as we don't want to mark this method throwing exception
@@ -245,7 +215,8 @@ public class MqttConnection {
         doAsyncConnect(() -> mqttProcessor.setConnCallback(new ConnCallback() {
             @Override
             public void connectComplete(boolean reconnect) {
-                // Make sure that the state is CONNECTED before invoking the callback
+                // Make sure that the state is CONNECTED before invoking the callback.
+                // This callback method is invoked by paho (not by us).
                 state = State.CONNECTED;
                 callback.connectComplete(reconnect);
             }
@@ -612,14 +583,8 @@ public class MqttConnection {
 
                     if (delivered.getQos() == 1) {
                         transport.publish(delivered.getMessageTopic(), compressedPayload, delivered.getQos(), false);
-                    }
-                    /**
-                     * issue: https://github.com/eclipse/paho.mqtt.java/issues/421
-                     */
-                    else if (delivered.getQos() == 0) {
-                        synchronized (transport) {
-                            transport.publish(delivered.getMessageTopic(), compressedPayload, delivered.getQos(), false);
-                        }
+                    } else if (delivered.getQos() == 0) {
+                        transport.publish(delivered.getMessageTopic(), compressedPayload, delivered.getQos(), false);
                     } else {
                         throw new EnvisionException(EnvisionError.QOS_2_NOT_ALLOWED);
                     }

@@ -46,7 +46,7 @@ desired version by inserting the following code snippet:
 <dependency>
     <groupId>com.envisioniot</groupId>
     <artifactId>enos-http</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.8</version>
     <!--This is latest current version number when this document is being written. Yours may vary.-->
 </dependency>
 ----
@@ -155,5 +155,6 @@ Under development
 * 2020/01/15 (Initial Release): Reporting measurement points (including file-type points)
 * 2020/05/07 (0.1.4): Support deleting and downloading files
 * 2020/05/14 (0.1.5): Fix NPE while uploading measurepoints
-* 2020/07/22 (0.1.6): Fix security vulnerabilities.
-* 2020/08/17 (0.1.7): Support file upload/download via EnOS LARK.
+* 2020/07/22 (0.1.6): Fix security vulnerabilities
+* 2020/08/17 (0.1.7): Support file upload/download via EnOS LARK and support OTA
+* 2020/12/09 (0.1.8): Add some log information

@@ -104,26 +104,14 @@ public class MqttClient {
         this.connection.connect();
     }
 
-    /**
-     * Connect with the specified callback. This call doesn't block current thread as
-     * the connect with callback is performed in async way.
-     *
-     * @param callback which would be called after it fails to connect or succeeds in
-     *                 connecting or connection is lost.
-     */
-    @Deprecated
-    public void connect(IConnectCallback callback) {
-        this.connection.connect(callback);
-    }
-
     public void connect(ConnCallback callback) {
         this.connection.connect(callback);
     }
 
     /**
-     * This method is used to re-connect to broker after invoking {@link MqttClient#disconnect()}.
-     * Also this method can even be called to force re-connecting to broker
-     * after {@link MqttClient#connect()} or {@link MqttClient#connect(IConnectCallback)}.
+     * This method is used to re-connect to broker after invoking {@link MqttClient#disconnect()}. Also
+     * this method can even be called to force re-connecting to broker after {@link MqttClient#connect()}
+     * or {@link MqttClient#connect(ConnCallback)}.
      *
      * @throws EnvisionException
      */
