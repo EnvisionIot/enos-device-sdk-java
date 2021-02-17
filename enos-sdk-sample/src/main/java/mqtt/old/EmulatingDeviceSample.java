@@ -300,7 +300,8 @@ public class EmulatingDeviceSample {
             MeasurepointPostRequest request = MeasurepointPostRequest.builder()
                     .setProductKey(productKey)
                     .setDeviceKey(deviceKey)
-                    .addMeasurePoints(measurepoints).build();
+                    .addMeasurePoints(measurepoints)
+                    .build();
 
             MeasurepointPostResponse response = client.publish(request);
             if (response.isSuccess()) {

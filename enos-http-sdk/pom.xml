@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>enos-http</artifactId>
-    <version>0.1.8-SNAPSHOT</version>
+    <version>0.1.8</version>
 
     <packaging>jar</packaging>
 
@@ -25,6 +25,7 @@
         0.1.3 Refactored to share common codes with HTTP integration
         0.1.4 support to download or delete file
         0.1.7 support OTA, support file upload/download via EnOS LARK
+        0.1.8 2.2 GA fix some log and sample
     -->
 
     <build>
