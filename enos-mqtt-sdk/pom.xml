@@ -19,9 +19,9 @@
     <url>https://github.com/EnvisionIot/enos-device-sdk-java</url>
 
     <description>EnOS Device SDK For Java (MQTT)</description>
-    
+
     <!-- Version History -->
-    <!-- 
+    <!--
         0.0.4 rename some requests
         2.1.0 release
         2.1.1 support dynamic activate(login by productSecret)
@@ -63,7 +63,7 @@
         <dependency>
             <groupId>com.envisioniot</groupId>
             <artifactId>enos-core</artifactId>
-            <version>0.1.8</version>
+            <version>0.1.9-SNAPSHOT</version>
         </dependency>
 
         <dependency>
