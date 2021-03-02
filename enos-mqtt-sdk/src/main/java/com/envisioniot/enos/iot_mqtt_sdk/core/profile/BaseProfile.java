@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static org.eclipse.paho.client.mqttv3.MqttConnectOptions.MQTT_VERSION_3_1_1;
+
 public abstract class BaseProfile {
 
     public static final String VERSION = "1.1";
@@ -104,6 +106,7 @@ public abstract class BaseProfile {
         connectOptions.setConnectionTimeout(this.config.getConnectionTimeout());
         connectOptions.setMaxInflight(this.config.getMaxInFlight());
         connectOptions.setHttpsHostnameVerificationEnabled(this.config.isHostnameVerifyEnabled());
+        connectOptions.setMqttVersion(MQTT_VERSION_3_1_1);
         if (config.getSslSecured()) {
             if (this.sslContext == null) {
                 try {
