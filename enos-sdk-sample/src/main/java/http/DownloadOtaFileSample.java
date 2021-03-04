@@ -13,9 +13,9 @@ import java.io.InputStream;
 
 /**
  * @author :charlescai
- * @date :2020-04-21
+ * @date :2021-03-04
  */
-public class DownloadFileSample {
+public class DownloadOtaFileSample {
     // EnOS HTTP Broker URL, which can be obtained from Environment Information page in EnOS Console
     static final String BROKER_URL = "https://broker_url/";
 
@@ -39,10 +39,10 @@ public class DownloadFileSample {
                 .build();
 
         // fileUri is an enos scheme file uri
-        String fileUri = "enos-connect://xxx.txt";
-        int bufferLength = 1024;
+        String fileUri = "enos-connect://xxx.zip";
+        int bufferLength = 1024 * 1024;
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            InputStream inputStream = connection.downloadFile(fileUri, FileCategory.FEATURE);
+            InputStream inputStream = connection.downloadFile(fileUri, FileCategory.OTA);
             byte[] buffer = new byte[bufferLength];
             int len;
             while ((len = inputStream.read(buffer)) != -1) {
@@ -56,10 +56,10 @@ public class DownloadFileSample {
 
         // Asynchronously call the file download request
         try {
-            connection.downloadFileAsync(fileUri, FileCategory.FEATURE, new IFileCallback() {
+            connection.downloadFileAsync(fileUri, FileCategory.OTA, new IFileCallback() {
                         @Override
                         public void onResponse(InputStream inputStream) throws IOException {
-                            System.out.println("download file asynchronously");
+                            System.out.println("download ota file asynchronously");
                             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                                 byte[] buffer = new byte[bufferLength];
                                 int len;
@@ -80,6 +80,6 @@ public class DownloadFileSample {
         } catch (EnvisionException e) {
             e.printStackTrace();
         }
-
     }
 }
+
