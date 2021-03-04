@@ -197,3 +197,4 @@ Under development
 * 2020/07/22 (2.2.9): Fix security vulnerabilities.
 * 2020/10/05 (2.2.10): Support message compression.
 * 2020/12/09 (2.2.13): Support NetworkStatusReportRequest and upgrade paho mqtt.
+* 2020/03/04 (2.2.15): Support ConnectionStatePostRequest and fix duplicate login bug.

@@ -4,12 +4,7 @@ import com.envisioniot.enos.iot_http_sdk.HttpConnection;
 import com.envisioniot.enos.iot_http_sdk.SessionConfiguration;
 import com.envisioniot.enos.iot_http_sdk.StaticDeviceCredential;
 import com.envisioniot.enos.iot_http_sdk.file.FileCategory;
-import com.envisioniot.enos.iot_http_sdk.file.IFileCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * @author mengyuantan
