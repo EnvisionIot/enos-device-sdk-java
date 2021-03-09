@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>enos-http</artifactId>
-    <version>0.1.8</version>
+    <version>0.1.9-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
@@ -26,13 +26,14 @@
         0.1.4 support to download or delete file
         0.1.7 support OTA, support file upload/download via EnOS LARK
         0.1.8 2.2 GA fix some log and sample
+        0.1.9 support ssl for http auth
     -->
 
     <build>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <filtering>true</filtering>
+                <filtering>false</filtering>
             </resource>
         </resources>
     </build>
@@ -62,7 +63,7 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>3.12.3</version>
+            <version>4.9.0</version>
         </dependency>
 
         <dependency>

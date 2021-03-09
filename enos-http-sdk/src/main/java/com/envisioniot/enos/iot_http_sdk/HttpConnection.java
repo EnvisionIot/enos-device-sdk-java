@@ -5,6 +5,7 @@ import com.envisioniot.enos.iot_http_sdk.auth.AuthResponseBody;
 import com.envisioniot.enos.iot_http_sdk.file.*;
 import com.envisioniot.enos.iot_http_sdk.progress.IProgressListener;
 import com.envisioniot.enos.iot_http_sdk.progress.ProgressRequestWrapper;
+import com.envisioniot.enos.iot_http_sdk.ssl.OkHttpUtil;
 import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
@@ -99,8 +100,7 @@ public class HttpConnection
 
         private boolean autoUpload = true;
 
-        public HttpConnection build()
-        {
+        public HttpConnection build() throws EnvisionException {
             HttpConnection instance = new HttpConnection();
 
             Preconditions.checkNotNull(brokerUrl);
@@ -118,12 +118,8 @@ public class HttpConnection
             // allocate client
             if (okHttpClient == null)
             {
-                okHttpClient = new OkHttpClient.Builder()
-                        .connectTimeout(10L, TimeUnit.SECONDS)
-                        .readTimeout(2L, TimeUnit.MINUTES)
-                        .writeTimeout(2L, TimeUnit.MINUTES)
-                        .retryOnConnectionFailure(false)
-                        .build();
+                okHttpClient = OkHttpUtil.generateHttpsClient(sessionConfiguration.isSslSecured(), sessionConfiguration.isEccConnect(),
+                        sessionConfiguration.getJksPath(), sessionConfiguration.getJksPassword());
             }
             instance.okHttpClient = okHttpClient;
 
@@ -532,8 +528,7 @@ public class HttpConnection
         Request httpRequest = new Request.Builder()
                 .url(brokerUrl + "/topic" + request.getMessageTopic() + "?sessionId=" + sessionId).post(body).build();
 
-        Call call = okHttpClient.newCall(httpRequest);
-        return call;
+        return okHttpClient.newCall(httpRequest);
     }
     
     

@@ -19,4 +19,14 @@ public class SessionConfiguration
 
     @Builder.Default
     private int lifetime = DEFAULT_LIFETIME;
+
+    @Builder.Default
+    private boolean sslSecured = false;
+
+    @Builder.Default
+    private boolean isEccConnect = false;
+
+    private String jksPath;
+
+    private String jksPassword;
 }

@@ -10,7 +10,6 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRe
 import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This sample shows how to post measurepoints over HTTP to EnOS IoT.
@@ -35,8 +34,7 @@ public class MeasurepointPostSample
               .build();
     }
     
-    public static void main(String[] args) throws InterruptedException
-    {
+    public static void main(String[] args) throws EnvisionException {
         // construct a static device credential via ProductKey, DeviceKey and DeviceSecret
         StaticDeviceCredential credential = new StaticDeviceCredential(
                 PRODUCT_KEY, DEVICE_KEY, DEVICE_SECRET);
