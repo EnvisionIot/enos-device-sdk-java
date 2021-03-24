@@ -284,6 +284,7 @@ public class HttpConnection
                     lastAuthResponse = new Gson().fromJson(response.body().charStream(), AuthResponseBody.class);
                     // update sessionId
                     if (!lastAuthResponse.isSuccess()) {
+                        log.warn(lastAuthResponse.toString());
                         throw new EnvisionException(lastAuthResponse.getCode(), lastAuthResponse.getMessage());
                     }
 
