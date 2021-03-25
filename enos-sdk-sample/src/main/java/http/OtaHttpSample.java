@@ -137,8 +137,7 @@ public class OtaHttpSample
         });
     }
 
-    public static void main(String[] args) throws InterruptedException
-    {
+    public static void main(String[] args) throws InterruptedException, EnvisionException {
         // construct a static device credential via ProductKey, DeviceKey and DeviceSecret
         StaticDeviceCredential credential = new StaticDeviceCredential(
                 PRODUCT_KEY, DEVICE_KEY, DEVICE_SECRET);
