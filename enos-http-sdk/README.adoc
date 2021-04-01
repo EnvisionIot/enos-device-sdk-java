@@ -46,7 +46,7 @@ desired version by inserting the following code snippet:
 <dependency>
     <groupId>com.envisioniot</groupId>
     <artifactId>enos-http</artifactId>
-    <version>0.1.8</version>
+    <version>0.1.9</version>
     <!--This is latest current version number when this document is being written. Yours may vary.-->
 </dependency>
 ----
@@ -133,6 +133,7 @@ try
 == Sample Code
 
 * link:/enos-sdk-sample/src/main/java/http/MeasurepointPostSample.java[Establishing Connection with EnOS Cloud]
+* link:/enos-sdk-sample/src/main/java/http/HttpBiDirectionalAuthenticate.java[Establishing Bi-directional Authenticated Connection with EnOS Cloud]
 * link:/enos-sdk-sample/src/main/java/http/MeasurepointPostSample.java[Reporting Measurement Points]
 * link:/enos-sdk-sample/src/main/java/http/PostFileSample.java[Reporting a File as Measurement Points]
 * link:/enos-sdk-sample/src/main/java/http/PostFileByLarkSample.java[Reporting a File as Measurement Points By Lark]
@@ -158,3 +159,4 @@ Under development
 * 2020/07/22 (0.1.6): Fix security vulnerabilities
 * 2020/08/17 (0.1.7): Support file upload/download via EnOS LARK and support OTA
 * 2020/12/09 (0.1.8): Add some log information
+* 2021/04/01 (0.1.9): Support bi-directional authenticated connection with EnOS Cloud

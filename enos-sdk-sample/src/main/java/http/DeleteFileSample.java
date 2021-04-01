@@ -21,7 +21,7 @@ public class DeleteFileSample {
     static final String DEVICE_KEY = "deviceKey";
     static final String DEVICE_SECRET = "deviceSecret";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws EnvisionException {
         // construct a static device credential via ProductKey, DeviceKey and DeviceSecret
         StaticDeviceCredential credential = new StaticDeviceCredential(
                 PRODUCT_KEY, DEVICE_KEY, DEVICE_SECRET);
