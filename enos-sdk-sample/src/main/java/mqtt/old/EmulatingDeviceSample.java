@@ -3,6 +3,7 @@ package mqtt.old;
 import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.MqttClient;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMessageHandler;
+import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.device.SubDeviceDeleteCommand;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.device.SubDeviceDeleteReply;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.device.SubDeviceDisableCommand;
@@ -18,11 +19,15 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginR
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogoutRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogoutResponse;
-import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
-import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostResponse;
+import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.*;
+import com.google.common.base.Preconditions;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import mqtt.old.helper.Helper;
 
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -40,7 +45,9 @@ public class EmulatingDeviceSample {
 
     private static final String DEFAULT_SERVER_URL = Helper.SERVER_URL;
 
-    public static void main(String appArgs[]) throws Exception {
+    private static volatile boolean ignoreInvalidMeasurePoints = false;
+
+    public static void main(String[] appArgs) throws Exception {
         if (appArgs.length > 1) {
             throw new IllegalArgumentException("Only accept one argument. usage: EmulatingDeviceSample server-url");
         }
@@ -53,15 +60,18 @@ public class EmulatingDeviceSample {
             System.out.print("> ");
 
             String input = reader.readLine().trim();
-            if (input.toLowerCase().equals("help")) {
+            if ("help".equals(input.toLowerCase())) {
                 System.out.println("setServerUrl url");
                 System.out.println("connect productKey deviceKey deviceSecret");
-                System.out.println("publish mpName1 mpValue1 mpType1 [mpName2 mpValue2 mpType2] [...] [subProductKey subDeviceKey]"); // mp: measure point
+                System.out.println("publish mpName1 mpValue1 mpType1 [mpName2 mpValue2 mpType2] [...] [subProductKey subDeviceKey]");
+                System.out.println("publishEvent eventId1 param1 value1 type1 [param2 value2 type2] [...] [subProductKey subDeviceKey]");
+                System.out.println("updateAttrs attr1 value1 type1 [attr2 value2 type2] [...] [subProductKey subDeviceKey]");
                 System.out.println("registerMessageHandler");
                 System.out.println("loginSubDevice subProductKey subDeviceKey subDeviceSecret");
                 System.out.println("logoutSubDevice subProductKey subDeviceKey");
                 System.out.println("reportVersion currentVersion");
                 System.out.println("enableFirmwareUpgrade");
+                System.out.println("ignoreInvalidMeasurePoints true/false");
                 System.out.println("disconnect");
                 System.out.println("exit");
 
@@ -85,10 +95,7 @@ public class EmulatingDeviceSample {
                             client = new MqttClient(serverUrl, args[1], args[2], args[3]);
                             client.getProfile()
                                     .setConnectionTimeout(60)
-                                    .setAutoReconnect(true)
-//                                    .setSSLSecured(true)
-//                                    .setSSLJksPath("C:\\Users\\jian.zhang4\\device-auth\\beta\\mqtt-sample-dev01\\mqtt-sample-dev01.jks", "123456")
-                            ;
+                                    .setAutoReconnect(true);
                             client.connect(new ConnCallback() {
 
                                 @Override
@@ -113,70 +120,51 @@ public class EmulatingDeviceSample {
                         }
                     }
                     break;
+                case "ignoreInvalidMeasurePoints":
+                    if (args.length < 2) {
+                        System.err.println("Error: invalid command line. Input help for more details");
+                    } else {
+                        ignoreInvalidMeasurePoints = Boolean.parseBoolean(args[1]);
+                    }
+                    break;
                 case "publish":
                     if (validate(args, 4, true, client, false)) {
-
-                        int numberOfMeasurePoints = (args.length - 1) / 3;
-                        int left = args.length - 1 - numberOfMeasurePoints * 3;
-                        if (left != 0 && left != 2) {
-                            System.err.println("Error: invalid command line. Input help for more details");
-                            break;
+                        val featureArgs = getModelFeatureArgs(client, args, 1);
+                        if (featureArgs != null) {
+                            publishMeasurepoint(client, featureArgs);
                         }
-
-                        Map<String, Object> measurePoints = new HashMap<>();
-                        boolean failed = false;
-                        for (int i = 0; i < numberOfMeasurePoints; ++i) {
-                            String field = args[i * 3 + 1];
-                            Object value = args[i * 3 + 2];
-                            Object type = args[i * 3 + 3];
-
-                            if (type.equals("double")) {
-                                value = Double.valueOf(args[i * 3 + 2]);
-                            } else if (type.equals("float")) {
-                                value = Float.valueOf(args[i * 3 + 2]);
-                            } else if (type.equals("int")) {
-                                value = Integer.valueOf(args[i * 3 + 2]);
-                            } else if (!args[3].equals("string")) {
-                                System.err.println("Error: don't support measure point type " + args[3]);
-                                failed = true;
-                                break;
-                            }
-
-                            measurePoints.put(field, value);
+                    }
+                    break;
+                case "publishEvent":
+                    if (validate(args, 5, true, client, false)) {
+                        val featureArgs = getModelFeatureArgs(client, args, 2);
+                        if (featureArgs != null) {
+                            publishEvent(client, args[1], featureArgs);
                         }
-                        if (failed) {
-                            break;
+                    }
+                    break;
+                case "updateAttrs":
+                    if (validate(args, 4, true, client, false)) {
+                        val featureArgs = getModelFeatureArgs(client, args, 1);
+                        if (featureArgs != null) {
+                            updateAttributes(client, featureArgs);
                         }
-
-                        String productKey = client.getProfile().getProductKey();
-                        String deviceKey = client.getProfile().getDeviceKey();
-                        if (left == 2) {
-                            int offset = 1 + numberOfMeasurePoints * 3;
-                            productKey = args[offset];
-                            deviceKey = args[offset + 1];
-                        }
-
-                        publishMeasurepoint(client, measurePoints, productKey, deviceKey);
                     }
                     break;
                 case "registerMessageHandler":
                     if (validate(args, 1, false, client, false)) {
                         client.setArrivedMsgHandler(ServiceInvocationCommand.class, createServiceCommandHandler());
                         client.setArrivedMsgHandler(MeasurepointSetCommand.class, createMeasurepointSetHandler(client));
-                        client.setArrivedMsgHandler(SubDeviceDisableCommand.class, new IMessageHandler<SubDeviceDisableCommand, SubDeviceDisableReply>() {
-                            @Override
-                            public SubDeviceDisableReply onMessage(SubDeviceDisableCommand arrivedMessage, List<String> argList) throws Exception {
-                                System.out.println("argList: " + argList + ", topic: " + arrivedMessage.getMessageTopic());
-                                return null;
-                            }
-                        });
-                        client.setArrivedMsgHandler(SubDeviceDeleteCommand.class, new IMessageHandler<SubDeviceDeleteCommand, SubDeviceDeleteReply>() {
-                            @Override
-                            public SubDeviceDeleteReply onMessage(SubDeviceDeleteCommand arrivedMessage, List<String> argList) throws Exception {
-                                System.out.println("argList: " + argList + ", topic: " + arrivedMessage.getMessageTopic());
-                                return null;
-                            }
-                        });
+                        client.setArrivedMsgHandler(SubDeviceDisableCommand.class,
+                                (IMessageHandler<SubDeviceDisableCommand, SubDeviceDisableReply>) (arrivedMessage, argList) -> {
+                                    System.out.println("argList: " + argList + ", topic: " + arrivedMessage.getMessageTopic());
+                                    return null;
+                                });
+                        client.setArrivedMsgHandler(SubDeviceDeleteCommand.class,
+                                (IMessageHandler<SubDeviceDeleteCommand, SubDeviceDeleteReply>) (arrivedMessage, argList) -> {
+                                    System.out.println("argList: " + argList + ", topic: " + arrivedMessage.getMessageTopic());
+                                    return null;
+                                });
                     }
                     break;
                 case "loginSubDevice":
@@ -223,7 +211,7 @@ public class EmulatingDeviceSample {
         }
     }
 
-    private static boolean validate(String args[], int expectedArgLen, boolean allowMoreArgs,
+    private static boolean validate(String[] args, int expectedArgLen, boolean allowMoreArgs,
                                     MqttClient client, boolean expClientNull) {
         if (args.length == expectedArgLen || allowMoreArgs && args.length > expectedArgLen) {
             if (!expClientNull && client == null) {
@@ -258,7 +246,7 @@ public class EmulatingDeviceSample {
 
             System.out.println("service params: " + request.getParams());
 
-            if (serviceName.equals("multiply")) {
+            if ("multiply".equals(serviceName)) {
                 Map<String, Object> params = request.getParams();
                 Integer left = (Integer) params.get("left");
                 Integer right = (Integer) params.get("right");
@@ -295,19 +283,69 @@ public class EmulatingDeviceSample {
         };
     }
 
-    private static void publishMeasurepoint(MqttClient client, Map<String, Object> measurepoints, String productKey, String deviceKey) {
+    private static void publishEvent(MqttClient client, String eventId, ModelFeatureArgs featureArgs) {
         try {
-            MeasurepointPostRequest request = MeasurepointPostRequest.builder()
-                    .setProductKey(productKey)
-                    .setDeviceKey(deviceKey)
-                    .addMeasurePoints(measurepoints)
+            EventPostRequest request = EventPostRequest.builder()
+                    .setProductKey(featureArgs.getProductKey())
+                    .setDeviceKey(featureArgs.getDeviceKey())
+                    .setEventIdentifier(eventId)
+                    .setValues(featureArgs.getValues())
                     .build();
 
-            MeasurepointPostResponse response = client.publish(request);
+            EventPostResponse response = client.publish(request);
             if (response.isSuccess()) {
-                System.out.println("\nmeasure points " + measurepoints + " published successfully");
+                System.out.println("\nevent [" + eventId + "] published successfully");
             } else {
-                System.out.println("failed to publish " + measurepoints + ": " + response.getMessage());
+                System.out.println("failed to publish event [" + eventId + "]: " + response.getMessage());
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void updateAttributes(MqttClient client, ModelFeatureArgs featureArgs) {
+        try {
+            AttributeUpdateRequest request = AttributeUpdateRequest.builder()
+                    .setProductKey(featureArgs.getProductKey())
+                    .setDeviceKey(featureArgs.getDeviceKey())
+                    .setAttributes(featureArgs.getValues())
+                    .build();
+
+            AttributeUpdateResponse response = client.publish(request);
+            if (response.isSuccess()) {
+                System.out.println("\nattributes [" + featureArgs.getValues() + "] updated successfully");
+            } else {
+                System.out.println("failed to publish attributes " + featureArgs.getValues() + ": " + response.getMessage());
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void publishMeasurepoint(MqttClient client, ModelFeatureArgs featureArgs) {
+        try {
+            MeasurepointPostRequest request = MeasurepointPostRequest.builder()
+                    .setProductKey(featureArgs.getProductKey())
+                    .setDeviceKey(featureArgs.getDeviceKey())
+                    .addMeasurePoints(featureArgs.getValues())
+                    .build();
+
+            final IMqttResponse response;
+            if (ignoreInvalidMeasurePoints) {
+                // Currently, we only support ignore feature for batch request
+                MeasurepointPostBatchRequest batchReq = MeasurepointPostBatchRequest.builder()
+                        .addRequest(request)
+                        .setSkipInvalidMeasurepoints(true)
+                        .build();
+                response = client.publish(batchReq);
+            } else {
+                response = client.publish(request);
+            }
+
+            if (response.isSuccess()) {
+                System.out.println("\nmeasure points " + featureArgs.getValues() + " published successfully");
+            } else {
+                System.out.println("failed to publish measure points " + featureArgs.getValues() + ": " + response.getMessage());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -418,4 +456,55 @@ public class EmulatingDeviceSample {
         }
     }
 
+    @Nullable
+    private static ModelFeatureArgs getModelFeatureArgs(MqttClient client, String[] inputArgs, int start) {
+        int remainingLen = inputArgs.length - start;
+
+        int numberOfValues = remainingLen / 3;
+        int left = remainingLen - numberOfValues * 3;
+        if (left != 0 && left != 2) {
+            System.err.println("Error: invalid command line. Input help for more details");
+            return null;
+        }
+
+        Map<String, Object> values = new HashMap<>(numberOfValues);
+        for (int i = 0; i < numberOfValues; ++i) {
+            String field = inputArgs[start++];
+            Object value = inputArgs[start++];
+            String vType = inputArgs[start++];
+
+            if ("double".equals(vType)) {
+                value = Double.valueOf((String) value);
+            } else if ("float".equals(vType)) {
+                value = Float.valueOf((String) value);
+            } else if ("int".equals(vType)) {
+                value = Integer.valueOf((String) value);
+            } else if (!"string".equals(vType)) {
+                System.err.println("Error: don't support measure point type [" + vType + "]");
+                return null;
+            }
+
+            values.put(field, value);
+        }
+
+        String productKey = client.getProfile().getProductKey();
+        String deviceKey = client.getProfile().getDeviceKey();
+
+        Preconditions.checkState(start == inputArgs.length || start + 2 == inputArgs.length,
+                "[BUG] argument parsing logic is buggy");
+        if (start < inputArgs.length) {
+            productKey = inputArgs[start];
+            deviceKey = inputArgs[start + 1];
+        }
+
+        return new ModelFeatureArgs(productKey, deviceKey, values);
+    }
+
+    @AllArgsConstructor
+    @Getter
+    private static class ModelFeatureArgs {
+        private String productKey;
+        private String deviceKey;
+        private Map<String, Object> values;
+    }
 }
