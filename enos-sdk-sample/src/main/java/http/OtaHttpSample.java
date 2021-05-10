@@ -3,17 +3,22 @@ package http;
 import com.envisioniot.enos.iot_http_sdk.HttpConnection;
 import com.envisioniot.enos.iot_http_sdk.SessionConfiguration;
 import com.envisioniot.enos.iot_http_sdk.StaticDeviceCredential;
+import com.envisioniot.enos.iot_http_sdk.file.FileCategory;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
+import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMessageHandler;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttDeliveryMessage;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.ota.OtaUpgradeCommand;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.ota.*;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostResponse;
+import com.google.common.base.Preconditions;
 import com.google.gson.GsonBuilder;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.collections.CollectionUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -25,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 public class OtaHttpSample
 {
     // EnOS HTTP Broker URL, which can be obtained from Environment Information page in EnOS Console
-    static final String BROKER_URL = "http://url";
+    static final String BROKER_URL = "http://broker_url/";
 
     // Device credentials, which can be obtained from Device Details page in EnOS Console
     static final String PRODUCT_KEY = "productKey";
@@ -36,7 +41,7 @@ public class OtaHttpSample
     {
         // Measurepoints are defined in ThingModel
         return MeasurepointPostRequest.builder()
-              .addMeasurePoint("gdx_di_001", 100)
+              .addMeasurePoint("int_measurepoint1", 100)
               .build();
     }
 
@@ -59,8 +64,8 @@ public class OtaHttpSample
         try {
             response = connection.publish(request, null);
             System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(response));
-            System.out.println("send getversion request =>" + request.toString());
-            System.out.println("receive getversion response =>" + response.toString());
+            System.out.println("send getVersion request =>" + request.toString());
+            System.out.println("receive getVersion response =>" + response.toString());
             return response.getFirmwareList();
         } catch (EnvisionException | IOException e) {
             e.printStackTrace();
@@ -70,25 +75,15 @@ public class OtaHttpSample
 
     public static void upgradeFirmwareByDeviceReq(HttpConnection connection) throws InterruptedException {
         List<Firmware> firmwareList = getFirmwaresFromCloud(connection);
-        String version = null;
-        for (Firmware firmware : firmwareList) {
-            version = firmware.version;
-            StringBuffer sb = new StringBuffer();
-            sb.append("Firmware=>[");
-            sb.append("version=" + firmware.version);
-            sb.append("signMethod=" + firmware.signMethod);
-            sb.append("sign=" + firmware.sign);
-            sb.append("fileUrl=" + firmware.fileUrl);
-            sb.append("fileSize=" + firmware.fileSize);
-            sb.append("]");
-            System.out.println(sb.toString());
-        }
-        if (version != null) {
+        if (CollectionUtils.isNotEmpty(firmwareList)) {
+            // only one firmware is reasonable by now
+            Firmware firmware = firmwareList.get(0);
+            System.out.println("receive firmware: " + firmware);
             reportUpgradeProgress(connection,"20", "20");
             TimeUnit.SECONDS.sleep(10);
             reportUpgradeProgress(connection,"80", "80");
             TimeUnit.SECONDS.sleep(20);
-            reportVersion(connection, version);
+            reportVersion(connection, firmware.version);
         }
     }
 
@@ -103,7 +98,7 @@ public class OtaHttpSample
         }
     }
 
-    public static void upgradeFirmwareByCloudPush(HttpConnection connection) {
+    public static void registryUpgradeByCloudPushHandler(HttpConnection connection) {
         connection.setArrivedMsgHandler(OtaUpgradeCommand.class, new IMessageHandler<OtaUpgradeCommand, IMqttDeliveryMessage>() {
             @Override
             public IMqttDeliveryMessage onMessage(OtaUpgradeCommand otaUpgradeCommand, List<String> list) throws Exception {
@@ -111,8 +106,19 @@ public class OtaHttpSample
 
                 Firmware firmware = otaUpgradeCommand.getFirmwareInfo();
 
-                //TODO: download firmware from firmware.fileUrl
+                //download firmware file
+                InputStream inputStream = connection.downloadFile(firmware.fileUrl, FileCategory.OTA);
 
+                // check signature of firmware file
+                String sign = null;
+                if (SignMethod.MD5.getName().equalsIgnoreCase(firmware.signMethod)) {
+                    sign = DigestUtils.md5Hex(inputStream);
+                } else if (SignMethod.SHA256.getName().equalsIgnoreCase(firmware.signMethod)) {
+                    sign = DigestUtils.sha256Hex(inputStream);
+                }
+                Preconditions.checkArgument(firmware.sign.equals(sign), "sign check failed");
+
+                //todo: upgrade firmware
                 //mock reporting progress
                 reportUpgradeProgress(connection, "20", "20");
                 TimeUnit.SECONDS.sleep(2);
@@ -131,8 +137,7 @@ public class OtaHttpSample
         });
     }
 
-    public static void main(String[] args) throws InterruptedException
-    {
+    public static void main(String[] args) throws InterruptedException, EnvisionException {
         // construct a static device credential via ProductKey, DeviceKey and DeviceSecret
         StaticDeviceCredential credential = new StaticDeviceCredential(
                 PRODUCT_KEY, DEVICE_KEY, DEVICE_SECRET);
@@ -143,10 +148,13 @@ public class OtaHttpSample
         HttpConnection connection = new HttpConnection.Builder(BROKER_URL, credential)
                 .sessionConfiguration(configuration)
                 .build();
+
+        registryUpgradeByCloudPushHandler(connection);
+
+        reportVersion(connection, "current_version");
+        upgradeFirmwareByDeviceReq(connection);
+
         while (true) {
-            upgradeFirmwareByCloudPush(connection);
-//            reportVersion(connection, "2.1");
-//            upgradeFirmwareByDeviceReq(connection);
             //POST measurepoints
             MeasurepointPostRequest request = buildMeasurepointPostRequest();
             try {
@@ -157,13 +165,10 @@ public class OtaHttpSample
                 break;
             }
 
-
             // Wait for more than life time, the connection shall automatically re-auth
             System.out.println("current sessionId: " + connection.getSessionId());
-            Thread.currentThread().sleep(10000);
+            Thread.sleep(10000);
         }
-        
     }
-
 }
 

@@ -3,16 +3,19 @@ package http;
 import com.envisioniot.enos.iot_http_sdk.HttpConnection;
 import com.envisioniot.enos.iot_http_sdk.SessionConfiguration;
 import com.envisioniot.enos.iot_http_sdk.StaticDeviceCredential;
-import com.envisioniot.enos.iot_http_sdk.file.FileDeleteResponse;
-import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
+import com.envisioniot.enos.iot_http_sdk.file.FileCategory;
+import com.envisioniot.enos.iot_http_sdk.file.IFileCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
-import com.google.gson.GsonBuilder;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author :charlescai
- * @date :2020-04-22
+ * @date :2020-04-21
  */
-public class DeleteFileSample {
+public class DownloadFeatureFileSample {
     // EnOS HTTP Broker URL, which can be obtained from Environment Information page in EnOS Console
     static final String BROKER_URL = "https://broker_url/";
 
@@ -37,20 +40,35 @@ public class DeleteFileSample {
 
         // fileUri is an enos scheme file uri
         String fileUri = "enos-connect://xxx.txt";
-        try {
-            FileDeleteResponse response = connection.deleteFile(fileUri);
-            System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(response));
-        } catch (EnvisionException e) {
+        int bufferLength = 1024;
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            InputStream inputStream = connection.downloadFile(fileUri, FileCategory.FEATURE);
+            byte[] buffer = new byte[bufferLength];
+            int len;
+            while ((len = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, len);
+            }
+            byte[] data = outputStream.toByteArray();
+            System.out.println(new String(data));
+        } catch (EnvisionException | IOException e) {
             e.printStackTrace();
         }
 
         // Asynchronously call the file download request
         try {
-            connection.deleteFileAsync(fileUri,  new IResponseCallback<FileDeleteResponse>() {
+            connection.downloadFileAsync(fileUri, FileCategory.FEATURE, new IFileCallback() {
                         @Override
-                        public void onResponse(FileDeleteResponse response)  {
-                            System.out.println("receive response asynchronously");
-                            System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(response));
+                        public void onResponse(InputStream inputStream) throws IOException {
+                            System.out.println("download feature ile asynchronously");
+                            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                                byte[] buffer = new byte[bufferLength];
+                                int len;
+                                while ((len = inputStream.read(buffer)) != -1) {
+                                    outputStream.write(buffer, 0, len);
+                                }
+                                byte[] data = outputStream.toByteArray();
+                                System.out.println(new String(data));
+                            }
                         }
 
                         @Override
