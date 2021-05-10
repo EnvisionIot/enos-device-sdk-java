@@ -6,6 +6,7 @@ import com.envisioniot.enos.iot_http_sdk.StaticDeviceCredential;
 import com.envisioniot.enos.iot_http_sdk.file.FileCategory;
 import com.envisioniot.enos.iot_http_sdk.file.IFileCallback;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
+import com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.RangeFileBody;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -13,9 +14,9 @@ import java.io.InputStream;
 
 /**
  * @author :charlescai
- * @date :2020-04-21
+ * @date :2021-05-10
  */
-public class DownloadFeatureFileSample {
+public class DownloadFileByRangeSample {
     // EnOS HTTP Broker URL, which can be obtained from Environment Information page in EnOS Console
     static final String BROKER_URL = "https://broker_url/";
 
@@ -40,9 +41,13 @@ public class DownloadFeatureFileSample {
 
         // fileUri is an enos scheme file uri
         String fileUri = "enos-connect://xxx.txt";
+        long startRange = 0;
+        long endRange = 1023;
         int bufferLength = 1024;
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            InputStream inputStream = connection.downloadFile(fileUri, FileCategory.FEATURE);
+            RangeFileBody rangeFileBody = connection.downloadFile(fileUri, FileCategory.FEATURE, startRange, endRange);
+
+            InputStream inputStream = rangeFileBody.getData();
             byte[] buffer = new byte[bufferLength];
             int len;
             while ((len = inputStream.read(buffer)) != -1) {
@@ -53,12 +58,14 @@ public class DownloadFeatureFileSample {
             e.printStackTrace();
         }
 
+
         // Asynchronously call the file download request
         try {
-            connection.downloadFileAsync(fileUri, FileCategory.FEATURE, new IFileCallback() {
+            connection.downloadFileAsync(fileUri, FileCategory.FEATURE, startRange, endRange, new IFileCallback() {
                         @Override
-                        public void onResponse(InputStream inputStream) throws IOException {
+                        public void onRangeResponse(RangeFileBody rangeFileBody) throws IOException {
                             System.out.println("download feature ile asynchronously");
+                            InputStream inputStream = rangeFileBody.getData();
                             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                                 byte[] buffer = new byte[bufferLength];
                                 int len;
@@ -80,3 +87,4 @@ public class DownloadFeatureFileSample {
         }
     }
 }
+
