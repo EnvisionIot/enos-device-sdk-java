@@ -11,6 +11,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignUtil;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.FileScheme;
+import com.envisioniot.enos.iot_mqtt_sdk.core.internals.constants.RangeFileBody;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMessageHandler;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttArrivedMessage;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.IMqttArrivedMessage.DecodeResult;
@@ -75,6 +76,8 @@ public class HttpConnection
     public static final String MEDIA_TYPE_OCTET_STREAM = OCTET_STREAM.toString();
 
     private static final String CMD_PAYLOAD =  "command-payload";
+
+    private static final String RANGE = "Range";
 
     /**
      * Builder for http connection. A customized OkHttpClient can be provided, to
@@ -598,27 +601,54 @@ public class HttpConnection
         }
     }
 
-    /**
-     * download file of specific fileUri and category
-     * @param fileUri
-     * @param category specify feature or ota file
-     * @return
-     * @throws EnvisionException
-     */
+    public RangeFileBody downloadFile(String fileUri, FileCategory category, Long startRange, Long endRange) throws EnvisionException {
+        RangeFileBody.RangeFileBodyBuilder builder = RangeFileBody.builder();
+
+        Call call = generateDownloadCall(fileUri, category, startRange, endRange);
+
+        Response httpResponse;
+        try {
+            httpResponse = call.execute();
+
+            if (!httpResponse.isSuccessful()) {
+                throw new EnvisionException(httpResponse.code(), httpResponse.message());
+            }
+
+            try {
+                Preconditions.checkNotNull(httpResponse);
+                Preconditions.checkNotNull(httpResponse.body());
+
+                return builder.contentLength(Integer.parseInt(httpResponse.headers().get("Content-length")))
+                        .contentRange(httpResponse.headers().get("Content-Range"))
+                        .acceptRanges(httpResponse.headers().get("Accept-Ranges"))
+                        .data(httpResponse.body().byteStream())
+                        .build();
+            } catch (Exception e) {
+                log.info("failed to get response: " + httpResponse, e);
+                throw new EnvisionException(CLIENT_ERROR);
+            }
+        } catch (SocketException e)
+        {
+            log.info("failed to execute request due to socket error {}", e.getMessage());
+            throw new EnvisionException(SOCKET_ERROR, e.getMessage());
+        } catch (EnvisionException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("failed to execute request", e);
+            throw new EnvisionException(CLIENT_ERROR);
+        }
+    }
+
+        /**
+         * download file of specific fileUri and category
+         * @param fileUri
+         * @param category specify feature or ota file
+         * @return
+         * @throws EnvisionException
+         */
     public InputStream downloadFile(String fileUri, FileCategory category) throws EnvisionException, IOException {
 
-        if (fileUri.startsWith(FileScheme.ENOS_LARK_URI_SCHEME)) {
-            String downloadUrl = getDownloadUrl(fileUri, category);
-            Response response =  FileUtil.downloadFile(downloadUrl);
-            Preconditions.checkArgument(response.isSuccessful(),
-                    "fail to download file, downloadUrl: %s, msg: %s",
-                    downloadUrl, response.message());
-            Preconditions.checkNotNull(response.body(),
-                    "response body is null, downloadUrl: %s", downloadUrl);
-            return response.body().byteStream();
-        }
-
-        Call call = generateDownloadCall(fileUri, category);
+        Call call = generateDownloadCall(fileUri, category, null, null);
 
         Response httpResponse;
         try {
@@ -650,12 +680,11 @@ public class HttpConnection
     }
 
     public void downloadFileAsync(String fileUri, FileCategory category, IFileCallback callback) throws EnvisionException {
-        Call call;
-        if (fileUri.startsWith(FileScheme.ENOS_LARK_URI_SCHEME)) {
-            call = generateGetDownloadUrlCall(fileUri, category);
-        } else {
-            call = generateDownloadCall(fileUri, category);
-        }
+        downloadFileAsync(fileUri, category, null, null, callback);
+    }
+
+    public void downloadFileAsync(String fileUri, FileCategory category, Long startRange, Long endRange, IFileCallback callback) throws EnvisionException {
+        Call call = generateDownloadCall(fileUri, category, startRange, endRange);
 
         call.enqueue(new Callback() {
             @Override
@@ -672,14 +701,18 @@ public class HttpConnection
                 try {
                     Preconditions.checkNotNull(response);
                     Preconditions.checkNotNull(response.body());
-                    if (response.isSuccessful() && fileUri.startsWith(FileScheme.ENOS_LARK_URI_SCHEME)) {
-                        FileDownloadResponse fileDownloadResponse = GsonUtil.fromJson(
-                                response.body().string(), FileDownloadResponse.class);
-                        String fileDownloadUrl = fileDownloadResponse.getData();
-                        response = FileUtil.downloadFile(fileDownloadUrl);
-                    }
                     if (response.isSuccessful() && response.body() != null) {
                         callback.onResponse(response.body().byteStream());
+
+                        if (response.code() == 206) {
+                            RangeFileBody.RangeFileBodyBuilder builder = RangeFileBody.builder();
+                            RangeFileBody rangeFileBody = builder.contentLength(Integer.parseInt(response.headers().get("Content-length")))
+                                    .contentRange(response.headers().get("Content-Range"))
+                                    .acceptRanges(response.headers().get("Accept-Ranges"))
+                                    .data(response.body().byteStream())
+                                    .build();
+                            callback.onRangeResponse(rangeFileBody);
+                        }
                     }
                 } catch (Exception e) {
                     log.info("failed to get response: " + response, e);
@@ -805,7 +838,7 @@ public class HttpConnection
         return okHttpClient.newCall(httpRequest);
     }
 
-    private Call generateDownloadCall(String fileUri, FileCategory category) throws EnvisionException {
+    private Call generateDownloadCall(String fileUri, FileCategory category, Long startRange, Long endRange) throws EnvisionException {
         checkAuth();
 
         StaticDeviceCredential staticDeviceCredential = (StaticDeviceCredential) credential;
@@ -818,7 +851,22 @@ public class HttpConnection
                 .append("&fileUri=").append(fileUri)
                 .append("&category=").append(category.getName());
 
-        Request httpRequest = new Request.Builder()
+        Request.Builder builder = new Request.Builder();
+
+        if (startRange != null || endRange != null) {
+            StringBuilder rangeBuilder = new StringBuilder()
+                    .append("bytes=");
+            if (startRange != null) {
+                rangeBuilder.append(startRange);
+            }
+            rangeBuilder.append("-");
+            if (endRange != null) {
+                rangeBuilder.append(endRange);
+            }
+            builder.addHeader(RANGE, rangeBuilder.toString());
+        }
+
+        Request httpRequest = builder
                 .url(uriBuilder.toString())
                 .get()
                 .build();
