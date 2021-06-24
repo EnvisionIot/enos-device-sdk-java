@@ -11,6 +11,8 @@ import java.io.File;
 @Data
 public class UploadFileInfo
 {
+    String originalFilename;
+
     String filename;
 
     File file;

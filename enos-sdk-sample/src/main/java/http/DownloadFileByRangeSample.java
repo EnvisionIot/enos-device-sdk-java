@@ -64,7 +64,7 @@ public class DownloadFileByRangeSample {
             connection.downloadFileAsync(fileUri, FileCategory.FEATURE, startRange, endRange, new IFileCallback() {
                         @Override
                         public void onRangeResponse(RangeFileBody rangeFileBody) throws IOException {
-                            System.out.println("download feature ile asynchronously");
+                            System.out.println("download feature ile asynchronously: " + rangeFileBody);
                             InputStream inputStream = rangeFileBody.getData();
                             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                                 byte[] buffer = new byte[bufferLength];
