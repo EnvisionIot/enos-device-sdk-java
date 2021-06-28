@@ -27,6 +27,7 @@
         0.1.7 support OTA, support file upload/download via EnOS LARK
         0.1.8 2.2 GA fix some log and sample
         0.1.9 support ssl for http auth
+        0.2.0 support ssl for http auth file download by range
     -->
 
     <build>
