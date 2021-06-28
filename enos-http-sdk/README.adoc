@@ -46,7 +46,7 @@ desired version by inserting the following code snippet:
 <dependency>
     <groupId>com.envisioniot</groupId>
     <artifactId>enos-http</artifactId>
-    <version>0.1.9</version>
+    <version>0.1.8</version>
     <!--This is latest current version number when this document is being written. Yours may vary.-->
 </dependency>
 ----
@@ -159,4 +159,4 @@ Under development
 * 2020/07/22 (0.1.6): Fix security vulnerabilities
 * 2020/08/17 (0.1.7): Support file upload/download via EnOS LARK and support OTA
 * 2020/12/09 (0.1.8): Add some log information
-* 2021/04/01 (0.1.9): Support bi-directional authenticated connection with EnOS Cloud
+* 2021/06/28 (0.2.0): Support ssl for http auth and file download by range
