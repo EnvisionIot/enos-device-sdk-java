@@ -17,7 +17,7 @@ import java.io.IOException;
 public class HttpBiDirectionalAuthenticate {
     // EnOS HTTP Broker URL, which can be obtained from Environment Information page in EnOS Console
     // ssl port 8443
-    static final String BROKER_URL = "https://broker_url:8443";
+    static final String BROKER_URL = "https://broker_url:8443/";
 
     // Device credentials, which can be obtained from Device Details page in EnOS Console
     static final String PRODUCT_KEY = "productKey";
@@ -26,6 +26,11 @@ public class HttpBiDirectionalAuthenticate {
 
     private static String jksPath = "jskPath";
     private static String jksPassword = "jskPassword";
+
+    /** Ecc cert flag
+     * if use ECC certificate, chose true
+     * if use RSA certificate, chose false */
+    static final boolean IS_ECC_CONNECT = false;
 
     public static void main(String[] args) throws EnvisionException {
         // construct a static device credential via ProductKey, DeviceKey and DeviceSecret
@@ -37,7 +42,7 @@ public class HttpBiDirectionalAuthenticate {
                 .builder()
                 .lifetime(30_000)
                 .sslSecured(true)
-                .isEccConnect(true)
+                .isEccConnect(IS_ECC_CONNECT)
                 .jksPath(jksPath)
                 .jksPassword(jksPassword)
                 .build();

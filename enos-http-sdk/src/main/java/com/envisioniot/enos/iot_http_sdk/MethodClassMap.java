@@ -6,10 +6,8 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.ota.OtaUpgradeComman
 import com.envisioniot.enos.iot_mqtt_sdk.util.GsonUtil;
 import com.envisioniot.enos.iot_mqtt_sdk.util.StringUtil;
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import jdk.nashorn.internal.parser.JSONParser;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nullable;
