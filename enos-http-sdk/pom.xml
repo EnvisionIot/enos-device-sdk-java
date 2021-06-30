@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>enos-http</artifactId>
-    <version>0.1.9-SNAPSHOT</version>
+    <version>0.2.0</version>
 
     <packaging>jar</packaging>
 
@@ -27,6 +27,7 @@
         0.1.7 support OTA, support file upload/download via EnOS LARK
         0.1.8 2.2 GA fix some log and sample
         0.1.9 support ssl for http auth
+        0.2.0 support ssl for http auth file download by range
     -->
 
     <build>
@@ -57,7 +58,7 @@
         <dependency>
             <groupId>com.envisioniot</groupId>
             <artifactId>enos-core</artifactId>
-            <version>0.1.7</version>
+            <version>0.2.0</version>
         </dependency>
 
         <dependency>

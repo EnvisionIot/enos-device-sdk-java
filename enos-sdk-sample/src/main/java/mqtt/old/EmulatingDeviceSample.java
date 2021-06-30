@@ -15,6 +15,8 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.tsl.MeasurepointSetR
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.tsl.ServiceInvocationCommand;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.tsl.ServiceInvocationReply;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.ota.*;
+import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.resume.MeasurepointResumeBatchRequest;
+import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.resume.MeasurepointResumeRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLogoutRequest;
@@ -56,6 +58,7 @@ public class EmulatingDeviceSample {
         boolean exited = false;
         MqttClient client = null;
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        boolean realtimePubMode = true;
         while (!exited) {
             System.out.print("> ");
 
@@ -63,6 +66,7 @@ public class EmulatingDeviceSample {
             if ("help".equals(input.toLowerCase())) {
                 System.out.println("setServerUrl url");
                 System.out.println("connect productKey deviceKey deviceSecret");
+                System.out.println("setPublishMode realtime/offline");
                 System.out.println("publish mpName1 mpValue1 mpType1 [mpName2 mpValue2 mpType2] [...] [subProductKey subDeviceKey]");
                 System.out.println("publishEvent eventId1 param1 value1 type1 [param2 value2 type2] [...] [subProductKey subDeviceKey]");
                 System.out.println("updateAttrs attr1 value1 type1 [attr2 value2 type2] [...] [subProductKey subDeviceKey]");
@@ -127,11 +131,29 @@ public class EmulatingDeviceSample {
                         ignoreInvalidMeasurePoints = Boolean.parseBoolean(args[1]);
                     }
                     break;
+                case "setPublishMode":
+                    if (args.length != 2) {
+                        System.err.println("Error: invalid command line. Input help for more details");
+                    } else {
+                        String mode = args[1];
+                        if ("realtime".equals(mode)) {
+                            realtimePubMode = true;
+                        } else if ("offline".equals(mode)) {
+                            realtimePubMode = false;
+                        } else {
+                            System.err.println("Error: invalid publish mode: " + mode + ". Input help for more details");
+                        }
+                    }
+                    break;
                 case "publish":
                     if (validate(args, 4, true, client, false)) {
                         val featureArgs = getModelFeatureArgs(client, args, 1);
                         if (featureArgs != null) {
-                            publishMeasurepoint(client, featureArgs);
+                            if (realtimePubMode) {
+                                publishMeasurePoint(client, featureArgs);
+                            } else {
+                                publishOfflineMeasurePoint(client, featureArgs);
+                            }
                         }
                     }
                     break;
@@ -322,7 +344,7 @@ public class EmulatingDeviceSample {
         }
     }
 
-    private static void publishMeasurepoint(MqttClient client, ModelFeatureArgs featureArgs) {
+    private static void publishMeasurePoint(MqttClient client, ModelFeatureArgs featureArgs) {
         try {
             MeasurepointPostRequest request = MeasurepointPostRequest.builder()
                     .setProductKey(featureArgs.getProductKey())
@@ -334,6 +356,36 @@ public class EmulatingDeviceSample {
             if (ignoreInvalidMeasurePoints) {
                 // Currently, we only support ignore feature for batch request
                 MeasurepointPostBatchRequest batchReq = MeasurepointPostBatchRequest.builder()
+                        .addRequest(request)
+                        .setSkipInvalidMeasurepoints(true)
+                        .build();
+                response = client.publish(batchReq);
+            } else {
+                response = client.publish(request);
+            }
+
+            if (response.isSuccess()) {
+                System.out.println("\nmeasure points " + featureArgs.getValues() + " published successfully");
+            } else {
+                System.out.println("failed to publish measure points " + featureArgs.getValues() + ": " + response.getMessage());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void publishOfflineMeasurePoint(MqttClient client, ModelFeatureArgs featureArgs) {
+        try {
+            MeasurepointResumeRequest request = MeasurepointResumeRequest.builder()
+                    .setProductKey(featureArgs.getProductKey())
+                    .setDeviceKey(featureArgs.getDeviceKey())
+                    .addMeasurePoints(featureArgs.getValues())
+                    .build();
+
+            final IMqttResponse response;
+            if (ignoreInvalidMeasurePoints) {
+                // Currently, we only support ignore feature for batch request
+                MeasurepointResumeBatchRequest batchReq = MeasurepointResumeBatchRequest.builder()
                         .addRequest(request)
                         .setSkipInvalidMeasurepoints(true)
                         .build();

@@ -27,6 +27,11 @@ public class HttpBiDirectionalAuthenticate {
     private static String jksPath = "jskPath";
     private static String jksPassword = "jskPassword";
 
+    /** Ecc cert flag
+     * if use ECC certificate, chose true
+     * if use RSA certificate, chose false */
+    static final boolean IS_ECC_CONNECT = false;
+
     public static void main(String[] args) throws EnvisionException {
         // construct a static device credential via ProductKey, DeviceKey and DeviceSecret
         StaticDeviceCredential credential = new StaticDeviceCredential(
@@ -37,7 +42,7 @@ public class HttpBiDirectionalAuthenticate {
                 .builder()
                 .lifetime(30_000)
                 .sslSecured(true)
-                .isEccConnect(true)
+                .isEccConnect(IS_ECC_CONNECT)
                 .jksPath(jksPath)
                 .jksPassword(jksPassword)
                 .build();
