@@ -17,10 +17,26 @@ import java.net.Socket;
  * @Description Ecc connection support
  * @date 2020/2/11 9:28
  */
-public class EccSSLSocketFactory extends SSLSocketFactory {
-    private SSLSocketFactory factory;
+public class EnosSSLSocketFactory extends SSLSocketFactory {
+    private static final String[] ECC_CIPHER_SUITES = new String[]{
+            "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+            "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
+    };
+    private static final String[] RSA_CIPHER_SUITES = new String[]{
+            "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+            "TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384",
+            "TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256",
+            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+            "TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384",
+            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+            "TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256"
+    };
 
-    EccSSLSocketFactory(SSLSocketFactory factory) {
+    private final SSLSocketFactory factory;
+    private final String[] cipherSuites;
+
+    EnosSSLSocketFactory(SSLSocketFactory factory, Boolean isEccConnect) {
         if (factory == null) {
             try {
                 factory = new SSLSocketFactoryFactory().createSocketFactory(null);
@@ -29,6 +45,9 @@ public class EccSSLSocketFactory extends SSLSocketFactory {
             }
         }
         this.factory = factory;
+        this.cipherSuites = Boolean.TRUE.equals(isEccConnect)
+                ? ECC_CIPHER_SUITES :
+                RSA_CIPHER_SUITES;
     }
 
     @Override
@@ -38,12 +57,12 @@ public class EccSSLSocketFactory extends SSLSocketFactory {
 
     @Override
     public String[] getDefaultCipherSuites() {
-        return new String[]{"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"};
+        return cipherSuites;
     }
 
     @Override
     public String[] getSupportedCipherSuites() {
-        return new String[]{"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"};
+        return cipherSuites;
     }
 
     @Override
