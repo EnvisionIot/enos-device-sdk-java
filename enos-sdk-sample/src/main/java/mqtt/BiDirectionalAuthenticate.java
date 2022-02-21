@@ -18,40 +18,35 @@ public class BiDirectionalAuthenticate {
     /**
      * Gateway credentials, which can be obtained from Device Details page in EnOS Console
      */
-    private static String productKey = "productKey";
-    private static String deviceKey = "deviceKey";
-    private static String deviceSecret = "deviceSecret";
+    private static final String PRODUCT_KEY = "productKey";
+    private static final String DEVICE_KEY = "deviceKey";
+    private static final String DEVICE_SECRET = "deviceSecret";
 
     // The JKS needs to store the device private key, the device certificate 
     // applied from the EnOS platform, and the EnOS platform CA certificate
     // To learn how to acquire these certificates, see 
     // https://support-cn5.envisioniot.com/docs/device-connection/en/latest/learn/deviceconnection_authentication.html#certificate-based-authentication
-    private static String jksPath = "jskPath";
-    private static String jksPassword = "jskPassword";
+    private static final String JKS_PATH = "jskPath";
+    private static final String JKS_PASSWORD = "jskPassword";
 
     /**
-     * protocol list : ssl,wss
-     * IpAddress : can domain name or ip address
+     * PROTOCOL list : ssl,wss
      * Port list:  18883,18885
+     * EnOS MQTT Broker URL, which can be obtained from Environment Information page in EnOS Console
      */
-    private static String protocol = "ssl";
-    /**
-     * EnOS HTTP Broker URL, which can be obtained from Environment Information page in EnOS Console
-     */
-    private static String IpAddress = "broker_domain_url";
-    private static String port = "18883";
+    private static final String BROKER_URL = "ssl://broker_url:18883";
 
     public static void main(String[] args) {
-        DefaultProfile defaultProfile = new DefaultProfile(protocol + "://" + IpAddress + ":" + port,
-                productKey,
-                deviceKey,
-                deviceSecret);
+        DefaultProfile defaultProfile = new DefaultProfile(BROKER_URL,
+                PRODUCT_KEY,
+                DEVICE_KEY,
+                DEVICE_SECRET);
         defaultProfile
                 .setConnectionTimeout(60)
                 .setKeepAlive(180)
                 .setAutoReconnect(false)
                 .setSSLSecured(true)
-                .setSSLJksPath(jksPath, jksPassword);
+                .setSSLJksPath(JKS_PATH, JKS_PASSWORD);
 
         // if use ECC certificate 
         // defaultProfile.setEccConnect(true);

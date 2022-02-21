@@ -16,18 +16,18 @@ import java.util.concurrent.TimeUnit;
  */
 public class OtaSample {
 
-    // EnOS HTTP Broker URL, which can be obtained from Environment Information page in EnOS Console
+    // EnOS MQTT Broker URL, which can be obtained from Environment Information page in EnOS Console
     static final String BROKER_URL = "tcp://broker_url:11883";
 
     // Gateway credentials, which can be obtained from Device Details page in EnOS Console
-    static final String GW_PRODUCT_KEY = "productKey";
-    static final String GW_DEVICE_KEY = "deviceKey";
-    static final String GW_DEVICE_SECRET = "deviceSecret";
+    static final String PRODUCT_KEY = "productKey";
+    static final String DEVICE_KEY = "deviceKey";
+    static final String DEVICE_SECRET = "deviceSecret";
 
     static MqttClient client;
 
     public static void main(String[] args) throws Exception {
-        client = new MqttClient(new DefaultProfile(BROKER_URL, GW_PRODUCT_KEY, GW_DEVICE_KEY, GW_DEVICE_SECRET));
+        client = new MqttClient(new DefaultProfile(BROKER_URL, PRODUCT_KEY, DEVICE_KEY, DEVICE_SECRET));
 
         // register arrived msg handler to handle cloud-publish firmware upgrade
         setOtaUpgradeMessageHandler();
@@ -114,7 +114,7 @@ public class OtaSample {
 
     public static void reportVersion(String version) throws Exception {
         OtaVersionReportRequest.Builder builder = new OtaVersionReportRequest.Builder();
-        builder.setProductKey(GW_PRODUCT_KEY).setDeviceKey(GW_DEVICE_KEY)
+        builder.setProductKey(PRODUCT_KEY).setDeviceKey(DEVICE_KEY)
                .setVersion(version);
         OtaVersionReportRequest request = builder.build();
         System.out.println("send =>" + request.toString());
@@ -131,7 +131,7 @@ public class OtaSample {
 
     private static List<Firmware> getFirmwaresFromCloud() throws Exception {
         OtaGetVersionRequest.Builder builder = new OtaGetVersionRequest.Builder();
-        builder.setProductKey(GW_PRODUCT_KEY).setDeviceKey(GW_DEVICE_KEY);
+        builder.setProductKey(PRODUCT_KEY).setDeviceKey(DEVICE_KEY);
         OtaGetVersionRequest request = builder.build();
         OtaGetVersionResponse response = client.publish(request);
         System.out.println("send getversion request =>" + request.toString());

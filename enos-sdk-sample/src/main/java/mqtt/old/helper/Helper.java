@@ -8,9 +8,9 @@ import java.util.List;
 
 public class Helper {
     /**
-     * Here we use beta as default since it's more reliable than alpha
+     * EnOS MQTT Broker URL, which can be obtained from Environment Information page in EnOS Console
      */
-    public static String SERVER_URL = "tcp://beta-iot-as-mqtt-cn4.eniot.io:11883";
+    public static String SERVER_URL = "tcp://broker_url:11883";
 
     public static String ORG_ID = "o15535059999891";
 
@@ -34,6 +34,9 @@ public class Helper {
 
     public static String DEV02_KEY = "mqtt_sdk_sample_dev02";
     public static String DEV02_SECRET = "sV0cN56ptABCf0LbqGAH";
+
+    public static String DEV03_KEY = "mqtt_sdk_sample_dev03";
+    public static String DEV03_SECRET = "LadT3Vz5G0P13IftWZBC";
 
     /**
      * device info for gate-way and its sub-devices
