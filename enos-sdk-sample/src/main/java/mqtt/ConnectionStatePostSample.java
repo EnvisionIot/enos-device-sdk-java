@@ -14,9 +14,9 @@ import java.util.concurrent.TimeUnit;
 public class ConnectionStatePostSample {
     private static final String BROKER_URL = Helper.SERVER_URL;
 
-    private static final String PRODUCT_KEY = "YOUR_PRODUCT_KEY";
-    private static final String DEVICE_KEY = "YOUR_DEVICE_KEY";
-    private static final String DEVICE_SECRET = "YOUR_DEVICE_SECRET";
+    private static final String PRODUCT_KEY = "productKey";
+    private static final String DEVICE_KEY = "deviceKey";
+    private static final String DEVICE_SECRET = "deviceSecret";
 
     public static void main(String[] args) throws Exception {
         MqttClient mqttClient = new MqttClient(BROKER_URL, PRODUCT_KEY, DEVICE_KEY, DEVICE_SECRET);
