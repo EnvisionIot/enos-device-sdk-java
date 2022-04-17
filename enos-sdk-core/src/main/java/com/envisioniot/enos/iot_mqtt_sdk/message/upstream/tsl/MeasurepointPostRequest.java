@@ -192,6 +192,7 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
         {
             UploadFileInfo fileInfo = new UploadFileInfo();
             String filename = FileUtil.generateFileName(file);
+            fileInfo.setOriginalFilename(file.getName());
             fileInfo.setFilename(filename);
             fileInfo.setFile(file);
             fileInfo.setFeatureType(MEASUREPOINT);
@@ -267,6 +268,7 @@ public class MeasurepointPostRequest extends BaseMqttRequest<MeasurepointPostRes
             Map<String, String> map = Maps.newHashMap();
             map.put("featureId", fileInfo.getFeatureId());
             map.put("fileName", fileInfo.getFilename());
+            map.put("originalFilename", fileInfo.getOriginalFilename());
             map.put("fileLength", String.valueOf(fileInfo.getFile().length()));
             map.put("fileExt", getFileExt(fileInfo.getFilename()).get());
 
