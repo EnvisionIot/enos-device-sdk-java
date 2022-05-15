@@ -31,14 +31,6 @@ public interface IMqttArrivedMessage extends IMqttMessage {
         return null;
     }
 
-    /**
-     * for match method which received from http protocol
-     *
-     * @return
-     */
-    default Pattern getMethodPattern() {
-        return null;
-    }
 
     /**
      * @param topic mqtt topic of arrived message

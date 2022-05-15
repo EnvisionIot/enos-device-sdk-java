@@ -1,10 +1,10 @@
 package com.envisioniot.enos.iot_mqtt_sdk.core.profile;
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.ClientInfoUtil;
-import com.envisioniot.enos.iot_mqtt_sdk.core.codec.CompressType;
 import com.envisioniot.enos.iot_mqtt_sdk.core.compositejks.SslContextBuilder;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignUtil;
+import com.envisioniot.enos.iot_mqtt_sdk.core.codec.CompressType;
 import com.envisioniot.enos.iot_mqtt_sdk.util.SecureMode;
 import com.envisioniot.enos.iot_mqtt_sdk.util.SecureModeUtil;
 import com.envisioniot.enos.iot_mqtt_sdk.util.StringUtil;
@@ -115,8 +115,12 @@ public abstract class BaseProfile {
                     throw new RuntimeException("create SSL context failed", e.fillInStackTrace());
                 }
             }
-            //  Ensure SSLSocketFactory is created on the basis of enabling bi-directional authentication
-            connectOptions.setSocketFactory(new EnosSSLSocketFactory(this.sslContext.getSocketFactory(), this.config.isEccConnect()));
+            if (this.config.isEccConnect()) {
+                //  Ensure SSLSocketFactory is created on the basis of enabling bi-directional authentication
+                connectOptions.setSocketFactory(new EccSSLSocketFactory(this.sslContext.getSocketFactory()));
+            } else {
+                connectOptions.setSocketFactory(this.sslContext.getSocketFactory());
+            }
         }
 
         return connectOptions;

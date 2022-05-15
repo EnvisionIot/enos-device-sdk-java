@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>enos-http</artifactId>
-    <version>0.2.1</version>
+    <version>0.2.0</version>
 
     <packaging>jar</packaging>
 
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>com.envisioniot</groupId>
             <artifactId>enos-core</artifactId>
-            <version>0.2.2</version>
+            <version>0.2.0</version>
         </dependency>
 
         <dependency>

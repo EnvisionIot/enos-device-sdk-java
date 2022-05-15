@@ -9,17 +9,11 @@ import java.util.regex.Pattern;
 
 public class OtaUpgradeCommand extends BaseMqttCommand<OtaUpgradeReply> {
     private static final long serialVersionUID = -1562255084521046172L;
-    private static final Pattern TOPIC_PATTERN = Pattern.compile(ArrivedTopicPattern.DEVICE_OTA_COMMAND);
-    private static final Pattern METHOD_PATTERN = Pattern.compile("ota.device.upgrade");
+    private static Pattern pattern = Pattern.compile(ArrivedTopicPattern.DEVICE_OTA_COMMAND);
 
     @Override
     public Pattern getMatchTopicPattern() {
-        return TOPIC_PATTERN;
-    }
-
-    @Override
-    public Pattern getMethodPattern() {
-        return METHOD_PATTERN;
+        return pattern;
     }
 
     @Override

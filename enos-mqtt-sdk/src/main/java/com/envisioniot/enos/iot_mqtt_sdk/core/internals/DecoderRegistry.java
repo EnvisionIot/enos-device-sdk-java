@@ -25,7 +25,7 @@ public class DecoderRegistry {
         // For uplink response can be dynamically loaded
         // Just need to statically load the encoding method of various Commands
         try {
-            String[] classNames = new String[]{
+            String[] classNames = new String[] {
                     "com.envisioniot.enos.iot_mqtt_sdk.message.downstream.tsl.MeasurepointSetCommand",
                     "com.envisioniot.enos.iot_mqtt_sdk.message.downstream.tsl.ModelDownRawCommand",
                     "com.envisioniot.enos.iot_mqtt_sdk.message.downstream.tsl.MeasurepointGetCommand",
@@ -64,15 +64,16 @@ public class DecoderRegistry {
                     "com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tag.TagQueryResponse",
                     "com.envisioniot.enos.iot_mqtt_sdk.message.upstream.log.LogPostResponse",
                     "com.envisioniot.enos.iot_mqtt_sdk.message.upstream.network.NetworkStatusReportResponse",
-                    "com.envisioniot.enos.iot_mqtt_sdk.message.upstream.connection.ConnectionStatePostResponse",
-                    "com.envisioniot.enos.iot_mqtt_sdk.message.downstream.traffic.TrafficControlCommand",
+                    "com.envisioniot.enos.iot_mqtt_sdk.message.upstream.connection.ConnectionStatePostResponse"
             };
             Arrays.stream(classNames).forEach(n -> {
                 IMqttArrivedMessage decoder;
-                try {
+                try
+                {
                     decoder = (IMqttArrivedMessage) Class.forName(n).newInstance();
                     decoderList.add(decoder);
-                } catch (Exception e) {
+                } catch (Exception e)
+                {
                     logger.error("register downstream command decoder failed ", e);
                 }
             });
