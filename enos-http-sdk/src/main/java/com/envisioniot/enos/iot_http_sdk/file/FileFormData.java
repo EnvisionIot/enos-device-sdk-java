@@ -70,7 +70,7 @@ public class FileFormData
                 .addUnsafeNonAscii("Content-MD5", md5(fileInfo.getFile()))
                 .build();
 
-        return MultipartBody.Part.create(headers, 
+        return Part.create(headers, 
                 RequestBody.create(MediaType.parse(HttpConnection.MEDIA_TYPE_OCTET_STREAM), fileInfo.getFile()));
     }
 }
