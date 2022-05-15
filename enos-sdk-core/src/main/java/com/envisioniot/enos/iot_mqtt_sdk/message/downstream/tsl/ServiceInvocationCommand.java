@@ -13,8 +13,7 @@ import java.util.regex.Pattern;
  */
 public class ServiceInvocationCommand extends BaseMqttCommand<ServiceInvocationReply> {
     private static final long serialVersionUID = -6852970783309556308L;
-    private static Pattern TOPIC_PATTERN = Pattern.compile(ArrivedTopicPattern.SERVICE_INVOKE_COMMAND);
-    private static final Pattern METHOD_PATTERN = Pattern.compile("thing\\.service\\.(.*)");
+    private static Pattern pattern = Pattern.compile(ArrivedTopicPattern.SERVICE_INVOKE_COMMAND);
 
     @Override
     public Class<ServiceInvocationReply> getAnswerType() {
@@ -23,12 +22,7 @@ public class ServiceInvocationCommand extends BaseMqttCommand<ServiceInvocationR
 
     @Override
     public Pattern getMatchTopicPattern() {
-        return TOPIC_PATTERN;
-    }
-
-    @Override
-    public Pattern getMethodPattern() {
-        return METHOD_PATTERN;
+        return pattern;
     }
 
     @Override

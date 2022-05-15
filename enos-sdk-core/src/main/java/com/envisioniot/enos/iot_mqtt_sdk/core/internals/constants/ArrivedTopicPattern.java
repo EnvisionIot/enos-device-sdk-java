@@ -86,6 +86,4 @@ public class ArrivedTopicPattern {
     public static final String NETWORK_STATUS_REPLY = "/sys/(.*)/(.*)/network/status/report_reply";
 
     public static final String CONNECTION_STATE_REPLY = "/sys/(.*)/(.*)/connection/state/post_reply";
-
-    public static final String TRAFFIC_CONTROL_COMMAND = "/sys/(.*)/(.*)/traffic/control";
 }
