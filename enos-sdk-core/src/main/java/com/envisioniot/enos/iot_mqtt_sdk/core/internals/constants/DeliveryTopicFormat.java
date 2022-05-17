@@ -76,4 +76,6 @@ public class DeliveryTopicFormat {
     public static final String NETWORK_STATUS_REPORT = "/sys/%s/%s/network/status/report";
 
     public static final String CONNECTION_STATE_POST = "/sys/%s/%s/connection/state/post";
+
+    public static final String TRAFFIC_CONTROL_COMMAND = "/sys/%s/%s/traffic/control";
 }

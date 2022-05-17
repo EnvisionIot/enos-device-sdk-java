@@ -160,3 +160,4 @@ Under development
 * 2020/08/17 (0.1.7): Support file upload/download via EnOS LARK and support OTA
 * 2020/12/09 (0.1.8): Add some log information
 * 2021/06/28 (0.2.0): Support ssl for http auth and file download by range
+* 2021/12/21 (0.2.1): Support poll command.

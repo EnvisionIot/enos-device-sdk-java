@@ -1,11 +1,17 @@
 package com.envisioniot.enos.iot_mqtt_sdk.core.internals;
 
-import com.envisioniot.enos.iot_mqtt_sdk.core.*;
+import com.envisioniot.enos.iot_mqtt_sdk.core.ConnCallback;
+import com.envisioniot.enos.iot_mqtt_sdk.core.IExecutorFactory;
+import com.envisioniot.enos.iot_mqtt_sdk.core.IResponseCallback;
+import com.envisioniot.enos.iot_mqtt_sdk.core.Sharable;
+import com.envisioniot.enos.iot_mqtt_sdk.core.codec.ICompressor;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionError;
 import com.envisioniot.enos.iot_mqtt_sdk.core.exception.EnvisionException;
 import com.envisioniot.enos.iot_mqtt_sdk.core.msg.*;
-import com.envisioniot.enos.iot_mqtt_sdk.core.profile.*;
-import com.envisioniot.enos.iot_mqtt_sdk.core.codec.ICompressor;
+import com.envisioniot.enos.iot_mqtt_sdk.core.profile.BaseProfile;
+import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultActivateResponseHandler;
+import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DeviceCredential;
+import com.envisioniot.enos.iot_mqtt_sdk.core.profile.FileProfile;
 import com.envisioniot.enos.iot_mqtt_sdk.message.downstream.activate.DeviceActivateInfoCommand;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.BaseMqttRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginRequest;
@@ -94,11 +100,11 @@ public class MqttConnection {
     }
 
     private MqttConnection(BaseProfile profile, MessageBuffer buffer, IExecutorFactory executorFactory) {
-            this.profile = profile;
-            this.buffer = buffer;
-            this.executorFactory = executorFactory;
+        this.profile = profile;
+        this.buffer = buffer;
+        this.executorFactory = executorFactory;
 
-            this.mqttProcessor = new DefaultProcessor(this);
+        this.mqttProcessor = new DefaultProcessor(this);
     }
 
     State getState() {
@@ -516,16 +522,15 @@ public class MqttConnection {
         protected void preExecute() throws EnvisionException {
             fillRequest();
             delivered.check();
-            if ((delivered instanceof BaseMqttRequest) && 
-                (((BaseMqttRequest<?>) delivered).getFiles() != null) &&
-                (!((BaseMqttRequest<?>) delivered).getFiles().isEmpty()))
-            {
+            if ((delivered instanceof BaseMqttRequest) &&
+                    (((BaseMqttRequest<?>) delivered).getFiles() != null) &&
+                    (!((BaseMqttRequest<?>) delivered).getFiles().isEmpty())) {
                 throw new EnvisionException("file publishing is not supported yet in MQTT");
             }
 
             // Clean all its cache if it's sub-device login
             if (delivered instanceof SubDeviceLoginRequest) {
-                DeviceCredential dev = ((SubDeviceLoginRequest)delivered).getCredential();
+                DeviceCredential dev = ((SubDeviceLoginRequest) delivered).getCredential();
                 subTopicCache.remove(dev.getProductKey(), dev.getDeviceKey());
             }
         }

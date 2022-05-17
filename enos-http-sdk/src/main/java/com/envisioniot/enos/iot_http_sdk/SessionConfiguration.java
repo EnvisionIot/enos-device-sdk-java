@@ -4,8 +4,11 @@ import static com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod.SHA256
 
 import com.envisioniot.enos.iot_mqtt_sdk.core.internals.SignMethod;
 
+import com.google.common.collect.Sets;
 import lombok.Builder;
 import lombok.Data;
+
+import java.util.Set;
 
 @Builder
 @Data
@@ -29,4 +32,7 @@ public class SessionConfiguration
     private String jksPath;
 
     private String jksPassword;
+
+    @Builder.Default
+    private Set<String> acceptCommandTypes = Sets.newHashSet();
 }
