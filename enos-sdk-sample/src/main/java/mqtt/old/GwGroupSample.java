@@ -56,11 +56,10 @@ public class GwGroupSample {
 
             assertTrue(publishSubDeviceMeasurePoints(gw01Client));
             assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw01Client));
-
-            // When gw01 is managing the sub-device, gw02 is not allowed to manipulate
-            // it (unless gw02 take over the sub-device by using sub-device log in).
+            // gw02 can publish measurePoints using batch sub-devices but not publish measurePoints using single sub-device
             assertFalse(publishSubDeviceMeasurePoints(gw02Client));
-            assertFalse(publishSubDeviceMeasurePointsUsingBatch(gw02Client));
+            assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw02Client));
+            // gw02 should not logout sub device because sub-device login by gw01
             assertFalse(logoutSubDevice(gw02Client));
 
             // The invalid operations from gw02 above should not affect gw01 to
@@ -73,13 +72,14 @@ public class GwGroupSample {
 
             assertTrue(publishSubDeviceMeasurePoints(gw02Client));
             assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw02Client));
-
-            // gw01 should be not allowed to manage the sub-device any more
-            // since gw02 has taken it over.
+            // gw01 can publish measurePoints using batch sub-devices but not publish measurePoints using single sub-device
             assertFalse(publishSubDeviceMeasurePoints(gw01Client));
-            assertFalse(publishSubDeviceMeasurePointsUsingBatch(gw01Client));
+            assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw01Client));
+            // gw01 should not logout sub device because sub-device login by gw02
             assertFalse(logoutSubDevice(gw01Client));
 
+            // The invalid operations from gw01 above should not affect gw02 to
+            // continue managing the sub-device
             assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw02Client));
             assertTrue(logoutSubDevice(gw02Client));
         } finally {
