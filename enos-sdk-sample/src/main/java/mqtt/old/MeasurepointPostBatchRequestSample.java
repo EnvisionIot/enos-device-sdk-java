@@ -13,15 +13,14 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostBa
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostBatchResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
 import com.google.common.collect.ImmutableMap;
-
 import mqtt.old.helper.BaseConnectCallback;
-
-import static mqtt.old.helper.Helper.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
+import static mqtt.old.helper.Helper.*;
 
 /**
  * This sample shows how sub-devices login/logout and publish
@@ -31,9 +30,28 @@ import java.util.Random;
  */
 public class MeasurepointPostBatchRequestSample {
     final static Random rand = new Random();
+    final static MqttClient CLIENT = new MqttClient(new DefaultProfile(
+            new NormalDeviceLoginInput(SERVER_URL, GW_PRODUCT_KEY, GW_DEV_KEY, GW_DEV_SECRET)
+    ));
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, EnvisionException {
+        CLIENT.connect(new BaseConnectCallback(CLIENT, null, false) {
 
+            @Override
+            protected void onSuccess(MqttClient client) {
+                try {
+                    testSample();
+                    client.close();
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
+
+            }
+        });
+
+    }
+
+    private static void testSample() throws InterruptedException, EnvisionException {
         //success
         testNormalCase(true, true);
         //success
@@ -44,7 +62,7 @@ public class MeasurepointPostBatchRequestSample {
         testNormalCase(false, false);
 
 
-        //sucess
+        //success
         testOneInvalidMP(true, true);
         //success
         testOneInvalidMP(true, false);
@@ -82,7 +100,6 @@ public class MeasurepointPostBatchRequestSample {
         testOneDevWithOfflineAndAnotherdevWithInvalidMP(false, false);
         //false
         testOneDevWithOfflineAndAnotherdevWithInvalidMP(false, true);
-
     }
 
     // testNormalCase (two on-line devices with valid measurepoints) [flat 4]
@@ -182,26 +199,11 @@ public class MeasurepointPostBatchRequestSample {
 
 
     private static void testSubDevicesByManuallyLogin(boolean allowoffline, boolean skipInvalid, final List<DeviceCredential> loginedSubDevices, List<DeviceCredential> publishSubDevices, Map measurepoints, Map invalidMeasurepints) throws InterruptedException {
-        MqttClient client = new MqttClient(new DefaultProfile(
-                new NormalDeviceLoginInput(SERVER_URL, GW_PRODUCT_KEY, GW_DEV_KEY, GW_DEV_SECRET)
-        ));
-        client.connect(new BaseConnectCallback(client, null, false) {
-
-            @Override
-            protected void onSuccess(MqttClient client) {
-
-                loginSubDevices(client, loginedSubDevices);
-                if (!loginedSubDevices.isEmpty()) {
-                    publishMeasurePointsFor(client, publishSubDevices, allowoffline, skipInvalid, measurepoints, invalidMeasurepints);
-                }
-                logoutSubDevices(client, loginedSubDevices);
-
-                client.close();
-
-            }
-        });
-
-        Thread.sleep(6000);
+        loginSubDevices(CLIENT, loginedSubDevices);
+        if (!loginedSubDevices.isEmpty()) {
+            publishMeasurePointsFor(CLIENT, publishSubDevices, allowoffline, skipInvalid, measurepoints, invalidMeasurepints);
+        }
+        logoutSubDevices(CLIENT, loginedSubDevices);
     }
 
     /**
@@ -233,7 +235,7 @@ public class MeasurepointPostBatchRequestSample {
                 .addMeasurePoints(measurepoints)
                 .build());
 
-        if(invalidMeasurepoints == null){
+        if (invalidMeasurepoints == null) {
             invalidMeasurepoints = measurepoints;
         }
         requests.add(MeasurepointPostRequest.builder()
