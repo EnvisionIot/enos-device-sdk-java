@@ -56,10 +56,10 @@ public class GwGroupSample {
 
             assertTrue(publishSubDeviceMeasurePoints(gw01Client));
             assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw01Client));
-            // gw02 can publish measurePoints using batch sub-devices but not publish measurePoints using single sub-device
+            // gw02 can batch publish to multiple sub-devices but cannot publish to a single sub-device
             assertFalse(publishSubDeviceMeasurePoints(gw02Client));
             assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw02Client));
-            // gw02 should not logout sub device because sub-device login by gw01
+            // Unable to log out via gw02 if log in via gw01; the same client must be used for both log in/log out
             assertFalse(logoutSubDevice(gw02Client));
 
             // The invalid operations from gw02 above should not affect gw01 to
@@ -72,10 +72,10 @@ public class GwGroupSample {
 
             assertTrue(publishSubDeviceMeasurePoints(gw02Client));
             assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw02Client));
-            // gw01 can publish measurePoints using batch sub-devices but not publish measurePoints using single sub-device
+            // gw01 can batch publish to multiple sub-devices but cannot publish to a single sub-device
             assertFalse(publishSubDeviceMeasurePoints(gw01Client));
             assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw01Client));
-            // gw01 should not logout sub device because sub-device login by gw02
+            // Unable to log out via gw01 if log in via gw02; the same client must be used for both log in/log out
             assertFalse(logoutSubDevice(gw01Client));
 
             // The invalid operations from gw01 above should not affect gw02 to
