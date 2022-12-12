@@ -372,15 +372,27 @@ public class MqttConnection {
         // Always clean the subscribing cache if transport is to be disconnected
         cleanSubscribeTopicCache();
 
-        try {
-            if (transport != null) {
-                // Normally we should only call disconnect if the underlying transport
-                // is connecting or connected. However, we are unable to check if it's
-                // in connecting state. Here we call the disconnect forcibly.
-                transport.disconnectForcibly(1000, 3000);
+        if (transport != null) {
+            /* see comment of org.eclipse.paho.client.mqttv3.MqttClient.disconnectForcibly(long, long, boolean)
+             * use disconnect first, if it fails, use disconnectForcibily
+             */
+            try {
+                transport.disconnect(1000);
+            } catch (MqttException e) {
+                if (e.getReasonCode() == MqttException.REASON_CODE_CLIENT_ALREADY_DISCONNECTED) {
+                    //already disconnected? return directly
+                    return;
+                }
+
+                try {
+                    // Normally we should only call disconnect if the underlying transport
+                    // is connecting or connected. However, we are unable to check if it's
+                    // in connecting state. Here we call the disconnect forcibly.
+                    transport.disconnectForcibly(1000, 3000);
+                } catch (MqttException ee) {
+                    // ignore this confusing error
+                }
             }
-        } catch (MqttException e) {
-            // ignore this confusing error
         }
     }
 
