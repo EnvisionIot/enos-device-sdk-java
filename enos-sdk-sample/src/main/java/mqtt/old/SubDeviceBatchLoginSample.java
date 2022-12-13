@@ -21,7 +21,7 @@ public class SubDeviceBatchLoginSample {
     public static void main(String[] args) throws Exception {
         MqttClient client = new MqttClient(new DefaultProfile(
                 new NormalDeviceLoginInput(
-                        Helper.SERVER_URL, "QRFW2y2D", "mqtt_sample_gwgroup_gw01", "tsdJ4PvZqDdDTBwh626T")
+                        Helper.SERVER_URL, "pk", "dk", "secret")
         ));
         client.getProfile().setAutoLoginSubDevice(true);
         client.connect(new BaseConnectCallback(client, "batch-login", true) {
@@ -43,12 +43,12 @@ public class SubDeviceBatchLoginSample {
 
         SubDeviceLoginBatchRequest request = SubDeviceLoginBatchRequest.builder()
                 // add sub device info: pk,dk,ds
-                .addSubDeviceInfo("qXjojs7t", "mqtt_sample_sub_dev01", "cl7ZQc2eeKFsbkwPZDx0")
+                .addSubDeviceInfo("pk", "dk", "ds")
                 // "mqtt_sample_gwgroup_dev02" has mirrors whose device keys are: gwgroup_mirror_dev01, gwgroup_mirror_dev02
-                .addSubDeviceInfo("qXjojs7t", "mqtt_sample_sub_dev02", "Zx0O4U6uoCFGszq0UKL5")
+                .addSubDeviceInfo("pk", "dk", "ds")
                 // clientId: Required. The identifier of the device, which can be the MAC address or device serial number.
                 // It must contain no more than 64 characters.
-                .setClientId("GXJ0cVMMWv")
+                .setClientId("id")
                 .build();
 
         SubDeviceLoginBatchResponse response = client.publish(request);

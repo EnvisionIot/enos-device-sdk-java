@@ -21,17 +21,17 @@ import java.util.Random;
 @Slf4j
 public class GwGroupSample {
 
-    private final static String GW01_PK = "vOQSJ4dN";
-    private final static String GW01_DK = "mqtt_sample_gwgroup_gw01";
-    private final static String GW01_SECRET = "m90jgBApzE5mBBXnkFxG";
+    private final static String GW01_PK = "pk";
+    private final static String GW01_DK = "dk";
+    private final static String GW01_SECRET = "secret";
 
-    private final static String GW02_PK = "vOQSJ4dN";
-    private final static String GW02_DK = "mqtt_sample_gwgroup_gw02";
-    private final static String GW02_SECRET = "iXIPK0XhIlWOLafrNtjY";
+    private final static String GW02_PK = "pk";
+    private final static String GW02_DK = "dk";
+    private final static String GW02_SECRET = "secret";
 
-    private final static String SUB_DEV01_PK = "K9HMijjG";
-    private final static String SUB_DEV01_DK = "mqtt_sample_gwgroup_dev01";
-    private final static String SUB_DEV01_SECRET = "sGCCwSIcD1AJ5wa8OcPW";
+    private final static String SUB_DEV01_PK = "pk";
+    private final static String SUB_DEV01_DK = "dk";
+    private final static String SUB_DEV01_SECRET = "secret";
 
     public static void main(String[] args) throws Exception {
         MqttClient gw01Client = new MqttClient(new DefaultProfile(
