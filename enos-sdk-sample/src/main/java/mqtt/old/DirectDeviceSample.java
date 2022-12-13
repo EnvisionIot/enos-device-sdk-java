@@ -21,7 +21,7 @@ public class DirectDeviceSample {
     private static void testDeviceWithMirrors() throws Exception {
         // The following direct device has mirror whose device key is HpG2Z2eSoC
         MqttClient client = new MqttClient(new DefaultProfile(
-                new NormalDeviceLoginInput(BROKER_URL, "oDc253LO", "zm1112a", "pmh5jEWEt2Cip5KsGPO3")
+                new NormalDeviceLoginInput(BROKER_URL, "pk", "dk", "secret")
         ));
         client.getProfile().setAutoLoginSubDevice(false);
         client.connect();
@@ -40,7 +40,7 @@ public class DirectDeviceSample {
 
     private static void testDeviceWithoutMirrors() throws Exception {
         MqttClient client = new MqttClient(new DefaultProfile(
-                new NormalDeviceLoginInput(BROKER_URL, "x4jwTsoz", "FfHtfAyhC5", "DVCWsRQHeIOvryFy7fIz")
+                new NormalDeviceLoginInput(BROKER_URL, "pk", "dk", "secret")
         ));
         client.getProfile().setAutoLoginSubDevice(false);
         client.connect();

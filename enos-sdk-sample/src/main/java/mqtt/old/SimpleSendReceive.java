@@ -41,17 +41,17 @@ public class SimpleSendReceive {
 
     //beta
     // json device
-    public static final String productKey = "TZrXVtm5";
-    public static final String deviceKey = "DynamicActivating1";
-    public static final String deviceSecret = "EWdFnTEalsndjrPqEGjL";
+    public static final String productKey = "pk";
+    public static final String deviceKey = "dk";
+    public static final String deviceSecret = "secret";
 
     // raw data device
-    public static final String parserProductKey = "WwVF5nKj";
-    public static final String parserDevicekey = "device1";
-    public static final String parserDeviceSecret = "mOpcSKsxSQsvr0nUHUiK";
-    public static final String subProductKey = "f8F5hjsS";
-    public static final String subDeviceKey = "zscai_sub_device";
-    public static final String subDeviceSecret = "3bvQHli93B8qn3UXhaVA";
+    public static final String parserProductKey = "pk";
+    public static final String parserDevicekey = "dk";
+    public static final String parserDeviceSecret = "secret";
+    public static final String subProductKey = "pk";
+    public static final String subDeviceKey = "dk";
+    public static final String subDeviceSecret = "secret";
 
     private static MqttClient client;
 
