@@ -8,44 +8,47 @@ import java.util.List;
 
 public class Helper {
     /**
-     * Here we use beta as default since it's more reliable than alpha
+     * EnOS MQTT Broker URL, which can be obtained from Environment Information page in EnOS Console
      */
-    public static String SERVER_URL = "tcp://beta-iot-as-mqtt-cn4.eniot.io:11883";
+    public static String SERVER_URL = "tcp://broker_url:11883";
 
-    public static String ORG_ID = "o15535059999891";
+    public static String ORG_ID = "orgId";
 
     /**
      * Non-gate-way product info (for direct connecting device and sub-device)
      */
-    public static String DEV_PRODUCT_KEY = "K9HMijjG";
-    public static String DEV_PRODUCT_SECRET = "iiMGJw8ohjL";
+    public static String DEV_PRODUCT_KEY = "pk";
+    public static String DEV_PRODUCT_SECRET = "secret";
 
     /**
      * gate-way product info
      */
-    public static String GW_PRODUCT_KEY = "vOQSJ4dN";
-    public static String GW_PRODUCT_SECRET = "W4Vsmzpu40I";
+    public static String GW_PRODUCT_KEY = "pk";
+    public static String GW_PRODUCT_SECRET = "secret";
 
     /**
      * device info for direct connecting device (non-gate-way device)
      */
-    public static String DEV01_KEY = "mqtt_sdk_sample_dev01";
-    public static String DEV01_SECRET = "23avggF6S2HKXx283IMs";
+    public static String DEV01_KEY = "dk";
+    public static String DEV01_SECRET = "secret";
 
-    public static String DEV02_KEY = "mqtt_sdk_sample_dev02";
-    public static String DEV02_SECRET = "sV0cN56ptABCf0LbqGAH";
+    public static String DEV02_KEY = "dk";
+    public static String DEV02_SECRET = "secret";
+
+    public static String DEV03_KEY = "dk";
+    public static String DEV03_SECRET = "secret";
 
     /**
      * device info for gate-way and its sub-devices
      */
-    public static String GW_DEV_KEY = "mqtt_sdk_sample_gw01";
-    public static String GW_DEV_SECRET = "KTufcRGDATp0kAl7pJ9h";
+    public static String GW_DEV_KEY = "dk";
+    public static String GW_DEV_SECRET = "secret";
 
-    public static String SUB_DEV01_KEY = "mqtt_sdk_sample_subdev01";
-    public static String SUB_DEV01_SECRET = "S3OGY40qNmqkrtZtkZ6p";
+    public static String SUB_DEV01_KEY = "dk";
+    public static String SUB_DEV01_SECRET = "secret";
 
-    public static String SUB_DEV02_KEY = "mqtt_sdk_sample_subdev02";
-    public static String SUB_DEV02_SECRET = "QI9RHWuw7jn1V6Kgxkra";
+    public static String SUB_DEV02_KEY = "dk";
+    public static String SUB_DEV02_SECRET = "secret";
 
     public final static List<DeviceCredential> SUBDEVICES = ImmutableList.of(
             new DeviceCredential(DEV_PRODUCT_KEY, null, SUB_DEV01_KEY, SUB_DEV01_SECRET),

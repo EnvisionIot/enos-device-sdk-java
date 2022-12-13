@@ -6,9 +6,7 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.profile.DefaultProfile;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginBatchRequest;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.status.SubDeviceLoginBatchResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostBatchRequest;
-import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostBatchResponse;
 import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRequest;
-import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import mqtt.old.helper.BaseConnectCallback;
 import mqtt.old.helper.Helper;
@@ -16,7 +14,6 @@ import mqtt.old.helper.Helper;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class SubDeviceBatchLoginSample {
@@ -24,7 +21,7 @@ public class SubDeviceBatchLoginSample {
     public static void main(String[] args) throws Exception {
         MqttClient client = new MqttClient(new DefaultProfile(
                 new NormalDeviceLoginInput(
-                        Helper.SERVER_URL, "QRFW2y2D", "mqtt_sample_gwgroup_gw01", "tsdJ4PvZqDdDTBwh626T")
+                        Helper.SERVER_URL, "pk", "dk", "secret")
         ));
         client.getProfile().setAutoLoginSubDevice(true);
         client.connect(new BaseConnectCallback(client, "batch-login", true) {
@@ -45,10 +42,13 @@ public class SubDeviceBatchLoginSample {
         int measurepointNum = 1000;
 
         SubDeviceLoginBatchRequest request = SubDeviceLoginBatchRequest.builder()
-                .addSubDeviceInfo("qXjojs7t", "mqtt_sample_gwgroup_dev01", "cl7ZQc2eeKFsbkwPZDx0")
+                // add sub device info: pk,dk,ds
+                .addSubDeviceInfo("pk", "dk", "ds")
                 // "mqtt_sample_gwgroup_dev02" has mirrors whose device keys are: gwgroup_mirror_dev01, gwgroup_mirror_dev02
-                .addSubDeviceInfo("qXjojs7t", "mqtt_sample_gwgroup_dev02", "Zx0O4U6uoCFGszq0UKL5")
-                .setClientId("GXJ0cVMMWv")
+                .addSubDeviceInfo("pk", "dk", "ds")
+                // clientId: Required. The identifier of the device, which can be the MAC address or device serial number.
+                // It must contain no more than 64 characters.
+                .setClientId("id")
                 .build();
 
         SubDeviceLoginBatchResponse response = client.publish(request);
@@ -83,7 +83,7 @@ public class SubDeviceBatchLoginSample {
                                 .setQos(0);
 
                         Map<String, Object> measurepoints = new HashMap<>(measurepointNum * 3);
-                        for (int k = 0;k < measurepointNum; ++k) {
+                        for (int k = 0; k < measurepointNum; ++k) {
                             measurepoints.put("int" + k, new Random().nextInt(10000));
                             measurepoints.put("float" + k, new Random().nextFloat());
                             measurepoints.put("string" + k, "s" + k);

@@ -21,17 +21,17 @@ import java.util.Random;
 @Slf4j
 public class GwGroupSample {
 
-    private final static String GW01_PK = "vOQSJ4dN";
-    private final static String GW01_DK = "mqtt_sample_gwgroup_gw01";
-    private final static String GW01_SECRET = "m90jgBApzE5mBBXnkFxG";
+    private final static String GW01_PK = "pk";
+    private final static String GW01_DK = "dk";
+    private final static String GW01_SECRET = "secret";
 
-    private final static String GW02_PK = "vOQSJ4dN";
-    private final static String GW02_DK = "mqtt_sample_gwgroup_gw02";
-    private final static String GW02_SECRET = "iXIPK0XhIlWOLafrNtjY";
+    private final static String GW02_PK = "pk";
+    private final static String GW02_DK = "dk";
+    private final static String GW02_SECRET = "secret";
 
-    private final static String SUB_DEV01_PK = "K9HMijjG";
-    private final static String SUB_DEV01_DK = "mqtt_sample_gwgroup_dev01";
-    private final static String SUB_DEV01_SECRET = "sGCCwSIcD1AJ5wa8OcPW";
+    private final static String SUB_DEV01_PK = "pk";
+    private final static String SUB_DEV01_DK = "dk";
+    private final static String SUB_DEV01_SECRET = "secret";
 
     public static void main(String[] args) throws Exception {
         MqttClient gw01Client = new MqttClient(new DefaultProfile(
@@ -56,11 +56,10 @@ public class GwGroupSample {
 
             assertTrue(publishSubDeviceMeasurePoints(gw01Client));
             assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw01Client));
-
-            // When gw01 is managing the sub-device, gw02 is not allowed to manipulate
-            // it (unless gw02 take over the sub-device by using sub-device log in).
+            // gw02 can batch publish to multiple sub-devices but cannot publish to a single sub-device
             assertFalse(publishSubDeviceMeasurePoints(gw02Client));
-            assertFalse(publishSubDeviceMeasurePointsUsingBatch(gw02Client));
+            assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw02Client));
+            // Unable to log out via gw02 if log in via gw01; the same client must be used for both log in/log out
             assertFalse(logoutSubDevice(gw02Client));
 
             // The invalid operations from gw02 above should not affect gw01 to
@@ -73,13 +72,14 @@ public class GwGroupSample {
 
             assertTrue(publishSubDeviceMeasurePoints(gw02Client));
             assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw02Client));
-
-            // gw01 should be not allowed to manage the sub-device any more
-            // since gw02 has taken it over.
+            // gw01 can batch publish to multiple sub-devices but cannot publish to a single sub-device
             assertFalse(publishSubDeviceMeasurePoints(gw01Client));
-            assertFalse(publishSubDeviceMeasurePointsUsingBatch(gw01Client));
+            assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw01Client));
+            // Unable to log out via gw01 if log in via gw02; the same client must be used for both log in/log out
             assertFalse(logoutSubDevice(gw01Client));
 
+            // The invalid operations from gw01 above should not affect gw02 to
+            // continue managing the sub-device
             assertTrue(publishSubDeviceMeasurePointsUsingBatch(gw02Client));
             assertTrue(logoutSubDevice(gw02Client));
         } finally {
