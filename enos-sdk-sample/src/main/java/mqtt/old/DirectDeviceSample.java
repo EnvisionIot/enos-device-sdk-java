@@ -8,18 +8,20 @@ import com.envisioniot.enos.iot_mqtt_sdk.message.upstream.tsl.MeasurepointPostRe
 import com.google.common.collect.ImmutableMap;
 
 public class DirectDeviceSample {
-    private static final String BETA_URL = "tcp://beta-iot-as-mqtt-cn4.eniot.io:11883";
+    private static final String BROKER_URL = "tcp://broker_url:11883";
 
     public static void main(String[] args) throws Exception {
+        // bind the mirror device
 //        testDeviceWithMirrors();
+
+        // unbound mirror device
         testDeviceWithoutMirrors();
     }
 
     private static void testDeviceWithMirrors() throws Exception {
-        // zhoumin account
         // The following direct device has mirror whose device key is HpG2Z2eSoC
         MqttClient client = new MqttClient(new DefaultProfile(
-                new NormalDeviceLoginInput(BETA_URL, "oDc253LO", "zm1112a", "pmh5jEWEt2Cip5KsGPO3")
+                new NormalDeviceLoginInput(BROKER_URL, "oDc253LO", "zm1112a", "pmh5jEWEt2Cip5KsGPO3")
         ));
         client.getProfile().setAutoLoginSubDevice(false);
         client.connect();
@@ -37,9 +39,8 @@ public class DirectDeviceSample {
     }
 
     private static void testDeviceWithoutMirrors() throws Exception {
-        // zhangjian account
         MqttClient client = new MqttClient(new DefaultProfile(
-                new NormalDeviceLoginInput(BETA_URL, "x4jwTsoz", "FfHtfAyhC5", "DVCWsRQHeIOvryFy7fIz")
+                new NormalDeviceLoginInput(BROKER_URL, "x4jwTsoz", "FfHtfAyhC5", "DVCWsRQHeIOvryFy7fIz")
         ));
         client.getProfile().setAutoLoginSubDevice(false);
         client.connect();

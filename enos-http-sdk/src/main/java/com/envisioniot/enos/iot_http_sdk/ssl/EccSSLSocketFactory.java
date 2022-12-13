@@ -16,10 +16,33 @@ import java.net.Socket;
  * @date 2020/2/11 9:28
  */
 public class EccSSLSocketFactory extends SSLSocketFactory {
+    private static final String[] ECC_CIPHER_SUITES = new String[]{
+            "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+            "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
+    };
+    private static final String[] RSA_CIPHER_SUITES = new String[]{
+            "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+            "TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384",
+            "TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256",
+            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+            "TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384",
+            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+            "TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256"
+    };
+
+    private final String[] cipherSuites;
+
     private SSLSocketFactory factory;
 
-    EccSSLSocketFactory(SSLSocketFactory factory) {
+    private Boolean isEccConnect;
+
+    EccSSLSocketFactory(SSLSocketFactory factory,  Boolean isEccConnect) {
         this.factory = factory;
+        this.isEccConnect = isEccConnect;
+        this.cipherSuites = Boolean.TRUE.equals(isEccConnect)
+                ? ECC_CIPHER_SUITES :
+                RSA_CIPHER_SUITES;
     }
 
     @Override
@@ -29,12 +52,12 @@ public class EccSSLSocketFactory extends SSLSocketFactory {
 
     @Override
     public String[] getDefaultCipherSuites() {
-        return new String[]{"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"};
+        return cipherSuites;
     }
 
     @Override
     public String[] getSupportedCipherSuites() {
-        return new String[]{"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"};
+        return cipherSuites;
     }
 
     @Override
@@ -44,7 +67,11 @@ public class EccSSLSocketFactory extends SSLSocketFactory {
 
     private Socket encapsulated(Socket socket) {
         if (socket instanceof SSLSocket) {
-            ((SSLSocket) socket).setEnabledCipherSuites(getDefaultCipherSuites());
+            if (isEccConnect) {
+                ((SSLSocket) socket).setEnabledCipherSuites(ECC_CIPHER_SUITES);
+            } else {
+                ((SSLSocket) socket).setEnabledCipherSuites(RSA_CIPHER_SUITES);
+            }
         }
         return socket;
     }

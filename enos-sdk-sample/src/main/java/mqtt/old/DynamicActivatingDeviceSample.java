@@ -7,7 +7,6 @@ import com.envisioniot.enos.iot_mqtt_sdk.core.profile.FileProfile;
 import com.envisioniot.enos.iot_mqtt_sdk.util.SecureModeUtil;
 import com.envisioniot.enos.iot_mqtt_sdk.util.StringUtil;
 import com.google.common.base.Preconditions;
-
 import mqtt.old.helper.BaseConnectCallback;
 import mqtt.old.helper.Helper;
 
@@ -57,8 +56,8 @@ public class DynamicActivatingDeviceSample {
      * @param profilePath profile file path
      */
     private static void checkProfile(final MqttClient client, FileProfile oldProfile, String profilePath) {
-        // Wait a moment to let config be updated
         try {
+            // Wait a moment to let config be updated
             for (int i = 1; i < 60; ++i) {
                 if (!StringUtil.isEmpty(oldProfile.getDeviceSecret())) {
                     // device secret populated by DefaultActivateResponseHandler
@@ -69,31 +68,32 @@ public class DynamicActivatingDeviceSample {
 
             // wait DefaultActivateResponseHandler to complete replying broker and reconnecting to it
             TimeUnit.SECONDS.sleep(3);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
-        // Reload the profile config
-        FileProfile newProfile = new FileProfile(profilePath);
-        if (StringUtil.isEmpty(newProfile.getDeviceSecret())) {
-            String error = StringUtil.isEmpty(oldProfile.getDeviceSecret())
-                    ? "device secret is not returned from broker"
-                    : "device secret is returned from broker but not persisted";
-            System.err.println("Error: " + error);
-        } else {
-            System.out.println("received device secret: " + newProfile.getDeviceSecret());
+            // Reload the profile config
+            FileProfile newProfile = new FileProfile(profilePath);
+            if (StringUtil.isEmpty(newProfile.getDeviceSecret())) {
+                String error = StringUtil.isEmpty(oldProfile.getDeviceSecret())
+                        ? "device secret is not returned from broker"
+                        : "device secret is returned from broker but not persisted";
+                System.err.println("Error: " + error);
+            } else {
+                System.out.println("received device secret: " + newProfile.getDeviceSecret());
 
-            // Ensure that connection is still alive after DefaultActivateResponseHandler reconnected to broker
-            if (!client.isConnected()) {
-                System.err.println("Error: connection disconnected during dynamic activating");
+                // Ensure that connection is still alive after DefaultActivateResponseHandler reconnected to broker
+                if (!client.isConnected()) {
+                    System.err.println("Error: connection disconnected during dynamic activating");
+                }
             }
-        }
 
-        client.close();
+            TimeUnit.SECONDS.sleep(3);
+            client.close();
 
-        // Test reconnect with updated profile
-        if (!StringUtil.isEmpty(newProfile.getDeviceSecret())) {
-            reconnectWithNewProfile(newProfile);
+            // Test reconnect with updated profile
+            if (!StringUtil.isEmpty(newProfile.getDeviceSecret())) {
+                reconnectWithNewProfile(newProfile);
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
     }
 

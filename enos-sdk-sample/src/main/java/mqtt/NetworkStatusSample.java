@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2020/10/20 20:52
  */
 public class NetworkStatusSample {
-    // EnOS HTTP Broker URL, which can be obtained from Environment Information page in EnOS Console
+    // EnOS MQTT Broker URL, which can be obtained from Environment Information page in EnOS Console
     static final String BROKER_URL = "tcp://broker_url:11883";
 
     // Device credentials, which can be obtained from Device Details page in EnOS Console
@@ -36,7 +36,7 @@ public class NetworkStatusSample {
         client.connect(new ConnCallback() {
             @Override
             public void connectComplete(boolean reconnect) {
-                System.out.println("connect alpha success");
+                System.out.println("connect success");
             }
 
             @Override
