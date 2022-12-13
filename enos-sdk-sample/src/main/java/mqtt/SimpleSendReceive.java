@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class SimpleSendReceive {
-    // EnOS HTTP Broker URL, which can be obtained from Environment Information page in EnOS Console
+    // EnOS MQTT Broker URL, which can be obtained from Environment Information page in EnOS Console
     static final String BROKER_URL = "tcp://broker_url:11883";
 
     // Device credentials, which can be obtained from Device Details page in EnOS Console

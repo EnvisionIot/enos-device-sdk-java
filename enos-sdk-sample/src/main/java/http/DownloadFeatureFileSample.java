@@ -58,7 +58,7 @@ public class DownloadFeatureFileSample {
             connection.downloadFileAsync(fileUri, FileCategory.FEATURE, new IFileCallback() {
                         @Override
                         public void onResponse(InputStream inputStream) throws IOException {
-                            System.out.println("download feature ile asynchronously");
+                            System.out.println("download feature file asynchronously");
                             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                                 byte[] buffer = new byte[bufferLength];
                                 int len;

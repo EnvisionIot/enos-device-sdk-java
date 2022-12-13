@@ -74,12 +74,25 @@ public class OkHttpUtil {
         X509TrustManager trustManagerVerifyCa = (X509TrustManager) trustManagers[0];
         // TSL or SSL
         SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(keyManagers, trustManagers, new SecureRandom());
+
+        TrustManager[] trustAllCerts = new TrustManager[] {
+                new X509TrustManager() {
+                    @Override
+                    public void checkClientTrusted(X509Certificate[] x509Certificates,
+                                                   String s) throws CertificateException {}
+                    @Override
+                    public void checkServerTrusted(X509Certificate[] x509Certificates,
+                                                   String s) throws CertificateException {}
+                    @Override
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return new X509Certificate[0];
+                    }
+                }
+        };
+        sslContext.init(keyManagers, trustAllCerts, new SecureRandom());
         SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
-        if (isEccConnect) {
-            sslSocketFactory = new EccSSLSocketFactory(sslSocketFactory);
-        }
+        sslSocketFactory = new EccSSLSocketFactory(sslSocketFactory, isEccConnect);
 
         // check cert
         okHttpBuilder.sslSocketFactory(sslSocketFactory, trustManagerVerifyCa);
